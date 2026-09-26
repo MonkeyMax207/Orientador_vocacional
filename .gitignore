@@ -2,9 +2,8 @@
 .venv/
 __pycache__/
 
-# Downloaded model weights: large binaries, fetched by setup scripts
+# Downloaded model weights + generated filler clips: large binaries, rebuilt by scripts
 models/
 
-# Generated audio (fillers are rebuilt by make_fillers.py; recordings are test scratch)
-fillers/*.wav
+# Recorded user turns (test material for bench.py and filter analysis)
 recordings/

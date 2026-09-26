@@ -27,7 +27,7 @@ inside an animatronic.
 | Latency hiding | Pre-recorded filler phrases + sentence-by-sentence streaming | TFS is met by the filler; the LLM delay is hidden |
 | Animations | Keyword → animation lookup table, no inference | Zero CPU cost, predictable |
 | Turn-taking | Always listening with VAD; `barge_in` config flag | Muting the mic while the agent speaks is the reliable default; interrupting can be enabled |
-| Architecture | Plain Python + `asyncio` queues, calling each library directly | Easy to learn from, minimal overhead on the Pi |
+| Architecture | Plain Python + threads and `queue.Queue`, calling each library directly | Every library blocks anyway; threads are simpler to follow than asyncio; minimal overhead on the Pi |
 | LLM runtime | Ollama (local server) | Native GPU on Windows, one-click install on all 3 platforms, easy CPU/GPU switch |
 | Python | 3.11 in a `uv` virtual environment | Matches Raspberry Pi OS Bookworm; speech libraries support it |
 | GPU access | Native Windows, no WSL | Ollama and faster-whisper both support CUDA on Windows. WSL is only the last fallback. |
@@ -38,18 +38,19 @@ inside an animatronic.
 
 | File | What it does | Depends on |
 |---|---|---|
-| `config.yaml` | Profiles `pc` and `pi`: model names, device (cuda/cpu), threads, `barge_in`, audio device names, `silence_ms`, `slow_llm_s` | — |
+| `config.toml` + `config.py` | Profiles `pc` and `pi`: model names, device (cuda/cpu), threads, `barge_in`, audio device names, `silence_ms`, `slow_llm_s` | — |
 | `audio_io.py` | Mic stream at 16 kHz mono in 32 ms (512-sample) chunks; speaker playback queue | `sounddevice` |
 | `vad.py` | `is_speech(chunk)`; detects the end of a turn after `silence_ms` (default 600) | Silero VAD ONNX model via `onnxruntime` (no PyTorch) |
 | `stt.py` | `transcribe(audio) -> str`, with language fixed to `es` | `faster-whisper` (`pc`: cuda float16; `pi`: cpu int8) |
 | `brain.py` | Vocational-guide persona (system prompt) + conversation history; `stream_reply(text)` yields tokens | Ollama HTTP API (`/api/chat`, `stream: true`, `keep_alive`) |
 | `tts.py` | `synthesize(sentence) -> audio` | `piper-tts` with a Spanish voice |
-| `sentences.py` | Splits the token stream into sentences, without breaking on "Dr.", "3.5", "etc." | — |
+| `sentences.py` | Splits the token stream into sentences, without breaking on "Dr.", "3.5"; `clean_for_tts()` strips markdown and emojis | — |
 | `animations.py` | `KEYWORDS = {"hola": "saludar", ...}`; `check(sentence)` prints `[ANIM] name` | — |
-| `fillers/*.wav` + `make_fillers.py` | 1.5–3 s filler phrases, generated once with the same Piper voice | `tts.py` |
-| `main.py` | State machine LISTENING → THINKING → SPEAKING; logs per-stage timings | everything above |
+| `fillers.py` (generates clips into `models/fillers/<voice>/`) | 1.5–3 s filler phrases, generated once with the same Piper voice; `Fillers.pick()` | `tts.py` |
+| `main.py` | State machine LISTENING → THINKING → SPEAKING; logs per-stage timings; saves every user turn to `recordings/` | everything above |
+| `download_models.py` | One-time download of the Silero, Piper and Whisper files into `models/` (the only step that needs internet) | `urllib`, `faster-whisper` |
 | `check_gpu.py` | Confirms that Ollama and faster-whisper can see the GPU from Windows | — |
-| `list_devices.py` | Prints the audio devices so their names can go in `config.yaml` | `sounddevice` |
+| `list_devices.py` | Prints the audio devices so their names can go in `config.toml` | `sounddevice` |
 | `bench.py` | Runs recorded Spanish questions through STT → LLM → TTS per profile and prints stage latencies | everything above |
 
 Starting model candidates (`bench.py` picks the final ones):
@@ -104,7 +105,7 @@ If that's still not enough, these can be tuned in config: Whisper size, Piper vo
 ## Testing
 
 - `vad.py`, `stt.py`, `tts.py` and `brain.py` each have a `__main__` self-check (e.g. `python stt.py sample.wav` prints the text and the time taken).
-- `sentences.py` and `animations.py` have `assert`-based self-checks for abbreviations, decimals, accents and keyword matching.
+- `test_logic.py` holds plain `assert` checks (no framework) for the sentence splitter, TTS text cleaning, keyword matching, turn detection, STT noise filtering and config profiles. Run: `uv run python test_logic.py`.
 - `bench.py` validates the latency budget on both profiles.
 - Audio is recorded through the Waveshare module before any filter is added. Filters are added only if the recordings show a need. The ASUS "AI Noise-cancelling" virtual devices are not used.
 
