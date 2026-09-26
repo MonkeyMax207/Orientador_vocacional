@@ -1,0 +1,34 @@
+# Settings for the voice agent.
+# [common] applies to every profile; a profile section ([pc] or [pi]) adds or overrides keys.
+# Choose the profile when starting:  uv run python main.py pc
+
+[common]
+# Audio devices: any words from the device name printed by `uv run python list_devices.py`.
+# "MME" selects the Windows audio API that converts sample rates for us (the USB module
+# runs at 48 kHz, we want 16 kHz). On Linux these names change (sub-project 3).
+input_device = "USB PnP MME"
+output_device = "USB PnP MME"
+vad_threshold = 0.5          # Silero speech probability above which a 32 ms chunk counts as speech
+silence_ms = 600             # this much silence ends the user's turn (lower = snappier, but cuts pauses)
+min_speech_ms = 250          # turns with less speech than this are noise (a click, a cough)
+slow_llm_s = 3.0             # no sentence ready this long after the user stopped → play a 2nd filler
+ollama_host = "http://localhost:11434"
+voice = "es_MX-ald-medium"   # Piper voice file: models/piper/<voice>.onnx
+
+[pc]
+threads = 8
+whisper_model = "small"
+whisper_device = "cuda"
+whisper_compute = "float16"  # GPU-native half precision
+llm_model = "qwen2.5:3b"
+llm_num_gpu = 99             # LLM layers offloaded to the GPU; 99 means "all of them"
+barge_in = false             # set true only when testing with headphones (the speaker would trigger it)
+
+[pi]
+threads = 4                  # the Raspberry Pi 5 has 4 CPU cores
+whisper_model = "base"
+whisper_device = "cpu"
+whisper_compute = "int8"     # 8-bit weights: ~2x faster on CPU with tiny accuracy loss
+llm_model = "qwen2.5:1.5b"
+llm_num_gpu = 0              # 0 = LLM runs on the CPU only, like on the Pi
+barge_in = false             # the Waveshare module has no hardware echo cancellation
