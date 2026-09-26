@@ -1,0 +1,10 @@
+# Python virtual environment (recreated with `uv sync`, never committed)
+.venv/
+__pycache__/
+
+# Downloaded model weights: large binaries, fetched by setup scripts
+models/
+
+# Generated audio (fillers are rebuilt by make_fillers.py; recordings are test scratch)
+fillers/*.wav
+recordings/
