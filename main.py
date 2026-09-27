@@ -22,6 +22,7 @@ from audio_io import SAMPLE_RATE, Mic, Player, save_wav, to_int16
 from brain import Brain, llm_worker
 from config import load_config
 from fillers import Fillers
+from rag import CARDS, Knowledge, OllamaEmbedder, retrieve
 from sentences import SentenceSplitter, clean_for_tts
 from stt import STT, clean
 from tts import TTS
@@ -41,7 +42,12 @@ class Agent:
     def __init__(self, cfg):
         self.cfg = cfg
         print("Cargando modelos...", flush=True)
-        self.brain = Brain(cfg.ollama_host, cfg.llm_model, cfg.threads, cfg.llm_num_gpu)
+        # Knowledge cards are optional: without knowledge/cards.json the agent still converses.
+        self.knowledge = None
+        if CARDS.exists():
+            self.knowledge = Knowledge(OllamaEmbedder(cfg.ollama_host, cfg.embed_model), cfg.embed_model)
+        names = self.knowledge.program_names() if self.knowledge else ()
+        self.brain = Brain(cfg.ollama_host, cfg.llm_model, cfg.threads, cfg.llm_num_gpu, program_names=names)
         self.brain.check()     # fail fast if Ollama is down or the model is missing
         self.brain.warmup()    # load the LLM + cache the system prompt
         self.stt = STT(cfg.whisper_model, cfg.whisper_device, cfg.whisper_compute, cfg.threads)
@@ -54,6 +60,8 @@ class Agent:
         self.player = Player(cfg.output_device, int(self.tts.sample_rate * cfg.voice_rate))
         self.mic = Mic(cfg.input_device)   # opened last so no audio piles up while loading
         self.ready_turn = None             # a full user turn captured while we were speaking
+        self.user_turns = []               # everything the student said (recommendation query)
+        self.last_reply = ""               # the agent's last answer (context for detail queries)
         RECORDINGS.mkdir(exist_ok=True)
 
     def feed_mic(self, chunk):
@@ -85,6 +93,14 @@ class Agent:
         # Interrupt once the user has said as much as a valid turn needs (min_speech_ms).
         return self.turns.speech_chunks * CHUNK_MS >= self.cfg.min_speech_ms
 
+    def find_cards(self, text: str) -> list[dict]:
+        self.user_turns.append(text)
+        if self.knowledge is None:
+            return []
+        mode, cards = retrieve(self.knowledge, text, self.user_turns, self.last_reply, self.cfg)
+        print(f"[rag] {mode}: {', '.join(c['id'] for c in cards) or '-'}", flush=True)
+        return cards
+
     def respond(self, audio: np.ndarray) -> None:
         # The user actually stopped talking silence_ms ago (that's how we detected the end).
         t_detect = time.perf_counter()
@@ -112,10 +128,11 @@ class Agent:
             self.finish_speaking()
             return
         print(f"\nTú: {text}", flush=True)
+        cards = self.find_cards(text)   # verified UAO facts for this turn (maybe none)
 
         # Start the LLM on its own thread; tokens arrive in `tokens` while we keep working.
         tokens, stop = queue.Queue(), threading.Event()
-        threading.Thread(target=llm_worker, args=(self.brain, text, tokens, stop), daemon=True).start()
+        threading.Thread(target=llm_worker, args=(self.brain, text, tokens, stop, cards), daemon=True).start()
 
         splitter, spoken = SentenceSplitter(), []
         t_sentence = t_first = None
@@ -152,6 +169,7 @@ class Agent:
                 break
 
         print(f"Orienta: {' '.join(spoken)}", flush=True)
+        self.last_reply = " ".join(spoken)
         if t_first:
             first_sound = min(t_filler + [t_first]) - t_end
             source = "filler" if t_filler and t_filler[0] < t_first else "respuesta"

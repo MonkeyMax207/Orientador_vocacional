@@ -179,6 +179,7 @@ def _agent(chunks, barge_in):
     a.cfg = SimpleNamespace(barge_in=barge_in, min_speech_ms=250, silence_ms=600, slow_llm_s=3.0,
                             filler_after_s=0.8)
     a.mic, a.vad, a.turns, a.ready_turn = _FakeMic(chunks), _FakeVAD(), vad.TurnDetector(600, 250), None
+    a.knowledge, a.user_turns, a.last_reply = None, [], ""
     return a
 
 
@@ -412,6 +413,13 @@ def test_retrieve():
     assert mode == "detalle" and calls[-1] == ("¿Te gusta la robótica? sí, esa", 2, 0.45, None)
     mode, _ = rag.retrieve(KB(), "¿qué me recomiendas?", ["me gusta dibujar", "¿qué me recomiendas?"], "", cfg)
     assert mode == "recomendacion" and calls[-1] == ("me gusta dibujar ¿qué me recomiendas?", 3, -1.0, {"perfil"})
+
+
+def test_find_cards_without_knowledge():
+    # Review Focus #3: no cards.json → the agent still works, just without cards.
+    a = _agent([], barge_in=False)
+    assert a.find_cards("¿Qué laboratorios hay?") == []
+    assert a.user_turns == ["¿Qué laboratorios hay?"]
 
 
 class _FakeResp:

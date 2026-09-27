@@ -16,6 +16,11 @@ slow_llm_s = 4.0             # still nothing this long after the user stopped �
 # 127.0.0.1, not "localhost": on Windows "localhost" tries IPv6 (::1) first, Ollama only
 # listens on IPv4, and every request would wait ~2 s for the IPv6 attempt to time out.
 ollama_host = "http://127.0.0.1:11434"
+# Knowledge (RAG) — see docs/superpowers/specs/2026-09-26-uao-knowledge-rag-design.md
+embed_model = "embeddinggemma"   # Ollama embedding model (CPU); chosen by knowledge/eval.py
+rag_threshold = 0.45             # minimum similarity for a card to be used in a detail turn
+rag_max_cards = 2                # cards per detail turn (each ~60 words ≈ +1.5 s on a Pi)
+recommend_after_turns = 6        # on this turn the agent recommends programs even if not asked
 
 [pc]
 threads = 8
