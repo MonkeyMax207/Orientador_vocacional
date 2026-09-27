@@ -338,6 +338,19 @@ def test_with_retries():
         pass
 
 
+def test_ask_retries_cut_json():
+    # A runner restart can cut the model's answer mid-JSON ("Unterminated string"): that must be
+    # retried like a network error, not crash the whole build.
+    replies = iter([{"response": '{"fichas": [{"titulo": "Acceso'},          # cut off
+                    {"response": '{"fichas": []}'}])
+    real_post, real_wait = make_cards._post, make_cards.RETRY_WAIT_S
+    make_cards._post, make_cards.RETRY_WAIT_S = (lambda path, body: next(replies)), 0
+    try:
+        assert make_cards.ask("prompt", make_cards.CAMPUS_SCHEMA) == {"fichas": []}
+    finally:
+        make_cards._post, make_cards.RETRY_WAIT_S = real_post, real_wait
+
+
 def test_trim_words():
     text = "Uno dos tres cuatro. Cinco seis siete. Ocho nueve diez once doce."
     assert make_cards.trim_words(text, 7) == "Uno dos tres cuatro. Cinco seis siete."   # whole sentences

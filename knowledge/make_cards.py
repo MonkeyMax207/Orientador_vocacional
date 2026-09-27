@@ -105,13 +105,19 @@ def trim_words(text: str, limit: int = MAX_WORDS) -> str:
     return " ".join(kept)
 
 
-def with_retries(fn, tries: int = 3, wait_s: float = 10):
-    # Ollama's model runner can crash under GPU-memory pressure (HTTP 500); it restarts on the
-    # next request, so waiting a bit and retrying usually works. The last failure is re-raised.
+RETRY_WAIT_S = 10   # seconds between attempts (tests set it to 0)
+
+
+def with_retries(fn, tries: int = 3, wait_s: float | None = None):
+    # Ollama's model runner can crash under GPU-memory pressure: either an HTTP 500, or an answer
+    # cut off mid-JSON when the runner restarts. It recovers on the next request, so waiting a bit
+    # and retrying usually works. The last failure is re-raised.
+    wait_s = RETRY_WAIT_S if wait_s is None else wait_s
     for attempt in range(1, tries + 1):
         try:
             return fn()
-        except OSError as e:   # urllib's HTTPError/URLError are OSError subclasses
+        # OSError: urllib's HTTPError/URLError. ValueError: json.JSONDecodeError (cut-off answer).
+        except (OSError, ValueError) as e:
             if attempt == tries:
                 raise
             print(f"  intento {attempt} falló ({e}); reintentando en {wait_s:.0f} s", flush=True)
@@ -137,7 +143,8 @@ def ask(prompt: str, schema: dict) -> dict:
     # /api/generate with "format": <JSON schema> makes Ollama constrain the output to that schema.
     body = {"model": BUILD_MODEL, "prompt": prompt, "format": schema, "stream": False,
             "options": {"temperature": 0, "num_ctx": 6144}}   # smaller context = more of the model fits in the GPU
-    return json.loads(with_retries(lambda: _post("/api/generate", body))["response"])
+    # Parsing happens INSIDE the retried function, so a cut-off (invalid) JSON answer is retried too.
+    return with_retries(lambda: json.loads(_post("/api/generate", body)["response"]))
 
 
 def program_cards(slug: str, html: str, plan: str) -> list[dict]:
@@ -194,7 +201,7 @@ if __name__ == "__main__":
             continue
         try:
             new = build()
-        except OSError as e:
+        except (OSError, ValueError) as e:
             failed.append(job_id)   # skip it and keep going; rerun later with its id as argument
             print(f"{job_id}: FALLÓ ({e})", flush=True)
             continue
