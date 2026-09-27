@@ -11,20 +11,24 @@ output_device = "USB PnP MME"
 vad_threshold = 0.5          # Silero speech probability above which a 32 ms chunk counts as speech
 silence_ms = 600             # this much silence ends the user's turn (lower = snappier, but cuts pauses)
 min_speech_ms = 250          # turns with less speech than this are noise (a click, a cough)
-slow_llm_s = 3.0             # no sentence ready this long after the user stopped → play a 2nd filler
+filler_after_s = 1.0         # a short filler plays only if no answer is ready this long after the user stops
+slow_llm_s = 4.0             # still nothing this long after the user stopped → one more filler
 # 127.0.0.1, not "localhost": on Windows "localhost" tries IPv6 (::1) first, Ollama only
 # listens on IPv4, and every request would wait ~2 s for the IPv6 attempt to time out.
 ollama_host = "http://127.0.0.1:11434"
-voice = "es_MX-ald-medium"   # Piper voice file: models/piper/<voice>.onnx
 
 [pc]
 threads = 8
 whisper_model = "small"
 whisper_device = "cuda"
 whisper_compute = "float16"  # GPU-native half precision
-llm_model = "qwen2.5:3b"
+llm_model = "llama3.2:3b"   # best of the replay test: answers questions, reads through STT errors
 llm_num_gpu = 99             # LLM layers offloaded to the GPU; 99 means "all of them"
 barge_in = false             # set true only when testing with headphones (the speaker would trigger it)
+tts_engine = "kokoro"        # natural voice (Piper is faster but sounds more robotic)
+tts_device = "cuda"          # Kokoro on the GPU: ~0.5 s per sentence instead of ~3 s on the CPU
+voice = "em_santa"           # Kokoro voice (em_ = Spanish male, ef_ = Spanish female)
+voice_rate = 1.0             # playback speed factor: <1 = deeper and slower ("character" voice), zero CPU cost
 
 [pi]
 threads = 4                  # the Raspberry Pi 5 has 4 CPU cores
@@ -34,3 +38,7 @@ whisper_compute = "int8"     # 8-bit weights: ~2x faster on CPU with tiny accura
 llm_model = "qwen2.5:1.5b"
 llm_num_gpu = 0              # 0 = LLM runs on the CPU only, like on the Pi
 barge_in = false             # the Waveshare module has no hardware echo cancellation
+tts_engine = "piper"         # Kokoro is slower than real time on a Pi 5 CPU; Piper is ~4x faster than real time
+tts_device = "cpu"           # the Pi has no CUDA GPU
+voice = "es_ES-davefx-medium" # Piper voice file: models/piper/<voice>.onnx (Spain accent, male)
+voice_rate = 1.0             # try 0.9 for a wiser, older turtle; costs nothing

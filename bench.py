@@ -26,7 +26,7 @@ brain.check()
 brain.warmup()
 stt = STT(cfg.whisper_model, cfg.whisper_device, cfg.whisper_compute, cfg.threads)
 # (STT warms itself up inside its constructor)
-tts = TTS(cfg.voice)
+tts = TTS(cfg.tts_engine, cfg.voice, cfg.tts_device)
 tts.synthesize("Hola.")
 
 rows = []

@@ -45,12 +45,13 @@ class Agent:
         self.brain.check()     # fail fast if Ollama is down or the model is missing
         self.brain.warmup()    # load the LLM + cache the system prompt
         self.stt = STT(cfg.whisper_model, cfg.whisper_device, cfg.whisper_compute, cfg.threads)
-        self.tts = TTS(cfg.voice)
+        self.tts = TTS(cfg.tts_engine, cfg.voice, cfg.tts_device)
         self.tts.synthesize("Hola.")                                   # warm-up
         self.fillers = Fillers(cfg.voice)
         self.vad = VAD(cfg.vad_threshold)
         self.turns = TurnDetector(cfg.silence_ms, cfg.min_speech_ms)
-        self.player = Player(cfg.output_device, self.tts.sample_rate)
+        # voice_rate < 1 plays the same samples slower: a deeper "character" voice at zero CPU cost.
+        self.player = Player(cfg.output_device, int(self.tts.sample_rate * cfg.voice_rate))
         self.mic = Mic(cfg.input_device)   # opened last so no audio piles up while loading
         self.ready_turn = None             # a full user turn captured while we were speaking
         RECORDINGS.mkdir(exist_ok=True)
@@ -86,17 +87,28 @@ class Agent:
 
     def respond(self, audio: np.ndarray) -> None:
         # The user actually stopped talking silence_ms ago (that's how we detected the end).
-        t_end = time.perf_counter() - self.cfg.silence_ms / 1000
-        # THINKING: filler first, before any heavy work. This is the < 2 s time to first sound.
-        self.player.put(self.fillers.pick(), ["pensar"])
-        t_filler = time.perf_counter()
+        t_detect = time.perf_counter()
+        t_end = t_detect - self.cfg.silence_ms / 1000
+        # THINKING: the filler is SCHEDULED, not played. threading.Timer runs play_filler on its
+        # own thread after a delay, unless we cancel() it first. So it only sounds if no answer
+        # is ready filler_after_s after the user stopped: that still keeps first sound < 2 s,
+        # but a quick answer comes without "Mmm..." in front of it.
+        t_filler = []   # the timer thread records here when the filler really started
+
+        def play_filler():
+            t_filler.append(time.perf_counter())
+            self.player.put(self.fillers.pick(), ["pensar"])
+
+        filler = threading.Timer(max(0.0, t_end + self.cfg.filler_after_s - t_detect), play_filler)
+        filler.start()
         save_wav(RECORDINGS / f"turn_{datetime.now():%Y%m%d_%H%M%S}.wav", to_int16(audio), SAMPLE_RATE)
 
         text = clean(self.stt.transcribe(audio))
         t_stt = time.perf_counter()
         if not text:
             print("(ruido ignorado)", flush=True)
-            self.player.stop()   # it was a cough or a bang: cut the filler short
+            filler.cancel()
+            self.player.stop()   # it was a cough or a bang: cut the filler short if it started
             self.finish_speaking()
             return
         print(f"\nTú: {text}", flush=True)
@@ -111,6 +123,7 @@ class Agent:
         while True:
             if self.user_interrupting():
                 stop.set()
+                filler.cancel()
                 self.player.stop()
                 print("[interrumpido]", flush=True)
                 return
@@ -130,7 +143,9 @@ class Agent:
                     continue
                 t_sentence = t_sentence or time.perf_counter()
                 # SPEAKING: synthesize and queue. It plays right after the filler/previous sentence.
-                self.player.put(self.tts.synthesize(sentence), animations.match(sentence))
+                clip = self.tts.synthesize(sentence)
+                filler.cancel()   # the answer is here: a filler not yet started is no longer needed
+                self.player.put(clip, animations.match(sentence))
                 t_first = t_first or time.perf_counter()
                 spoken.append(sentence)
             if token is None:
@@ -138,7 +153,9 @@ class Agent:
 
         print(f"Orienta: {' '.join(spoken)}", flush=True)
         if t_first:
-            print(f"[tiempos] primer sonido {t_filler - t_end:.2f}s | stt {t_stt - t_filler:.2f}s | "
+            first_sound = min(t_filler + [t_first]) - t_end
+            source = "filler" if t_filler and t_filler[0] < t_first else "respuesta"
+            print(f"[tiempos] primer sonido {first_sound:.2f}s ({source}) | stt {t_stt - t_detect:.2f}s | "
                   f"llm 1ª frase {t_sentence - t_stt:.2f}s | tts 1ª frase {t_first - t_sentence:.2f}s | "
                   f"respuesta lista {t_first - t_end:.2f}s", flush=True)
         self.finish_speaking()

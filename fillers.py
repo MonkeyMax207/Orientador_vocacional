@@ -11,18 +11,19 @@ from audio_io import load_wav, save_wav
 
 FILLER_DIR = Path(__file__).parent / "models" / "fillers"
 
-# Normal fillers: 1.5–3 s long, neutral enough to follow any question or answer.
+# Normal fillers: SHORT (under ~1 s), the "mmm" a person makes while thinking. They only play
+# when the answer is late (filler_after_s in config.toml), so they must not delay it further.
 FILLERS = [
-    "Mmm... déjame pensarlo un momento.",
-    "Entiendo, dame un segundo.",
-    "Muy bien... a ver, déjame pensar.",
-    "Mmm, qué interesante, un momento.",
-    "Vale, déjame organizar las ideas.",
+    "Mmm...",
+    "A ver...",
+    "Mmm, a ver...",
+    "Déjame ver...",
+    "Ajá...",
 ]
 # Slow fillers: played if the answer still isn't ready after slow_llm_s.
 SLOW_FILLERS = [
-    "Sigo pensando, ya casi.",
-    "Dame un momentito más.",
+    "Dame un segundito.",
+    "Ya casi, déjame pensar.",
 ]
 
 
@@ -50,7 +51,7 @@ if __name__ == "__main__":
     from tts import TTS
 
     cfg = load_config(sys.argv[1] if len(sys.argv) > 1 else "pc")
-    tts = TTS(cfg.voice)
+    tts = TTS(cfg.tts_engine, cfg.voice, cfg.tts_device)
     out = FILLER_DIR / cfg.voice
     out.mkdir(parents=True, exist_ok=True)
     for prefix, texts in (("filler", FILLERS), ("slow", SLOW_FILLERS)):

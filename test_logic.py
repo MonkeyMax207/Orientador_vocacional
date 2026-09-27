@@ -6,6 +6,7 @@ Each test_* function raises AssertionError if the logic is broken.
 import queue
 import tempfile
 import threading
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -172,7 +173,8 @@ class _FakeVAD:
 def _agent(chunks, barge_in):
     # A real Agent without __init__: no models or audio devices, only the logic under test.
     a = main.Agent.__new__(main.Agent)
-    a.cfg = SimpleNamespace(barge_in=barge_in, min_speech_ms=250, silence_ms=600, slow_llm_s=3.0)
+    a.cfg = SimpleNamespace(barge_in=barge_in, min_speech_ms=250, silence_ms=600, slow_llm_s=3.0,
+                            filler_after_s=0.8)
     a.mic, a.vad, a.turns, a.ready_turn = _FakeMic(chunks), _FakeVAD(), vad.TurnDetector(600, 250), None
     return a
 
@@ -202,6 +204,39 @@ def test_noise_turn_cuts_filler():
     main.RECORDINGS = Path(tempfile.mkdtemp())   # keep the test's wav out of recordings/
     a.respond(np.zeros(512, np.float32))
     assert stopped
+
+
+def _filler_run(llm_delay_s):
+    # Runs one real respond() with fakes; returns True if a filler clip was queued.
+    FILLER = np.zeros(3, np.int16)
+    puts = []
+
+    class Player:
+        def put(self, audio, anims=()): puts.append(audio)
+        def stop(self): pass
+        def busy(self): return False
+
+    class SlowBrain:
+        def stream_reply(self, text, stop):
+            time.sleep(llm_delay_s)
+            yield "Hola, qué bien."
+
+    a = _agent([], barge_in=False)
+    a.cfg.silence_ms, a.cfg.filler_after_s = 0, 0.3   # filler due 0.3 s after the turn ends
+    a.player, a.brain = Player(), SlowBrain()
+    a.fillers = SimpleNamespace(pick=lambda slow=False: FILLER)
+    a.stt = SimpleNamespace(transcribe=lambda audio: "Hola")
+    a.tts = SimpleNamespace(synthesize=lambda text: np.zeros(5, np.int16))
+    main.RECORDINGS = Path(tempfile.mkdtemp())
+    a.respond(np.zeros(512, np.float32))
+    time.sleep(0.4)   # give a wrongly-uncancelled timer the chance to fire
+    return any(p is FILLER for p in puts)
+
+
+def test_filler_only_when_answer_is_late():
+    # A person doesn't say "dame un segundo" when they already know the answer.
+    assert not _filler_run(llm_delay_s=0.0)   # answer ready at once → no filler
+    assert _filler_run(llm_delay_s=0.8)       # answer late → filler covers the wait
 
 
 if __name__ == "__main__":

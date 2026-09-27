@@ -7,11 +7,26 @@ requires-python = ">=3.11,<3.12"   # Raspberry Pi OS Bookworm ships 3.11; match 
 dependencies = [
     "numpy",            # audio buffers are numpy arrays
     "sounddevice",      # microphone + speaker via PortAudio
-    "onnxruntime",      # runs the Silero VAD model (and Piper internally)
     "faster-whisper",   # speech-to-text (CTranslate2 engine, fast on CPU and GPU)
-    "piper-tts==1.3.0", # text-to-speech; pinned because its Python API changed in 1.3
-    # CUDA 12 math libraries that faster-whisper needs for the GPU. Only on x86-64 PCs:
+    "piper-tts==1.3.0", # text-to-speech (fast, used on the Pi); pinned: its Python API changed in 1.3
+    "kokoro-onnx",      # text-to-speech (more natural; used on the pc profile, on the GPU)
+    # ONNX Runtime runs Silero VAD, Piper and Kokoro. Two builds of the same library:
+    #  - on the Pi (ARM): the normal CPU build;
+    #  - on x86 PCs: the GPU build (it also has the CPU provider). 1.22 is the last build for
+    #    CUDA 12, which is what this NVIDIA driver and faster-whisper support (1.23+ need CUDA 13).
+    "onnxruntime; platform_machine == 'aarch64'",
+    "onnxruntime-gpu==1.22.0; platform_machine == 'AMD64' or platform_machine == 'x86_64'",
+    # CUDA 12 math libraries used by faster-whisper and onnxruntime-gpu. Only on x86-64 PCs:
     # they don't exist for the Pi's ARM CPU, and the marker keeps `uv sync` working there.
     "nvidia-cublas-cu12; platform_machine == 'AMD64' or platform_machine == 'x86_64'",
-    "nvidia-cudnn-cu12>=9,<10; platform_machine == 'AMD64' or platform_machine == 'x86_64'",
+    # cuDNN 9.10: newer 9.x releases fail inside onnxruntime-gpu 1.22 ("Failed to initialize CUDNN Frontend").
+    "nvidia-cudnn-cu12==9.10.*; platform_machine == 'AMD64' or platform_machine == 'x86_64'",
+    "nvidia-cufft-cu12; platform_machine == 'AMD64' or platform_machine == 'x86_64'",       # needed by onnxruntime-gpu
+    "nvidia-cuda-runtime-cu12; platform_machine == 'AMD64' or platform_machine == 'x86_64'",
 ]
+
+[tool.uv]
+# piper-tts and kokoro-onnx both ask for the CPU "onnxruntime". Installing it next to
+# onnxruntime-gpu would overwrite the GPU build (same Python module name), so on x86 we tell uv
+# to ignore that request; on the Pi it stays.
+override-dependencies = ["onnxruntime; platform_machine == 'aarch64'"]
