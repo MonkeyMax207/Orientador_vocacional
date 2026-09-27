@@ -19,7 +19,7 @@ ollama_host = "http://127.0.0.1:11434"
 # Knowledge (RAG) — see docs/superpowers/specs/2026-09-26-uao-knowledge-rag-design.md
 embed_model = "embeddinggemma"   # Ollama embedding model (CPU); 21/25 in knowledge/eval.py, cleanest off-topic rejection
 rag_threshold = 0.30             # embeddinggemma: off-topic scores 0.09–0.26, relevant 0.27–0.66 (knowledge/eval.py)
-recommend_after_turns = 6        # on this turn the agent recommends programs even if not asked
+recommend_after_turns = 8        # on this turn the agent suggests programs even if not asked (a friend listens first)
 
 [pc]
 threads = 8

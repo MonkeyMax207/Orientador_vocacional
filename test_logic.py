@@ -460,7 +460,11 @@ def test_retrieve():
     mode, _ = rag.retrieve(KB(), "¿Qué materias hay?", ["¿Labs de mecatrónica?", "¿Qué materias hay?"],
                            "La mecatrónica tiene muchos laboratorios…", cfg)
     assert mode == "detalle"
-    assert calls[-1] == (["¿Qué materias hay?", "¿Labs de mecatrónica? ¿Qué materias hay?"], 2, 0.45, None)
+    # Program-profile cards only in recommendation mode: in normal turns they made the agent push
+    # careers at every vague sentence ("estoy pensando qué estudiar" → Ingeniería Industrial).
+    assert calls[-1] == (["¿Qué materias hay?", "¿Labs de mecatrónica? ¿Qué materias hay?"], 2, 0.45,
+                         rag.DETAIL_KINDS)
+    assert "perfil" not in rag.DETAIL_KINDS and "egresado" not in rag.DETAIL_KINDS
     mode, _ = rag.retrieve(KB(), "¿qué me recomiendas?", ["me gusta dibujar", "¿qué me recomiendas?"], "", cfg)
     assert mode == "recomendacion" and calls[-1] == ("me gusta dibujar ¿qué me recomiendas?", 3, -1.0, {"perfil"})
 
@@ -526,6 +530,9 @@ def test_brain_injects_cards_only_in_current_turn():
     # The model must know the facts are a hidden note, not something the student wrote
     # (in the replay it answered "gracias por recordarme la información verificada").
     assert "el estudiante no" in first["messages"][-1]["content"]
+    # The student's words close the message, unlabeled: a "Lo que dijo el estudiante:" label made
+    # the model talk ABOUT the student in third person instead of TO them.
+    assert first["messages"][-1]["content"].endswith("]\n\n¿Qué labs hay?")
     assert first["messages"][0] == second["messages"][0]                  # system prompt identical
     assert "Ingeniería Mecatrónica" in first["messages"][0]["content"]    # official list in system
     assert all("Fab-Lab" not in m["content"] for m in second["messages"])  # card not kept in history

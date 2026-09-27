@@ -25,6 +25,10 @@ PRICE_WORDS = ("precio", "cuánto cuesta", "cuanto cuesta", "cuánto vale", "cua
                "matricula", "beca", "financiación", "financiacion", "valor del semestre")
 RECOMMEND_WORDS = ("recomiendas", "recomendarías", "recomienda", "qué carrera", "que carrera",
                    "qué puedo estudiar", "que puedo estudiar", "qué debería estudiar", "que deberia estudiar")
+# Card types used in normal (detail) turns: facts the student asks about. Program "perfil" and
+# "egresado" cards are only for recommendation turns; offered on every turn they turned the agent
+# into a salesman that pushed a career at each vague sentence.
+DETAIL_KINDS = {"materias", "laboratorios", "campus"}
 # Some embedding models are trained with instruction prefixes; using them improves retrieval.
 EMBED_PREFIXES = {"embeddinggemma": ("task: search result | query: ", "title: none | text: ")}
 
@@ -96,7 +100,9 @@ class Knowledge:
         # Several phrasings of the same need, embedded in ONE request (cheap on the Pi); the one
         # whose best card matches most strongly decides which cards are returned.
         rankings = [self._ranked_by(v) for v in self.embed(queries, query=True)]
-        best = max(rankings, key=lambda ranked: ranked[0][0])
+        # Compare queries by their best card among the allowed kinds (-1 if none: no cards at all).
+        best = max(rankings, key=lambda ranked: next(
+            (score for score, card in ranked if not kinds or card["tipo"] in kinds), -1.0))
         return self._pick(best, k, threshold, kinds)
 
     def program_names(self) -> list[str]:
@@ -125,7 +131,7 @@ def retrieve(kb, text: str, user_turns: list[str], last_reply: str, cfg) -> tupl
     # The agent's own (longer) reply is used only as a last resort: it would steer the search.
     previous = user_turns[-2] if len(user_turns) > 1 else ""
     queries = [text] + ([f"{previous} {text}"] if previous else [])
-    cards = kb.search_best(queries, cfg.rag_max_cards, cfg.rag_threshold)
+    cards = kb.search_best(queries, cfg.rag_max_cards, cfg.rag_threshold, DETAIL_KINDS)
     if not cards and last_reply:
-        cards = kb.search(f"{last_reply} {text}", cfg.rag_max_cards, cfg.rag_threshold)
+        cards = kb.search(f"{last_reply} {text}", cfg.rag_max_cards, cfg.rag_threshold, DETAIL_KINDS)
     return mode, cards
