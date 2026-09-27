@@ -13,12 +13,14 @@ FILLER_DIR = Path(__file__).parent / "models" / "fillers"
 
 # Normal fillers: SHORT (under ~1 s), the "mmm" a person makes while thinking. They only play
 # when the answer is late (filler_after_s in config.toml), so they must not delay it further.
+# Only real words: the TTS turns text into phonemes with espeak, which reads "Mmm" as the
+# letter names ("eme eme eme"). Interjections that are words ("Bueno", "Pues") sound natural.
 FILLERS = [
-    "Mmm...",
+    "Bueno...",
     "A ver...",
-    "Mmm, a ver...",
+    "Pues, a ver...",
     "Déjame ver...",
-    "Ajá...",
+    "Eh, bueno...",
 ]
 # Slow fillers: played if the answer still isn't ready after slow_llm_s.
 SLOW_FILLERS = [
