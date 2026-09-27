@@ -24,3 +24,16 @@ uv run python main.py pi                 # Pi-like profile (CPU, 4 threads, smal
 uv run python test_logic.py              # logic checks
 uv run python bench.py pi                # latency benchmark over recorded turns
 ```
+
+## Measured latency (PC, 2026-09-26)
+
+Six synthetic Spanish turns (two Piper voices), `uv run python bench.py <profile>`:
+
+| Profile | STT | LLM 1st sentence | TTS 1st sentence | Answer ready | First sound |
+|---|---|---|---|---|---|
+| pc (Whisper small GPU, qwen2.5:3b GPU) | 0.41 s | 0.23 s | 0.40 s | 1.65 s | ~0.60 s |
+| pi (on PC, 4 threads: Whisper base int8, qwen2.5:1.5b CPU) | 1.50 s | 0.81 s | 0.21 s | 3.12 s | ~0.60 s |
+| pi with Whisper small int8 (rejected) | 3.64 s | 0.73 s | 0.21 s | 5.18 s | ~0.60 s |
+
+"Answer ready" includes the 0.6 s end-of-turn silence. Expect the real Pi 5 to be ~1.5–2.5x slower than the `pi` row.
+Known trade-off: Whisper `base` is fast enough but mishears some short/unclear Spanish ("Sí" → "¡Tienes!"); `small` is accurate but too slow on CPU. To revisit in the Pi port.
