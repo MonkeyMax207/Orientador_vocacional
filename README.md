@@ -54,3 +54,28 @@ Feedback: fillers sounded pointless (the answer was already ready), the voice so
 | Rejected: Whisper `initial_prompt` vocabulary hint | Made `small` recite the hint over noise and turn "Sí" into "Sin" |
 
 pc end to end with everything on the 4 GB GPU (3.8 GB used): first sound 1.0 s (filler), answer ready 1.4–1.8 s.
+
+## UAO knowledge (RAG)
+
+The agent answers from `knowledge/cards.json`: 147 short fact cards about the Universidad Autónoma de
+Occidente's 30 undergraduate programs and campus life, generated from the public website and reviewed
+(cards flagged `revisar` are never used). Prices, tuition and scholarships are never answered; the agent
+hands those over to admissions staff.
+
+```
+uv run python -m knowledge.scrape        # download pages (internet; ~3 min, polite 2 s delay)
+uv run python -m knowledge.make_cards    # write cards with the PC LLM; review the "revisar" ones
+uv run python -m knowledge.eval embeddinggemma   # retrieval quality (21/25 at threshold 0.30)
+uv run python -m knowledge.replay pc     # end-to-end check without audio
+```
+
+To update: delete `knowledge/raw/`, rerun scrape and make_cards, review `git diff knowledge/cards.json`, commit.
+Before `replay`/`main`, unload models from other profiles (`ollama stop <model>`): Ollama keeps at most 3
+loaded, and evicting the chat model to load the embedder costs ~5 s per turn.
+
+Measured with `knowledge/replay.py` (PC, 2026-09-27), time to first sentence:
+
+| Profile | Turns without cards | Turns with cards | Notes |
+|---|---|---|---|
+| pc (llama3.2:3b GPU, 2 cards) | 0.2–0.4 s | 0.3–1.4 s | Every program named exists; labs/courses/sports from the right cards |
+| pi (qwen2.5:1.5b CPU, 1 card) | 0.6 s | 2.6–6 s (16–17 s late in the chat) | Right cards, but the 1.5B model drifts (fixates on unrelated programs, embellishes cards) |
