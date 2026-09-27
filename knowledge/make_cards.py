@@ -78,7 +78,9 @@ MAX_WORDS = 75   # hard cap per card: each extra word costs Pi reading time on e
 def plain(text: str) -> str:
     # Lowercase without accents and with single spaces, so "Cálculo" matches "calculo" and a
     # name split across two lines of a PDF table ("Algoritmia y\nprogramación") still matches.
-    text = "".join(c for c in unicodedata.normalize("NFD", text.lower()) if unicodedata.category(c) != "Mn")
+    # NFKD (not just NFD) also expands typographic ligatures used in PDFs: "ﬁ" → "f" + "i".
+    text = "".join(c for c in unicodedata.normalize("NFKD", text.lower()) if unicodedata.category(c) != "Mn")
+    text = re.sub(r"(\w)-\s+(\w)", r"\1\2", text)   # re-join words hyphenated at a line end
     return re.sub(r"\s+", " ", text).strip()
 
 

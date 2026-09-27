@@ -324,6 +324,10 @@ def test_missing_names():
     assert make_cards.missing_names(["", "Fab-Lab"], source) == []
     # PDF tables split names across lines: whitespace differences must not count as missing.
     assert make_cards.missing_names(["Algoritmia y programación"], "Algoritmia y\nprogramación") == []
+    # PDFs use typographic ligatures ("ﬁ" is ONE character) and hyphenate words at line ends.
+    assert make_cards.missing_names(["Matemáticas Financieras"], "Matemáticas ﬁnancieras") == []
+    assert make_cards.missing_names(["Mecánica de Fluidos"], "Mecánica de ﬂuidos") == []
+    assert make_cards.missing_names(["actos y procedimientos"], "actos y procedimien-\ntos") == []
 
 
 def test_labs_only_when_source_mentions_them():

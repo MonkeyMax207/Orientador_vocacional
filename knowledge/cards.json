@@ -24,10 +24,7 @@
   "titulo": "Administración de Empresas – modelo dual Alemán: plan de estudios",
   "texto": "El programa tiene una duración de 8 periodos académicos, lo que equivale a 171 créditos académicos. En el primer y tercer semestre, cursarás materias básicas como Ética, Matemática aplicada a la administración, Estadística descriptiva, Fundamentos en matemáticas, Mercadeo y ventas, y Metodología de la investigación. En los semestres siguientes, profundizarás en temas como Estadística inferencial, Legislación comercial y tributaria, Teoría organizacional, Microeconomía, Macroeconomía y Gestión del talento humano.",
   "fuente": "https://www.uao.edu.co/programa/administracion-de-empresas-modalidad-dual/",
-  "revisar": true,
-  "faltan": [
-   "Curso introductorio"
-  ]
+  "revisar": false
  },
  {
   "id": "arquitectura-perfil",
@@ -54,22 +51,16 @@
   "titulo": "Arquitectura: plan de estudios",
   "texto": "El programa de Arquitectura de la UAO se extiende a lo largo de 9 periodos académicos, totalizando 150 créditos. En los primeros semestres, se cursarán materias como Inglés, Introducción a la Historia y el Pensamiento Crítico, y Cultura Arquitectónica 1. En los semestres intermedios, se abordarán temas como Hábitat Urbano, Sostenibilidad y Convivencia, y Diseño + Tecnología + Urbanismo.",
   "fuente": "https://www.uao.edu.co/programa/arquitectura/",
-  "revisar": true,
-  "faltan": [
-   "Espacio Público y Experiencias"
-  ]
+  "revisar": false
  },
  {
   "id": "arquitectura-laboratorios",
   "tipo": "laboratorios",
   "programa": "Arquitectura",
   "titulo": "Arquitectura: laboratorios",
-  "texto": "El programa cuenta con laboratorios de Meta Diseño, Interiorismo y Urbanismo, donde los estudiantes podrán desarrollar proyectos utilizando herramientas digitales de modelado en 3D y tecnologías de realidad virtual. También se cuenta con un laboratorio interdisciplinar, el 'Habitar Contemporáneo', que fomenta el trabajo colaborativo y la exploración de nuevas ideas.",
+  "texto": "En Arquitectura, los talleres de proyecto se llaman laboratorios. En los semestres de profundización cursarás el Laboratorio de Meta Diseño, dedicado al diseño del espacio virtual, el de Interiorismo, sobre espacios y experiencias interiores, y el de Urbanismo, centrado en el espacio público.",
   "fuente": "https://www.uao.edu.co/programa/arquitectura/",
-  "revisar": true,
-  "faltan": [
-   "Interdisciplinar: El Habitar Contemporáneo"
-  ]
+  "revisar": false
  },
  {
   "id": "cine-perfil",
@@ -132,10 +123,7 @@
   "titulo": "Comunicación Social – Periodismo: plan de estudios",
   "texto": "El programa se extiende a lo largo de 8 periodos académicos, otorgando un total de 144 créditos. En los primeros semestres, te enfocarás en materias fundamentales como Introducción a la Comunicación Social, Fotografía, Comunicación Oral y Escrita, y Narrativas Periodísticas. En semestres intermedios, profundizarás en temas como Periodismo Multiformato, Big Data y Analítica para Comunicadores, y Comunicación en las Organizaciones.",
   "fuente": "https://www.uao.edu.co/programa/comunicacion-social-periodismo/",
-  "revisar": true,
-  "faltan": [
-   "Comunicación gráfica digital"
-  ]
+  "revisar": false
  },
  {
   "id": "comunicacion-social-periodismo-laboratorios",
@@ -171,11 +159,7 @@
   "titulo": "Contaduría Pública: plan de estudios",
   "texto": "El programa de Contaduría Pública tiene una duración de 3.5 años, equivalente a 150 créditos académicos, y se imparte de forma presencial en horario de día y noche. En el primer y segundo semestre, cursarás Fundamentos en Contabilidad, Economía de los Negocios, Matemáticas Financieras y Cálculo, además de Introducción a la Inteligencia de Negocios y Inglés 1.",
   "fuente": "https://www.uao.edu.co/programa/contaduria-publica/",
-  "revisar": true,
-  "faltan": [
-   "Matemáticas Financieras",
-   "Contabilidad Financiera"
-  ]
+  "revisar": false
  },
  {
   "id": "contaduria-publica-laboratorios",
@@ -211,11 +195,7 @@
   "titulo": "Derecho: plan de estudios",
   "texto": "El plan de estudios de Derecho en la UAO se extiende a lo largo de 8 periodos académicos, otorgando un total de 140 créditos. En el primer y segundo semestre, te enfocarás en la Interpretación y Argumentación Jurídica y Teoría General del Proceso y Justicia Digital. Posteriormente, explorarás Investigación Socio-Jurídica, Derecho Civil y Penal, Teoría Constitucional y Derecho Laboral.",
   "fuente": "https://www.uao.edu.co/programa/derecho/",
-  "revisar": true,
-  "faltan": [
-   "Derecho público: actos y procedimientos administrativos",
-   "Mecanismos alternativos de solución de conflictos y arbitraje"
-  ]
+  "revisar": false
  },
  {
   "id": "diseno-de-la-comunicacion-grafica-perfil",
@@ -305,23 +285,16 @@
   "titulo": "Ingeniería Ambiental – híbrida: plan de estudios",
   "texto": "El programa tiene una duración de 9 periodos académicos, con un total de 158 créditos. En los primeros semestres, te enfocarás en materias fundamentales como Matemáticas Fundamentales, Fundamentos de Ingeniería Ambiental, Química Ambiental y Cálculo 1. En los semestres intermedios, estudiarás Álgebra Lineal, Diseño Conceptual, Cálculo 2, Física 1 y  Inglés 2. En los últimos semestres, abordarás temas avanzados como Mecánica de Fluidos Ambientales, Hidráulica, Microbiología Ambiental y Gestión Ambiental.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-ambiental-hibrida/",
-  "revisar": true,
-  "faltan": [
-   "Mecánica de Fluidos Ambientales",
-   "Gestión de la Innovación"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-ambiental-hibrida-laboratorios",
   "tipo": "laboratorios",
   "programa": "Ingeniería Ambiental – híbrida",
   "titulo": "Ingeniería Ambiental – híbrida: laboratorios",
-  "texto": "Durante tu formación, tendrás acceso a laboratorios como el Laboratorio QCA Ambiental, donde realizarás experimentos y análisis relacionados con la calidad del agua y el aire. También podrás participar en prácticas en el Campus Sostenible de la UAO, que funciona como un laboratorio vivo para aplicar tus conocimientos y desarrollar habilidades prácticas en el manejo de recursos y la prevención de impactos ambientales.",
+  "texto": "Durante tu formación, tendrás acceso a laboratorios como el Laboratorio QCA Ambiental, que hace parte del plan de estudios. También podrás participar en prácticas en el Campus Sostenible de la UAO, que funciona como un laboratorio vivo para aplicar tus conocimientos y desarrollar habilidades prácticas en el manejo de recursos y la prevención de impactos ambientales.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-ambiental-hibrida/",
-  "revisar": true,
-  "faltan": [
-   "Campus Sostenible de la UAO"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-ambiental-perfil",
@@ -346,14 +319,9 @@
   "tipo": "materias",
   "programa": "Ingeniería Ambiental",
   "titulo": "Ingeniería Ambiental: plan de estudios",
-  "texto": "El programa de 9 periodos académicos comienza con materias básicas como Matemáticas Fundamentales, Fundamentos de Ingeniería Ambiental, Química Ambiental y Cálculo 1. Posteriormente, se profundiza con temas como Álgebra Lineal, Diseño Conceptual, Cálculo 2, Física 1 y 2, Química General, y Geometría. En los semestres avanzados, se estudian temas especializados como Mecánica de Fluidos Ambientales, Ecología, Hidráulica, Microbiología Ambiental, Gestión Ambiental, Modelación Ambiental y Evaluación de Impacto Ambiental.",
+  "texto": "El programa de 9 periodos académicos comienza con materias básicas como Matemáticas Fundamentales, Fundamentos de Ingeniería Ambiental, Química Ambiental y Cálculo 1. Posteriormente, se profundiza con temas como Álgebra Lineal, Diseño Conceptual, Cálculo 2, Física 1 y 2 y Química General. En los semestres avanzados, se estudian temas especializados como Mecánica de Fluidos Ambientales, Ecología, Hidráulica, Microbiología Ambiental, Gestión Ambiental, Modelación Ambiental y Evaluación de Impacto Ambiental.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-ambiental/",
-  "revisar": true,
-  "faltan": [
-   "Mecánica de Fluidos Ambientales",
-   "Geometría",
-   "Gestión de la Innovación"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-ambiental-laboratorios",
@@ -389,10 +357,7 @@
   "titulo": "Ingeniería Biomédica: plan de estudios",
   "texto": "El programa de Ingeniería Biomédica tiene una duración de 157 créditos académicos, distribuidos en nueve periodos académicos. En los primeros semestres, cursarás materias como Expresión Oral y Escrita, Introducción a la Ingeniería, Matemáticas Fundamentales, Inglés y Fundamentos de Ingeniería Biomédica, que te darán las bases para comprender el campo. En los semestres siguientes, profundizarás en áreas como Circuitos Eléctricos, Física, Electrónica, Morfoﬁsiología y Biomateriales.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-biomedica/",
-  "revisar": true,
-  "faltan": [
-   "Microprocesadores"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-de-datos-e-inteligencia-artificial-perfil",
@@ -419,11 +384,7 @@
   "titulo": "Ingeniería de Datos e Inteligencia Artificial: plan de estudios",
   "texto": "El programa se estructura en 8 periodos académicos y 141 créditos. En los primeros semestres, te enfocarás en materias fundamentales como Estadística y Probabilidad, Matemáticas Fundamentales, Lógica y Matemática Discreta, y Álgebra Lineal. En los semestres intermedios, profundizarás en temas como Sistemas Operativos, Inteligencia Artificial, Analítica de Datos y Almacenamiento de Datos.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-de-datos-e-inteligencia-artificial/",
-  "revisar": true,
-  "faltan": [
-   "Introducción a la ingeniería de datos artificial",
-   "Seminario de ing. de datos e inteligencia artificial"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-electrica-perfil",
@@ -450,24 +411,16 @@
   "titulo": "Ingeniería Eléctrica: plan de estudios",
   "texto": "El programa de Ingeniería Eléctrica de la UAO te ofrece una formación completa, comenzando con fundamentos como Matemáticas Fundamentales, Física y Circuitos Eléctricos. A medida que avanzas, te especializarás en áreas como Sistemas de Potencia Eléctrica, Electrónica y Energías Renovables. El plan de estudios incluye asignaturas como Álgebra Lineal, Cálculo 1 y 2, y Circuitos Eléctricos 1 y 2, además de temas avanzados como Sistemas Dinámicos y Líneas y Redes.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-electrica/",
-  "revisar": true,
-  "faltan": [
-   "Electrónica Analógica y Digital",
-   "Sistemas de Potencia Eléctrica"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-electrica-laboratorios",
   "tipo": "laboratorios",
   "programa": "Ingeniería Eléctrica",
   "titulo": "Ingeniería Eléctrica: laboratorios",
-  "texto": "Durante tu formación, tendrás acceso a laboratorios especializados como el Laboratorio de Circuitos Eléctricos, donde podrás realizar experimentos prácticos con componentes electrónicos. Además, podrás desarrollar proyectos en el Laboratorio de Energías Renovables, trabajando con sistemas solares y vehículos eléctricos. También tendrás la oportunidad de participar en actividades de construcción de sistemas solares y carros eléctricos, aplicando tus conocimientos en un entorno práctico y colaborativo.",
+  "texto": "El programa combina clases prácticas y laboratorios, donde trabajarás con instrumentación, software de diseño y herramientas de laboratorio. Además, puedes entrar a semilleros de investigación en energías renovables, microrredes y eficiencia energética, y vivir experiencias reales como construir sistemas solares, participar en competencias de carros eléctricos y en el Solar Decathlon.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-electrica/",
-  "revisar": true,
-  "faltan": [
-   "Laboratorio de Circuitos Eléctricos",
-   "Laboratorio de Energías Renovables"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-electronica-y-telecomunicaciones-virtual-perfil",
@@ -486,27 +439,6 @@
   "texto": "Al graduarte, serás un ingeniero capaz de diseñar, gestionar e implementar sistemas electrónicos y de telecomunicaciones. Podrás trabajar en el desarrollo de dispositivos inteligentes, sistemas de automatización, redes de comunicación, sistemas IoT y en la optimización de procesos en la Industria 4.0, además de investigar y asesorar en áreas de vanguardia.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-electronica-y-telecomunicaciones-virtual/",
   "revisar": false
- },
- {
-  "id": "ingenieria-electronica-y-telecomunicaciones-virtual-materias",
-  "tipo": "materias",
-  "programa": "Ingeniería Electrónica y Telecomunicaciones – Virtual",
-  "titulo": "Ingeniería Electrónica y Telecomunicaciones – Virtual: plan de estudios",
-  "texto": "El programa tiene una duración de 9 períodos académicos, divididos en 3 ciclos bimestrales. En los primeros semestres, te enfocarás en materias como Circuitos Eléctricos, Teoría de Circuitos, Electromagnetismo y Procesamiento Digital de Señales. En semestres intermedios, estudiarás Sistemas de Telecomunicaciones, Electrónica Digital y Control Automático. En los últimos semestres, abordarás temas avanzados como Redes de Comunicación,  Procesamiento de Señales Digitales y  Sistemas de Comunicación Avanzada. El programa cuenta con un total de 159 créditos.",
-  "fuente": "https://www.uao.edu.co/programa/ingenieria-electronica-y-telecomunicaciones-virtual/",
-  "revisar": true,
-  "faltan": [
-   "Circuitos Eléctricos",
-   "Teoría de Circuitos",
-   "Electromagnetismo",
-   "Procesamiento Digital de Señales",
-   "Sistemas de Telecomunicaciones",
-   "Electrónica Digital",
-   "Control Automático",
-   "Redes de Comunicación",
-   "Procesamiento de Señales Digitales",
-   "Sistemas de Comunicación Avanzada"
-  ]
  },
  {
   "id": "ingenieria-electronica-y-telecomunicaciones-perfil",
@@ -560,10 +492,7 @@
   "titulo": "Ingeniería Industrial: plan de estudios",
   "texto": "El programa se imparte en 9 periodos académicos, otorgando un total de 155 créditos. En los primeros semestres, te enfocarás en materias como Algoritma y Programación, Matemáticas Fundamentales, Álgebra Lineal y Cálculo 1, además de Inglés y Comunicación Oral y Escrita. En semestres intermedios, estudiarás Fundamentos de Ingeniería Industrial, Diseño Conceptual, Cálculo 2, Estadística 1 y Electiva en Ciencias Sociales.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-industrial/",
-  "revisar": true,
-  "faltan": [
-   "Ingeniería económica y financiera"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-industrial-laboratorios",
@@ -626,27 +555,16 @@
   "titulo": "Ingeniería Mecánica: plan de estudios",
   "texto": "El plan de estudios de 9 periodos académicos, con 155 créditos, te ofrece una base sólida en mecánica, termodinámica, materiales y procesos de fabricación. En los primeros semestres, cursarás Fundamentos de Ingeniería Mecánica, Matemáticas Fundamentales, Física 1 y Álgebra Lineal, sentando las bases para comprender los principios de la ingeniería. En los semestres intermedios, profundizarás en Mecánica 1 y 2, Cálculo 2, Química de Materias y Combustión, y Diseño Conceptual.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-mecanica/",
-  "revisar": true,
-  "faltan": [
-   "Mecánica de Fluidos"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-mecanica-laboratorios",
   "tipo": "laboratorios",
   "programa": "Ingeniería Mecánica",
   "titulo": "Ingeniería Mecánica: laboratorios",
-  "texto": "La Universidad Autónoma de Occidente cuenta con laboratorios de vanguardia equipados con software de diseño y simulación, permitiéndote realizar prácticas profesionales y desarrollar proyectos de manera realista. Además, tendrás acceso a laboratorios de Mecánica, Termodinámica, Materiales y Procesos de Fabricación, donde podrás aplicar los conocimientos teóricos y desarrollar habilidades prácticas en el diseño y la experimentación. También se cuenta con espacios de práctica para el manejo de equipos industriales y sistemas de control oleoneumáticos.",
+  "texto": "Según el programa, en la UAO encontrarás los laboratorios más completos y modernos del suroccidente colombiano, equipados con software de diseño y simulación, para que vivas experiencias reales durante toda tu carrera.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-mecanica/",
-  "revisar": true,
-  "faltan": [
-   "Laboratorio de Mecánica",
-   "Laboratorio de Termodinámica",
-   "Laboratorio de Materiales",
-   "Laboratorio de Procesos de Fabricación",
-   "Laboratorio de Diseño Mecánico",
-   "Laboratorio de Control y Automatización"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-mecatronica-perfil",
@@ -680,17 +598,9 @@
   "tipo": "laboratorios",
   "programa": "Ingeniería Mecatrónica",
   "titulo": "Ingeniería Mecatrónica: laboratorios",
-  "texto": "La Universidad Autónoma de Occidente cuenta con un amplio laboratorio de Fab-Lab, un Laboratorio de Automática, un Laboratorio de Electrónica, un Laboratorio de Manufactura y un Laboratorio de Mecánica, equipados con herramientas de impresión 3D, robótica, corte de materiales e impresoras de resinas. También tendrás acceso a laboratorios de Electrónica Digital, Instrumentación y Microprocesadores, así como a espacios para el diseño y prototipado de dispositivos mecatrónicos utilizando herramientas CAD/CAM.",
+  "texto": "La Universidad Autónoma de Occidente cuenta con un amplio laboratorio de Fab-Lab, un Laboratorio de Automática, un Laboratorio de Electrónica, un Laboratorio de Manufactura y un Laboratorio de Mecánica, equipados con herramientas de impresión 3D, robótica, corte de materiales e impresoras de resinas.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-mecatronica/",
-  "revisar": true,
-  "faltan": [
-   "Lab de Electrónica",
-   "Lab de Manufactura",
-   "Lab de Mecánica",
-   "Lab de Electrónica Digital",
-   "Lab de Instrumentación",
-   "Lab de Microprocesadores"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-multimedia-perfil",
@@ -717,12 +627,7 @@
   "titulo": "Ingeniería Multimedia: plan de estudios",
   "texto": "El programa se imparte en 9 periodos académicos, lo que suma un total de 160 créditos. En los primeros semestres, cursarás materias como Fundamentos de Ingeniería Multimedia, Álgebra Lineal, Cálculo 1 y Inglés 3. En los semestres intermedios, estudiarás Algoritmia y Programación, Cálculo 2, Inglés 4 y Taller de Audio y Video Digital. En los últimos semestres, te enfocarás en temas como Diseño Multimedia 2, Interacción Humano-Computador y Trabajo de Grado.",
   "fuente": "https://www.uao.edu.co/programa/ingenieria-multimedia/",
-  "revisar": true,
-  "faltan": [
-   "Fundamentos de ingeniería",
-   "Computación gráfica",
-   "Seminario de ingeniería multimedia"
-  ]
+  "revisar": false
  },
  {
   "id": "ingenieria-multimedia-laboratorios",
@@ -752,28 +657,6 @@
   "revisar": false
  },
  {
-  "id": "mercadeo-global-virtual-materias",
-  "tipo": "materias",
-  "programa": "Mercadeo Global – Virtual",
-  "titulo": "Mercadeo Global – Virtual: plan de estudios",
-  "texto": "El programa se extiende a lo largo de 8 períodos académicos, lo que equivale a 140 créditos. En los primeros semestres, te enfocarás en materias fundamentales como Marketing Digital, Investigación de Mercados y Estrategias de Comunicación Global. En los semestres intermedios, profundizarás en temas como Marketing Internacional, Comportamiento del Consumidor y Análisis de Datos para el Marketing.",
-  "fuente": "https://www.uao.edu.co/programa/mercadeo-global-virtual/",
-  "revisar": true,
-  "faltan": [
-   "Marketing Digital",
-   "Investigación de Mercados",
-   "Estrategias de Comunicación Global",
-   "Marketing Internacional",
-   "Comportamiento del Consumidor",
-   "Análisis de Datos para el Marketing",
-   "Marketing de Producto",
-   "Gestión de Marca Global",
-   "Marketing de Contenidos",
-   "Marketing de Redes Sociales",
-   "Análisis de Tendencias del Mercado"
-  ]
- },
- {
   "id": "mercadeo-y-negocios-internacionales-perfil",
   "tipo": "perfil",
   "programa": "Mercadeo y Negocios Internacionales",
@@ -798,10 +681,7 @@
   "titulo": "Mercadeo y Negocios Internacionales: plan de estudios",
   "texto": "El programa se extiende a lo largo de 8 periodos académicos, otorgando un total de 143 créditos académicos. Comenzarás con materias fundamentales como Estadística y Economía y Finanzas, mientras que en semestres avanzados, te enfocarás en Mercadeo y Negocios Internacionales, Investigación Aplicada y Tecnologías y Comunicaciones. También desarrollarás habilidades investigativas y creativas a través de cursos como la Investigación Creativa e Innovadora.",
   "fuente": "https://www.uao.edu.co/programa/mercadeo-y-negocios-internacionales/",
-  "revisar": true,
-  "faltan": [
-   "Economía y Finanzas"
-  ]
+  "revisar": false
  },
  {
   "id": "narrativas-y-entretenimiento-digital-perfil",
@@ -820,27 +700,6 @@
   "texto": "Al graduarte como Profesional en Narrativas y Entretenimiento Digital, estarás preparado para trabajar en agencias de medios, empresas de entretenimiento o entidades públicas, integrando equipos de comunicación y marketing. También podrás emprender proyectos propios de creación de contenido digital, liderar equipos en el desarrollo de videojuegos, experiencias inmersivas o proyectos audiovisuales, y fortalecer la comunicación digital de organizaciones con soluciones innovadoras.",
   "fuente": "https://www.uao.edu.co/programa/narrativas-y-entretenimiento-digital/",
   "revisar": false
- },
- {
-  "id": "narrativas-y-entretenimiento-digital-materias",
-  "tipo": "materias",
-  "programa": "Narrativas y Entretenimiento Digital",
-  "titulo": "Narrativas y Entretenimiento Digital: plan de estudios",
-  "texto": "El programa se imparte en un período de 8 periodos académicos, otorgando un total de 144 créditos académicos. En el primer y segundo semestre, te enfocarás en materias como Diseño Digital, Introducción a la Programación, Teoría de la Comunicación y Producción Audiovisual Básica. En los semestres siguientes, profundizarás en áreas como Desarrollo de Videojuegos, Marketing Digital, Diseño de Experiencias Inmersivas y Narrativas Multiformato.",
-  "fuente": "https://www.uao.edu.co/programa/narrativas-y-entretenimiento-digital/",
-  "revisar": true,
-  "faltan": [
-   "Diseño Digital",
-   "Introducción a la Programación",
-   "Teoría de la Comunicación",
-   "Producción Audiovisual Básica",
-   "Desarrollo de Videojuegos",
-   "Marketing Digital",
-   "Diseño de Experiencias Inmersivas",
-   "Narrativas Multiformato",
-   "Realidad Virtual y Aumentada",
-   "Gestión de Proyectos Creativos"
-  ]
  },
  {
   "id": "psicologia-perfil",
@@ -894,12 +753,7 @@
   "titulo": "Publicidad en Medios Digitales: plan de estudios",
   "texto": "El programa se extiende a lo largo de 8 semestres, otorgando un total de 144 créditos académicos. En el primer y segundo semestres, te enfocarás en los Fundamentos en medios online y offline, Diseño publicitario y Marketing y publicidad. En los semestres siguientes, estudiarás Gráfica digital, Comunicación oral y escrita, y Fundamentos de publicidad.",
   "fuente": "https://www.uao.edu.co/programa/publicidad-en-medios-digitales/",
-  "revisar": true,
-  "faltan": [
-   "Gráfica digital",
-   "Estrategia y planificación de medios",
-   "Publicidad para e-commerce"
-  ]
+  "revisar": false
  },
  {
   "id": "publicidad-en-medios-digitales-laboratorios",
@@ -927,25 +781,6 @@
   "texto": "Al graduarte, serás un profesional capacitado para gestionar campañas de marketing digital, analizar datos de audiencias, diseñar estrategias de comunicación y trabajar en empresas de diversos sectores. Podrás desempeñarte como gestor de marcas, analista de marketing digital, consultor de comunicación estratégica o especialista en comercio electrónico, adaptándote a las necesidades de mercados globales y organizaciones de cualquier tipo.",
   "fuente": "https://www.uao.edu.co/programa/publicidad-virtual/",
   "revisar": false
- },
- {
-  "id": "publicidad-virtual-materias",
-  "tipo": "materias",
-  "programa": "Publicidad en Medios Digitales – Virtual",
-  "titulo": "Publicidad en Medios Digitales – Virtual: plan de estudios",
-  "texto": "El programa tiene una duración de 144 créditos académicos, distribuidos en 8 períodos académicos, cada uno dividido en 3 ciclos bimestrales. En los primeros semestres, te enfocarás en materias como Estrategias de Marketing Digital, Análisis de Datos para el Marketing, Diseño de Campañas en Redes Sociales y Fundamentos de la Comunicación Digital.",
-  "fuente": "https://www.uao.edu.co/programa/publicidad-virtual/",
-  "revisar": true,
-  "faltan": [
-   "Análisis de Datos para el Marketing",
-   "Diseño de Campañas en Redes Sociales",
-   "Fundamentos de la Comunicación Digital",
-   "Publicidad en Motores de Búsqueda",
-   "Gestión de la Reputación Online",
-   "Marketing de Contenidos",
-   "Medición de Resultados",
-   "Marketing de Influencia"
-  ]
  },
  {
   "id": "uao-labs-laboratorios-uao-0",
@@ -1434,26 +1269,6 @@
   "revisar": false
  },
  {
-  "id": "administracion-virtual-materias",
-  "tipo": "materias",
-  "programa": "Administración de Empresas Virtual",
-  "titulo": "Administración de Empresas Virtual: plan de estudios",
-  "texto": "El programa de Administración de Empresas Virtual tiene una duración de 140 créditos distribuidos en 8 períodos académicos. En los primeros semestres, te enfocarás en materias como Fundamentos de Administración, Marketing Digital y Contabilidad Financiera. En semestres intermedios, estudiarás Gestión de Operaciones, Finanzas Corporativas y Estrategia Empresarial. Finalmente, en los últimos semestres, profundizarás en temas como Liderazgo Organizacional, Innovación y Desarrollo de Productos, y Administración de Proyectos Virtuales.",
-  "fuente": "https://www.uao.edu.co/programa/administracion-virtual/",
-  "revisar": true,
-  "faltan": [
-   "Fundamentos de Administración",
-   "Marketing Digital",
-   "Contabilidad Financiera",
-   "Gestión de Operaciones",
-   "Finanzas Corporativas",
-   "Estrategia Empresarial",
-   "Liderazgo Organizacional",
-   "Innovación y Desarrollo de Productos",
-   "Administración de Proyectos Virtuales"
-  ]
- },
- {
   "id": "contaduria-publica1-virtual-perfil",
   "tipo": "perfil",
   "programa": "Contaduría Pública y Finanzas Virtual",
@@ -1470,23 +1285,6 @@
   "texto": "Al graduarte como Profesional en Contaduría Pública y Finanzas, estarás preparado para asumir roles de liderazgo en áreas como la auditoría, la gestión financiera y el control de operaciones. Tendrás la capacidad de dirigir procesos contables, realizar dictámenes sobre estados financieros y brindar asesoría tributaria, contribuyendo al buen funcionamiento y la sostenibilidad de las empresas. Además, podrás ejercer la revisoría fiscal y gestionar proyectos financieros con un enfoque estratégico.",
   "fuente": "https://www.uao.edu.co/programa/contaduria-publica1-virtual/",
   "revisar": false
- },
- {
-  "id": "contaduria-publica1-virtual-materias",
-  "tipo": "materias",
-  "programa": "Contaduría Pública y Finanzas Virtual",
-  "titulo": "Contaduría Pública y Finanzas Virtual: plan de estudios",
-  "texto": "El programa de 8 Períodos académicos, con 140 créditos, te ofrece una formación completa en contabilidad y finanzas. En los primeros semestres, desarrollarás conceptos fundamentales de Contabilidad Financiera, Auditoría, Derecho Fiscal y Planeación Financiera. En los semestres intermedios, profundizarás en temas como Gestión de Recursos, Control de Gestión y Análisis Financiero.",
-  "fuente": "https://www.uao.edu.co/programa/contaduria-publica1-virtual/",
-  "revisar": true,
-  "faltan": [
-   "Derecho Fiscal",
-   "Planeación Financiera",
-   "Análisis Financiero",
-   "Finanzas Corporativas",
-   "Contabilidad Internacional",
-   "Fiscalidad Internacional"
-  ]
  },
  {
   "id": "ingenieria-informatica-virtual-perfil",
@@ -1507,27 +1305,6 @@
   "revisar": false
  },
  {
-  "id": "ingenieria-informatica-virtual-materias",
-  "tipo": "materias",
-  "programa": "Ingeniería Informática Virtual",
-  "titulo": "Ingeniería Informática Virtual: plan de estudios",
-  "texto": "El programa tiene una duración de 9 períodos académicos, con un total de 174 créditos. Se imparte de forma virtual, ofreciendo una modalidad flexible que te permite estudiar a tu propio ritmo. En los primeros semestres, te enfocarás en fundamentos de programación, matemáticas aplicadas a la informática y estructuras de datos. En semestres intermedios, profundizarás en bases de datos, redes de computadoras y sistemas operativos.",
-  "fuente": "https://www.uao.edu.co/programa/ingenieria-informatica-virtual/",
-  "revisar": true,
-  "faltan": [
-   "Fundamentos de Programación",
-   "Matemáticas Aplicadas a la Informática",
-   "Estructuras de Datos",
-   "Bases de Datos",
-   "Redes de Computadoras",
-   "Sistemas Operativos",
-   "Inteligencia Artificial",
-   "Seguridad Informática",
-   "Desarrollo de Aplicaciones",
-   "Análisis de Datos"
-  ]
- },
- {
   "id": "virtual-ingenieria-industrial-perfil",
   "tipo": "perfil",
   "programa": "Ingeniería Industrial Virtual",
@@ -1544,25 +1321,5 @@
   "texto": "Al graduarte como Ingeniero Industrial, podrás diseñar y optimizar procesos en diversos sectores como manufactura, servicios, logística y calidad. Tendrás la capacidad de liderar proyectos de mejora continua, implementar estrategias de gestión y desarrollar soluciones innovadoras para mejorar la eficiencia y rentabilidad de las organizaciones. Además, estarás preparado para enfrentar los desafíos globales y adaptarte a las nuevas dinámicas del mercado laboral.",
   "fuente": "https://www.uao.edu.co/programa/virtual-ingenieria-industrial/",
   "revisar": false
- },
- {
-  "id": "virtual-ingenieria-industrial-materias",
-  "tipo": "materias",
-  "programa": "Ingeniería Industrial Virtual",
-  "titulo": "Ingeniería Industrial Virtual: plan de estudios",
-  "texto": "El programa de Ingeniería Industrial Virtual tiene una duración de 155 créditos y se desarrolla en 9 periodos académicos. En los primeros semestres, te enfocarás en materias como Fundamentos de Ingeniería Industrial, Estadística Aplicada y Metodología de la Investigación. En los semestres intermedios, estudiarás Procesos de Producción, Gestión de la Calidad y Control Estadístico de la Calidad. En los últimos semestres, profundizarás en temas como Logística Empresarial, Gestión de Operaciones y Simulación de Procesos.",
-  "fuente": "https://www.uao.edu.co/programa/virtual-ingenieria-industrial/",
-  "revisar": true,
-  "faltan": [
-   "Fundamentos de Ingeniería Industrial",
-   "Estadística Aplicada",
-   "Metodología de la Investigación",
-   "Procesos de Producción",
-   "Gestión de la Calidad",
-   "Control Estadístico de la Calidad",
-   "Logística Empresarial",
-   "Gestión de Operaciones",
-   "Simulación de Procesos"
-  ]
  }
 ]
