@@ -11,6 +11,9 @@ from bs4 import BeautifulSoup, Comment, NavigableString
 DROP_TITLES = ("noticias", "asesor on-line", "signin", "reset password", "próximos eventos",
                "redes a las que", "facultad de")
 
+# A real heading is short; the longest useful one seen ("Código Snies: … vigencia 7 años") is ~20 words.
+MAX_HEADING_WORDS = 25
+
 # Price removal. The label and the amount are removed wherever they appear...
 _PRICE_LABEL = re.compile(r"Valor periodo acad[ée]mico:?\s*(\([^)]*\))?\s*\**:?", re.I)
 _AMOUNT = re.compile(r"\$\s?[\d.,]+\s*\**\s*(COP)?")
@@ -46,7 +49,12 @@ def _sections(html: str) -> list[tuple[str | None, str]]:
     for el in _soup(html).body.descendants:
         if getattr(el, "name", None) in ("h1", "h2"):
             out.append((title, " ".join(parts)))
-            title, parts = el.get_text(" ", strip=True), []
+            heading = el.get_text(" ", strip=True)
+            if len(heading.split()) > MAX_HEADING_WORDS:
+                # Some pages wrap a whole table (e.g. the study plan) in an <h2>: that's content.
+                title, parts = "", [heading]
+            else:
+                title, parts = heading, []
         elif (isinstance(el, NavigableString) and not isinstance(el, Comment)
               and el.find_parent(["h1", "h2"]) is None):
             text = el.strip()

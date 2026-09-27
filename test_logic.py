@@ -290,6 +290,16 @@ def test_page_text_generic():
     assert "Forma líderes." in t and "Evento del lunes" not in t
 
 
+def test_page_text_long_heading_is_content():
+    # Some pages wrap a whole study-plan table inside an <h2>: a "heading" that long is content.
+    html = ("<html><body><h1>Diseño</h1><h2>Plan de estudios <span>Primer semestre Fundamentos "
+            "matemáticos Dibujo I Inglés I Desarrollo personal Ética Segundo semestre Física Materiales "
+            "Inglés II Tercer semestre Ergonomía Procesos de manufactura Modelado 3D Historia del "
+            "diseño Dibujo II</span></h2>"
+            "</body></html>")
+    assert "Dibujo II" in extract.page_text(html)
+
+
 if __name__ == "__main__":
     # Collect every function whose name starts with test_ and run it.
     tests = [f for name, f in dict(globals()).items() if name.startswith("test_")]
