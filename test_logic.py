@@ -3,6 +3,7 @@
 Run: uv run python test_logic.py
 Each test_* function raises AssertionError if the logic is broken.
 """
+import json
 import queue
 import tempfile
 import threading
@@ -17,6 +18,7 @@ import brain
 import config
 import download_models
 import main
+import rag
 import sentences
 import stt
 import vad
@@ -340,6 +342,76 @@ def test_trim_words():
     assert make_cards.trim_words(text, 7) == "Uno dos tres cuatro. Cinco seis siete."   # whole sentences
     assert make_cards.trim_words(text, 3) == "Uno dos tres cuatro."                     # keeps at least one
     assert make_cards.trim_words(text, 99) == text
+
+
+_VEC = {"A. perfil a": [1, 0, 0], "B. labs b": [0, 1, 0], "C. campus c": [0, 0, 1],
+        "q-ab": [0.8, 0.6, 0], "nada": [-1, 0, 0]}
+
+
+def _fake_embed(calls):
+    def embed(texts, query=False):
+        calls.append(len(texts))
+        v = np.array([_VEC[t] for t in texts], dtype=np.float32)
+        return v / np.linalg.norm(v, axis=1, keepdims=True)
+    return embed
+
+
+def _kb(calls, tmp):
+    cards = [{"id": "a", "tipo": "perfil", "programa": "A", "titulo": "A", "texto": "perfil a"},
+             {"id": "b", "tipo": "laboratorios", "programa": "A", "titulo": "B", "texto": "labs b"},
+             {"id": "c", "tipo": "campus", "programa": None, "titulo": "C", "texto": "campus c"}]
+    (tmp / "cards.json").write_text(json.dumps(cards), encoding="utf-8")
+    return rag.Knowledge(_fake_embed(calls), "fake", tmp / "cards.json", tmp / "v.npz")
+
+
+def test_knowledge_search():
+    tmp = Path(tempfile.mkdtemp())
+    kb = _kb([], tmp)
+    ids = lambda cards: [c["id"] for c in cards]
+    assert ids(kb.search("q-ab", k=2, threshold=0.3)) == ["a", "b"]     # ordered by similarity
+    assert ids(kb.search("q-ab", k=2, threshold=0.7)) == ["a"]          # threshold cuts b (0.6)
+    assert ids(kb.search("q-ab", k=1, threshold=0.3)) == ["a"]          # k limit
+    assert ids(kb.search("q-ab", k=2, threshold=0.3, kinds={"laboratorios"})) == ["b"]
+    assert kb.search("nada", k=2, threshold=0.3) == []                  # nothing similar → nothing
+    assert kb.program_names() == ["A"]
+
+
+def test_vector_cache():
+    tmp, calls = Path(tempfile.mkdtemp()), []
+    _kb(calls, tmp)
+    _kb(calls, tmp)                          # same cards.json → vectors come from the cache
+    assert calls == [3]
+    cards = json.loads((tmp / "cards.json").read_text(encoding="utf-8"))
+    cards[0]["texto"] = "labs b"; cards[0]["titulo"] = "B"
+    (tmp / "cards.json").write_text(json.dumps(cards), encoding="utf-8")
+    rag.Knowledge(_fake_embed(calls), "fake", tmp / "cards.json", tmp / "v.npz")
+    assert calls == [3, 3]                   # file changed → recomputed
+
+
+def test_choose_mode():
+    assert rag.choose_mode("¿Cuánto cuesta el semestre?", 1, 6) == "precio"
+    assert rag.choose_mode("¿Hay becas?", 1, 6) == "precio"
+    assert rag.choose_mode("¿Qué carrera me recomiendas?", 2, 6) == "recomendacion"
+    assert rag.choose_mode("Me gusta el fútbol", 6, 6) == "recomendacion"   # automatic, once
+    assert rag.choose_mode("Me gusta el fútbol", 7, 6) == "detalle"
+    assert rag.choose_mode("¿Qué laboratorios hay?", 2, 6) == "detalle"
+
+
+def test_retrieve():
+    calls = []
+
+    class KB:
+        def search(self, query, k, threshold, kinds=None):
+            calls.append((query, k, threshold, kinds))
+            return [{"id": "x"}]
+
+    cfg = SimpleNamespace(recommend_after_turns=6, rag_max_cards=2, rag_threshold=0.45)
+    assert rag.retrieve(KB(), "¿cuánto vale?", ["¿cuánto vale?"], "", cfg) == ("precio", [rag.PRICE_CARD])
+    assert calls == []                                                   # no search for prices
+    mode, _ = rag.retrieve(KB(), "sí, esa", ["hola", "sí, esa"], "¿Te gusta la robótica?", cfg)
+    assert mode == "detalle" and calls[-1] == ("¿Te gusta la robótica? sí, esa", 2, 0.45, None)
+    mode, _ = rag.retrieve(KB(), "¿qué me recomiendas?", ["me gusta dibujar", "¿qué me recomiendas?"], "", cfg)
+    assert mode == "recomendacion" and calls[-1] == ("me gusta dibujar ¿qué me recomiendas?", 3, -1.0, {"perfil"})
 
 
 if __name__ == "__main__":
