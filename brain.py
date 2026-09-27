@@ -30,11 +30,24 @@ y qué le importa para su futuro. Cuando tengas cuatro o cinco temas, resume lo 
 sugiere dos o tres áreas de estudio que encajen. Si no conoces los programas específicos de la \
 universidad, dilo con honestidad."""
 
+# Added to the system prompt when knowledge cards exist. Built ONCE per run so the system prompt
+# never changes between turns: Ollama can then reuse its cached reading of it (prompt cache).
+RAG_RULES = """
+
+Reglas sobre la universidad:
+Solo menciona programas, materias, laboratorios y servicios que aparezcan en la "Información \
+verificada de la UAO" o en la lista oficial de programas de abajo.
+Si no tienes la información, dilo con honestidad y sugiere hablar con un asesor de la UAO.
+Nunca des precios, valores de matrícula ni montos de becas.
+Programas de pregrado de la UAO: {names}."""
+
 
 class Brain:
-    def __init__(self, host: str, model: str, threads: int, num_gpu: int, max_turns: int = 10):
+    def __init__(self, host: str, model: str, threads: int, num_gpu: int, max_turns: int = 10,
+                 program_names=()):
         self.url = host.rstrip("/")
         self.model = model
+        self.system = SYSTEM_PROMPT + (RAG_RULES.format(names=", ".join(program_names)) if program_names else "")
         self.max_turns = max_turns   # remembered exchanges; bounds prompt size (and Pi latency)
         self.history = []            # [{"role": "user"|"assistant", "content": str}, ...]
         # Ollama "options" = llama.cpp runtime settings. Keep them identical in every
@@ -69,19 +82,26 @@ class Brain:
         body = {
             "model": self.model, "stream": False,
             "keep_alive": -1,   # -1 = never unload the model (a kiosk must answer instantly)
-            "messages": [{"role": "system", "content": SYSTEM_PROMPT}],
+            "messages": [{"role": "system", "content": self.system}],
             "options": {**self.options, "num_predict": 1},   # generate just 1 token
         }
         with self._post("/api/chat", body) as r:
             r.read()
 
-    def stream_reply(self, user_text: str, stop=None):
+    def stream_reply(self, user_text: str, stop=None, cards=()):
+        content = user_text
+        if cards:
+            # Verified facts travel ONLY with this turn's message; the history keeps the plain
+            # text, so later turns don't carry (and re-read) old cards.
+            facts = "\n".join(f"- {c['titulo']}: {c['texto']}" for c in cards)
+            content = f"Información verificada de la UAO:\n{facts}\n\nEstudiante: {user_text}"
         self.history.append({"role": "user", "content": user_text})
         # Keep an odd number of messages so the history always starts with a user message.
         self.history = self.history[-(2 * self.max_turns - 1):]
         body = {
             "model": self.model, "stream": True, "keep_alive": -1, "options": self.options,
-            "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + self.history,
+            "messages": [{"role": "system", "content": self.system}] + self.history[:-1]
+                        + [{"role": "user", "content": content}],
         }
         reply = ""
         try:
@@ -101,14 +121,14 @@ class Brain:
             self.history.append({"role": "assistant", "content": reply})
 
 
-def llm_worker(brain, text: str, out_q, stop) -> None:
+def llm_worker(brain, text: str, out_q, stop, cards=()) -> None:
     """Runs on its own thread: moves tokens from the LLM into a queue for main.py.
 
     The final None is guaranteed (finally), so the reader never waits forever,
     even if Ollama crashes mid-reply.
     """
     try:
-        for token in brain.stream_reply(text, stop):
+        for token in brain.stream_reply(text, stop, cards):
             out_q.put(token)
     except Exception as e:
         print(f"[llm] error: {e}", flush=True)

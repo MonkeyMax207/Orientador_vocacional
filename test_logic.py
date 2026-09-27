@@ -133,7 +133,7 @@ def test_stt_gpu_failure_gives_fix_it_message():
 def test_llm_worker_always_ends():
     # Review Focus #3: if Ollama dies mid-reply, the consumer must still get the None end marker.
     class Broken:
-        def stream_reply(self, text, stop):
+        def stream_reply(self, text, stop, cards=()):
             yield "Hola"
             raise ConnectionError("Ollama se cayó")
 
@@ -220,7 +220,7 @@ def _filler_run(llm_delay_s):
         def busy(self): return False
 
     class SlowBrain:
-        def stream_reply(self, text, stop):
+        def stream_reply(self, text, stop, cards=()):
             time.sleep(llm_delay_s)
             yield "Hola, qué bien."
 
@@ -412,6 +412,34 @@ def test_retrieve():
     assert mode == "detalle" and calls[-1] == ("¿Te gusta la robótica? sí, esa", 2, 0.45, None)
     mode, _ = rag.retrieve(KB(), "¿qué me recomiendas?", ["me gusta dibujar", "¿qué me recomiendas?"], "", cfg)
     assert mode == "recomendacion" and calls[-1] == ("me gusta dibujar ¿qué me recomiendas?", 3, -1.0, {"perfil"})
+
+
+class _FakeResp:
+    # Stands in for the HTTP response: a context manager that yields NDJSON lines.
+    def __init__(self, lines): self.lines = lines
+    def __enter__(self): return self
+    def __exit__(self, *exc): return False
+    def __iter__(self): return iter(self.lines)
+
+
+def test_brain_injects_cards_only_in_current_turn():
+    b = brain.Brain("http://x", "m", 4, 0, program_names=["Ingeniería Mecatrónica"])
+    sent = []
+
+    def fake_post(path, body):
+        sent.append(body)
+        return _FakeResp([json.dumps({"message": {"content": "Hola."}, "done": True}).encode()])
+
+    b._post = fake_post
+    card = {"titulo": "Mecatrónica: laboratorios", "texto": "Tiene Fab-Lab."}
+    list(b.stream_reply("¿Qué labs hay?", cards=[card]))
+    list(b.stream_reply("Gracias"))
+    first, second = sent
+    assert "Tiene Fab-Lab." in first["messages"][-1]["content"]           # card in the current turn
+    assert first["messages"][0] == second["messages"][0]                  # system prompt identical
+    assert "Ingeniería Mecatrónica" in first["messages"][0]["content"]    # official list in system
+    assert all("Fab-Lab" not in m["content"] for m in second["messages"])  # card not kept in history
+    assert b.history[0] == {"role": "user", "content": "¿Qué labs hay?"}
 
 
 if __name__ == "__main__":
