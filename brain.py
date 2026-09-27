@@ -94,7 +94,11 @@ class Brain:
             # Verified facts travel ONLY with this turn's message; the history keeps the plain
             # text, so later turns don't carry (and re-read) old cards.
             facts = "\n".join(f"- {c['titulo']}: {c['texto']}" for c in cards)
-            content = f"Información verificada de la UAO:\n{facts}\n\nEstudiante: {user_text}"
+            # Framed as a hidden note: otherwise the model thinks the student wrote these facts
+            # ("gracias por recordarme la información verificada").
+            content = (f"[Nota interna para Orienta; el estudiante no la escribió ni la ve. "
+                       f"Información verificada de la UAO para responder:\n{facts}]\n\n"
+                       f"Lo que dijo el estudiante: {user_text}")
         self.history.append({"role": "user", "content": user_text})
         # Keep an odd number of messages so the history always starts with a user message.
         self.history = self.history[-(2 * self.max_turns - 1):]

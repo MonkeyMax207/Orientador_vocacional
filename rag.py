@@ -105,5 +105,10 @@ def retrieve(kb, text: str, user_turns: list[str], last_reply: str, cfg) -> tupl
     if mode == "recomendacion":
         # Everything the student has said vs. the "who is this program for" cards; always top 3.
         return mode, kb.search(" ".join(user_turns), 3, -1.0, kinds={"perfil"})
-    # Detail: the agent's last question gives context to short answers like "sí, esa".
-    return mode, kb.search(f"{last_reply} {text}".strip(), cfg.rag_max_cards, cfg.rag_threshold)
+    # Detail: search with the student's own words. Only if that finds nothing (short answers
+    # like "sí, esa") retry with the agent's last reply as context. Mixing them always would let
+    # the previous (longer) reply steer the search back to the previous topic.
+    cards = kb.search(text, cfg.rag_max_cards, cfg.rag_threshold)
+    if not cards and last_reply:
+        cards = kb.search(f"{last_reply} {text}", cfg.rag_max_cards, cfg.rag_threshold)
+    return mode, cards
