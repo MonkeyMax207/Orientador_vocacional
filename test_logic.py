@@ -404,6 +404,17 @@ def test_knowledge_search():
     assert kb.program_names() == ["A"]
 
 
+def test_knowledge_skips_cards_under_review():
+    # A card flagged "revisar" may contain invented courses/labs: never use it until a human clears it.
+    tmp = Path(tempfile.mkdtemp())
+    cards = [{"id": "a", "tipo": "perfil", "programa": "A", "titulo": "A", "texto": "perfil a"},
+             {"id": "b", "tipo": "materias", "programa": "A", "titulo": "B", "texto": "labs b", "revisar": True}]
+    (tmp / "cards.json").write_text(json.dumps(cards), encoding="utf-8")
+    kb = rag.Knowledge(_fake_embed([]), "fake", tmp / "cards.json", tmp / "v.npz")
+    assert [c["id"] for c in kb.cards] == ["a"]
+    assert kb.search("q-ab", k=2, threshold=0.3) == [cards[0]]
+
+
 def test_vector_cache():
     tmp, calls = Path(tempfile.mkdtemp()), []
     _kb(calls, tmp)

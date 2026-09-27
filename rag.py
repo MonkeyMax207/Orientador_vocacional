@@ -53,7 +53,10 @@ class OllamaEmbedder:
 class Knowledge:
     def __init__(self, embed, model_name: str, cards_path=CARDS, cache_path=VECTORS):
         raw = Path(cards_path).read_bytes()
-        self.cards, self.embed = json.loads(raw), embed
+        # Cards flagged "revisar" failed the source check (possibly invented names): skip them
+        # until a human reviews the card and sets "revisar": false in cards.json.
+        self.cards = [c for c in json.loads(raw) if not c.get("revisar")]
+        self.embed = embed
         # The cache key changes if the cards OR the embedding model change.
         key = hashlib.sha256(raw + model_name.encode()).hexdigest()
         cache = Path(cache_path)
