@@ -317,6 +317,24 @@ def test_labs_only_when_source_mentions_them():
     assert make_cards.mentions_labs("Contamos con labs de cómputo")
 
 
+def test_with_retries():
+    # Ollama's runner can crash mid-build (HTTP 500); it restarts itself, so retrying works.
+    attempts = []
+
+    def flaky():
+        attempts.append(1)
+        if len(attempts) < 3:
+            raise OSError("500")
+        return "ok"
+
+    assert make_cards.with_retries(flaky, tries=3, wait_s=0) == "ok" and len(attempts) == 3
+    try:
+        make_cards.with_retries(lambda: (_ for _ in ()).throw(OSError("500")), tries=2, wait_s=0)
+        raise AssertionError("expected OSError")
+    except OSError:
+        pass
+
+
 def test_trim_words():
     text = "Uno dos tres cuatro. Cinco seis siete. Ocho nueve diez once doce."
     assert make_cards.trim_words(text, 7) == "Uno dos tres cuatro. Cinco seis siete."   # whole sentences

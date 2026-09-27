@@ -11,6 +11,7 @@ it uses is checked against the source; unknown names mark the card "revisar": tr
 import json
 import re
 import sys
+import time
 import unicodedata
 import urllib.request
 from pathlib import Path
@@ -104,14 +105,39 @@ def trim_words(text: str, limit: int = MAX_WORDS) -> str:
     return " ".join(kept)
 
 
+def with_retries(fn, tries: int = 3, wait_s: float = 10):
+    # Ollama's model runner can crash under GPU-memory pressure (HTTP 500); it restarts on the
+    # next request, so waiting a bit and retrying usually works. The last failure is re-raised.
+    for attempt in range(1, tries + 1):
+        try:
+            return fn()
+        except OSError as e:   # urllib's HTTPError/URLError are OSError subclasses
+            if attempt == tries:
+                raise
+            print(f"  intento {attempt} falló ({e}); reintentando en {wait_s:.0f} s", flush=True)
+            time.sleep(wait_s)
+
+
+def _post(path: str, body: dict) -> dict:
+    req = urllib.request.Request(f"{OLLAMA}{path}", json.dumps(body).encode("utf-8"),
+                                 {"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=600) as r:
+        return json.load(r)
+
+
+def free_gpu() -> None:
+    # Unload every model Ollama has in memory (keep_alive 0 = unload now): the voice agent keeps
+    # its LLM loaded forever, and gemma3:4b needs the whole 4 GB GPU to build cards reliably.
+    with urllib.request.urlopen(f"{OLLAMA}/api/ps", timeout=10) as r:
+        for m in json.load(r)["models"]:
+            _post("/api/generate", {"model": m["name"], "keep_alive": 0})
+
+
 def ask(prompt: str, schema: dict) -> dict:
     # /api/generate with "format": <JSON schema> makes Ollama constrain the output to that schema.
     body = {"model": BUILD_MODEL, "prompt": prompt, "format": schema, "stream": False,
             "options": {"temperature": 0, "num_ctx": 8192}}
-    req = urllib.request.Request(f"{OLLAMA}/api/generate", json.dumps(body).encode("utf-8"),
-                                 {"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=600) as r:
-        return json.loads(json.load(r)["response"])
+    return json.loads(with_retries(lambda: _post("/api/generate", body))["response"])
 
 
 def program_cards(slug: str, html: str, plan: str) -> list[dict]:
@@ -150,21 +176,33 @@ if __name__ == "__main__":
     only = set(sys.argv[1:])   # optional: rebuild just these program slugs / campus ids
     old = json.loads(CARDS.read_text(encoding="utf-8")) if CARDS.exists() and only else []
     cards = [c for c in old if not any(c["id"].startswith(s + "-") for s in only)]
+    # One job per source: (id, function that builds its cards).
+    jobs = []
     for html_path in sorted((RAW / "programas").glob("*.html")):
-        slug = html_path.stem
-        if only and slug not in only:
-            continue
         pdf = html_path.with_suffix(".pdf")
-        new = program_cards(slug, html_path.read_text(encoding="utf-8"), pdf_text(pdf) if pdf.exists() else "")
-        cards += new
-        print(f"{slug}: {len(new)} fichas", flush=True)
+        jobs.append((html_path.stem, lambda h=html_path, p=pdf: program_cards(
+            h.stem, h.read_text(encoding="utf-8"), pdf_text(p) if p.exists() else "")))
     for path in CAMPUS:
         base_id = path.replace("/", "-")
-        if only and base_id not in only:
+        jobs.append((base_id, lambda path=path, b=base_id: campus_cards(
+            path, (RAW / "campus" / f"{b}.html").read_text(encoding="utf-8"))))
+
+    free_gpu()
+    failed = []
+    for job_id, build in jobs:
+        if only and job_id not in only:
             continue
-        new = campus_cards(path, (RAW / "campus" / f"{base_id}.html").read_text(encoding="utf-8"))
+        try:
+            new = build()
+        except OSError as e:
+            failed.append(job_id)   # skip it and keep going; rerun later with its id as argument
+            print(f"{job_id}: FALLÓ ({e})", flush=True)
+            continue
         cards += new
-        print(f"{base_id}: {len(new)} fichas", flush=True)
-    CARDS.write_text(json.dumps(cards, ensure_ascii=False, indent=1), encoding="utf-8")
+        # Save after every source, so a crash never throws away the cards already made.
+        CARDS.write_text(json.dumps(cards, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"{job_id}: {len(new)} fichas", flush=True)
     review = [c["id"] for c in cards if c["revisar"]]
     print(f"\n{len(cards)} fichas en {CARDS.name}. Para revisar ({len(review)}): {review}")
+    if failed:
+        print(f"Fallaron ({len(failed)}); reintenta con: uv run python -m knowledge.make_cards {' '.join(failed)}")
