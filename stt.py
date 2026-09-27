@@ -3,16 +3,21 @@
 CTranslate2 is a C++ inference engine: int8 on CPU and float16 on GPU, several times
 faster than the original PyTorch Whisper and much lighter.
 """
+import ctypes
 import importlib.util
 import os
 import re
 from pathlib import Path
 
+import numpy as np
+
 WHISPER_DIR = Path(__file__).parent / "models" / "whisper"
 
 # Phrases Whisper invents on silence or noise (it was trained on subtitled YouTube videos).
-HALLUCINATIONS = ("amara.org", "subtítulos", "suscríbete", "gracias por ver")
-NOISE_WORDS = {"eh", "em", "mm", "mmm", "hmm", "ah", "uh", "ajá"}
+HALLUCINATIONS = ("amara.org", "subtítulos realizados", "subtítulos por", "suscríbete", "gracias por ver")
+# Hesitation sounds, written with repeated letters collapsed ("mmmm" → "m", "ehh" → "eh").
+# "ajá" is NOT here: it's a real Spanish "yes".
+NOISE_WORDS = {"eh", "em", "m", "hm", "ah", "uh"}
 
 
 def clean(text: str) -> str:
@@ -20,31 +25,42 @@ def clean(text: str) -> str:
     low = t.lower()
     if any(h in low for h in HALLUCINATIONS):
         return ""
-    words = re.findall(r"\w+", low)
+    if re.fullmatch(r"[\[(].*[\])]", t) or low.strip(".!¡ ") == "música":
+        return ""   # sound tags Whisper writes for non-speech: "[Música]", "(risas)"
+    words = [re.sub(r"(\w)\1+", r"\1", w) for w in re.findall(r"\w+", low)]   # collapse repeats
     if not words or all(w in NOISE_WORDS for w in words):
         return ""
     return t
 
 
-def _add_cuda_dlls() -> None:
-    # Windows only: pip put cuBLAS/cuDNN DLLs in .venv/Lib/site-packages/nvidia/*/bin,
-    # but Windows doesn't search there. Add those folders to the DLL search path.
-    # On Linux the libraries are found through their own mechanism, so do nothing.
-    if os.name != "nt":
-        return
+def _add_cuda_libs() -> None:
+    # pip put the cuBLAS/cuDNN libraries in .venv/.../site-packages/nvidia/*/, where neither
+    # Windows nor Linux looks by default. CTranslate2 loads them lazily, by name, on the first
+    # GPU transcription, so we make them findable before that happens.
     spec = importlib.util.find_spec("nvidia")
     if spec is None:
-        return
+        return   # no NVIDIA packages (e.g. the Raspberry Pi): nothing to do
     for root in spec.submodule_search_locations:
-        for bin_dir in Path(root).glob("*/bin"):
-            os.add_dll_directory(str(bin_dir))
-            os.environ["PATH"] = str(bin_dir) + os.pathsep + os.environ["PATH"]   # for lazily loaded DLLs
+        if os.name == "nt":
+            # Windows: DLLs live in nvidia/*/bin → add those folders to the DLL search path.
+            for bin_dir in Path(root).glob("*/bin"):
+                os.add_dll_directory(str(bin_dir))
+                os.environ["PATH"] = str(bin_dir) + os.pathsep + os.environ["PATH"]   # for lazily loaded DLLs
+        else:
+            # Linux: .so files live in nvidia/*/lib. Changing LD_LIBRARY_PATH from inside the
+            # process has no effect, so load each library now; later lookups by name
+            # ("libcublas.so.12") then find the already-loaded copy.
+            for lib in sorted(Path(root).glob("*/lib/lib*.so*")):
+                try:
+                    ctypes.CDLL(str(lib), mode=ctypes.RTLD_GLOBAL)
+                except OSError:
+                    pass   # a library we don't need (or whose deps load later); skip it
 
 
 class STT:
     def __init__(self, model: str, device: str, compute_type: str, threads: int):
         if device == "cuda":
-            _add_cuda_dlls()
+            _add_cuda_libs()
         from faster_whisper import WhisperModel   # imported here so test_logic.py stays light
         try:
             self.model = WhisperModel(
@@ -54,6 +70,13 @@ class STT:
             )
         except Exception as e:
             raise SystemExit(f"No pude cargar Whisper '{model}' ({e}). Ejecuta: uv run python download_models.py")
+        try:
+            # Warm-up: the first transcription pays one-time setup, and it's also when the CUDA
+            # libraries actually load. Doing it here turns a GPU problem into a clear message.
+            self.transcribe(np.zeros(16000, dtype=np.float32))
+        except Exception as e:
+            raise SystemExit(f"Whisper falló en '{device}' ({e}). "
+                             "En config.toml usa whisper_device = 'cpu' y whisper_compute = 'int8'")
 
     def transcribe(self, audio) -> str:
         segments, _info = self.model.transcribe(
@@ -81,7 +104,6 @@ if __name__ == "__main__":
     path = sys.argv[2] if len(sys.argv) > 2 else "recordings/mic_test.wav"
     stt = STT(cfg.whisper_model, cfg.whisper_device, cfg.whisper_compute, cfg.threads)
     audio = load_wav(path)[0].astype(np.float32) / 32768   # int16 → float32 in [-1, 1]
-    stt.transcribe(audio[:16000])   # warm-up: the first call pays one-time setup (CUDA kernels, memory)
     t = time.perf_counter()
     text = stt.transcribe(audio)
     print(f"{time.perf_counter() - t:.2f}s  crudo: {text!r}  limpio: {clean(text)!r}")

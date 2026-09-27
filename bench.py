@@ -25,7 +25,7 @@ brain = Brain(cfg.ollama_host, cfg.llm_model, cfg.threads, cfg.llm_num_gpu)
 brain.check()
 brain.warmup()
 stt = STT(cfg.whisper_model, cfg.whisper_device, cfg.whisper_compute, cfg.threads)
-stt.transcribe(np.zeros(16000, dtype=np.float32))   # warm-ups so the first file isn't penalized
+# (STT warms itself up inside its constructor)
 tts = TTS(cfg.voice)
 tts.synthesize("Hola.")
 

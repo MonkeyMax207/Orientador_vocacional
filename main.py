@@ -30,6 +30,13 @@ from vad import CHUNK_MS, VAD, TurnDetector
 RECORDINGS = Path(__file__).parent / "recordings"
 
 
+def slow_filler_due(elapsed, limit, answer_started, already_played, player_busy) -> bool:
+    # Play a 2nd filler only if: the answer is late, none has started, we haven't already,
+    # AND the 1st filler has finished. Queued behind the 1st one it would delay an answer
+    # that is probably about to arrive.
+    return elapsed > limit and not answer_started and not already_played and not player_busy
+
+
 class Agent:
     def __init__(self, cfg):
         self.cfg = cfg
@@ -38,7 +45,6 @@ class Agent:
         self.brain.check()     # fail fast if Ollama is down or the model is missing
         self.brain.warmup()    # load the LLM + cache the system prompt
         self.stt = STT(cfg.whisper_model, cfg.whisper_device, cfg.whisper_compute, cfg.threads)
-        self.stt.transcribe(np.zeros(SAMPLE_RATE, dtype=np.float32))   # warm-up (first call is slow)
         self.tts = TTS(cfg.voice)
         self.tts.synthesize("Hola.")                                   # warm-up
         self.fillers = Fillers(cfg.voice)
@@ -46,12 +52,17 @@ class Agent:
         self.turns = TurnDetector(cfg.silence_ms, cfg.min_speech_ms)
         self.player = Player(cfg.output_device, self.tts.sample_rate)
         self.mic = Mic(cfg.input_device)   # opened last so no audio piles up while loading
+        self.ready_turn = None             # a full user turn captured while we were speaking
         RECORDINGS.mkdir(exist_ok=True)
 
     def feed_mic(self, chunk):
         return self.turns.feed(chunk, self.vad.is_speech(chunk))
 
     def listen(self) -> np.ndarray:
+        # A complete turn may already be waiting (captured during barge-in, see below).
+        if self.ready_turn is not None:
+            audio, self.ready_turn = self.ready_turn, None
+            return audio
         # LISTENING: run every 32 ms chunk through the VAD until a full turn comes back.
         while True:
             audio = self.feed_mic(self.mic.read())
@@ -64,7 +75,12 @@ class Agent:
             self.mic.pending()   # discard what the mic heard (mostly our own voice)
             return False
         for chunk in self.mic.pending():
-            self.feed_mic(chunk)   # keep building the user's turn, so their words aren't lost
+            # Keep building the user's turn, so their words aren't lost. While STT or Piper
+            # blocked this thread, a WHOLE short turn may have piled up: keep it for listen().
+            audio = self.feed_mic(chunk)
+            if audio is not None:
+                self.ready_turn = audio
+                return True
         # Interrupt once the user has said as much as a valid turn needs (min_speech_ms).
         return self.turns.speech_chunks * CHUNK_MS >= self.cfg.min_speech_ms
 
@@ -80,6 +96,7 @@ class Agent:
         t_stt = time.perf_counter()
         if not text:
             print("(ruido ignorado)", flush=True)
+            self.player.stop()   # it was a cough or a bang: cut the filler short
             self.finish_speaking()
             return
         print(f"\nTú: {text}", flush=True)
@@ -101,7 +118,8 @@ class Agent:
                 token = tokens.get(timeout=0.05)   # wait max 50 ms so we can check other things
             except queue.Empty:
                 # Answer still not ready long after the user stopped? Say a second filler.
-                if t_first is None and not slow_played and time.perf_counter() - t_end > self.cfg.slow_llm_s:
+                if slow_filler_due(time.perf_counter() - t_end, self.cfg.slow_llm_s,
+                                   t_first is not None, slow_played, self.player.busy()):
                     self.player.put(self.fillers.pick(slow=True), ["pensar"])
                     slow_played = True
                 continue

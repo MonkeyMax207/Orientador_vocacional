@@ -4,14 +4,17 @@ Why: Piper needs whole sentences to sound natural, but waiting for the whole rep
 wastes seconds. So we speak each sentence the moment it is complete.
 """
 import re
+import unicodedata
 
 # Words that end with a dot but do NOT end a sentence (compared in lowercase).
 ABBREVIATIONS = {"dr", "dra", "sr", "sra", "srta", "ud", "uds", "etc", "ej", "pág", "núm", "aprox", "lic", "ing"}
 
-# A sentence end = one or more of . ! ? … (optionally followed by a closing quote or
-# parenthesis), and then whitespace. Requiring the whitespace is what keeps "3.5" together,
-# and it means we only decide once we have seen the character after the punctuation.
-_BOUNDARY = re.compile(r'([.!?…]+["»)]?)\s+')
+# A sentence end is either:
+#  (1) one or more of . ! ? … (optionally followed by a closing quote or parenthesis), then
+#      whitespace. Requiring the whitespace is what keeps "3.5" together, and it means we only
+#      decide once we have seen the character after the punctuation; or
+#  (2) a line break: LLMs put list items and paragraphs on separate lines.
+_BOUNDARY = re.compile(r'([.!?…]+["»)]?)\s+|(\n)\s*')
 
 
 class SentenceSplitter:
@@ -22,11 +25,14 @@ class SentenceSplitter:
         self.buf += text
         out, start = [], 0
         for m in _BOUNDARY.finditer(self.buf):
-            candidate = self.buf[start:m.end(1)]   # from the last cut up to the punctuation
+            # From the last cut up to the punctuation (case 1) or up to the line break (case 2).
+            candidate = self.buf[start:m.end(1) if m.group(1) else m.start()]
             if m.group(1) == ".":
                 last_word = re.search(r"(\w+)\.$", candidate)
                 if last_word and last_word.group(1).lower() in ABBREVIATIONS:
                     continue                        # "Dr." → keep reading, not an end
+                if re.fullmatch(r"\s*\d+\.", candidate):
+                    continue                        # "2." opening a list item → the item follows
             out.append(candidate.strip())
             start = m.end()                         # next sentence starts after the whitespace
         self.buf = self.buf[start:]                 # keep the unfinished tail for the next feed
@@ -40,13 +46,14 @@ class SentenceSplitter:
 
 # Characters the voice should never read: markdown symbols...
 _MARKDOWN = re.compile(r"[*_#`~>|]")
-# ...emojis and pictographs (Unicode blocks), plus the invisible emoji variation selector...
-_EMOJI = re.compile(r"[\U0001F000-\U0001FAFF☀-➿️]")
-# ...and list bullets at the start of a line.
-_BULLET = re.compile(r"^\s*[-•]\s+")
+# ...and list markers at the start of a line: "- ", "• ", "2. ", "2) " (but not "3.5").
+_BULLET = re.compile(r"(?m)^\s*(?:[-•]|\d+[.)])\s+")
 
 
 def clean_for_tts(text: str) -> str:
     text = _BULLET.sub("", text)
-    text = _EMOJI.sub("", _MARKDOWN.sub("", text))
+    text = _MARKDOWN.sub("", text).replace("&", " y ")   # Piper would say "ampersand"
+    # Drop every Unicode "other symbol" (So: emojis, ⭐, ✨...) and "format" char (Cf: the
+    # invisible joiners inside compound emojis like 👨‍💻). Piper reads symbols by name.
+    text = "".join(c for c in text if unicodedata.category(c) not in ("So", "Cf"))
     return re.sub(r"\s+", " ", text).strip()   # collapse the spaces left behind
