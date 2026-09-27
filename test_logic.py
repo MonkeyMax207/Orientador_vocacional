@@ -20,6 +20,7 @@ import main
 import sentences
 import stt
 import vad
+from knowledge import scrape
 
 
 def test_config_profiles_have_same_keys():
@@ -237,6 +238,25 @@ def test_filler_only_when_answer_is_late():
     # A person doesn't say "dame un segundo" when they already know the answer.
     assert not _filler_run(llm_delay_s=0.0)   # answer ready at once → no filler
     assert _filler_run(llm_delay_s=0.8)       # answer late → filler covers the wait
+
+
+FIXTURE = Path(__file__).parent / "knowledge" / "fixtures" / "ingenieria-mecatronica.html"
+
+
+def test_program_urls():
+    html = ('<a href="https://www.uao.edu.co/programa/cine/">Cine</a>'
+            '<a href="https://www.uao.edu.co/programa/cine/">otra vez</a>'
+            '<a href="https://www.uao.edu.co/programa/derecho/">Derecho</a>'
+            '<a href="https://www.uao.edu.co/blog/x/">no</a>')
+    assert scrape.program_urls(html) == ["https://www.uao.edu.co/programa/cine/",
+                                         "https://www.uao.edu.co/programa/derecho/"]
+
+
+def test_latest_plan_pdf():
+    # The page links an old plan (2022), the 2025 plan, a PEP and a tuition PDF: pick the 2025 plan.
+    html = FIXTURE.read_text(encoding="utf-8")
+    assert scrape.latest_plan_pdf(html).endswith("/2025/01/PLAN-DE-ESTUDIO-ING-METRONICA-2025.pdf")
+    assert scrape.latest_plan_pdf("<p>sin pdf</p>") is None
 
 
 if __name__ == "__main__":

@@ -7,3 +7,6 @@ models/
 
 # Recorded user turns (test material for bench.py and filter analysis)
 recordings/
+
+# Raw pages downloaded by knowledge/scrape.py (rebuildable; only cards.json is committed)
+knowledge/raw/
