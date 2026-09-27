@@ -3,6 +3,7 @@
 Run: uv run python test_logic.py
 Each test_* function raises AssertionError if the logic is broken.
 """
+import animations
 import config
 import sentences
 
@@ -41,6 +42,13 @@ def test_clean_for_tts():
     assert sentences.clean_for_tts("**Hola** 😊 #1") == "Hola 1"
     assert sentences.clean_for_tts("- Ingeniería de sistemas") == "Ingeniería de sistemas"
     assert sentences.clean_for_tts("✨🎉") == ""
+
+
+def test_animation_keywords():
+    assert animations.match("¡Hola! Qué interesante.") == ["saludar", "inclinar_cabeza"]
+    assert animations.match("ADIOS, amigo") == ["despedir"]        # case and accents don't matter
+    assert animations.match("Me gusta Holanda") == []               # whole words only
+    assert animations.match("Hola, hola") == ["saludar"]            # no duplicates
 
 
 if __name__ == "__main__":
