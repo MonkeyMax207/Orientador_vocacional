@@ -3,9 +3,13 @@
 Run: uv run python test_logic.py
 Each test_* function raises AssertionError if the logic is broken.
 """
+import numpy as np
+
 import animations
 import config
+import download_models
 import sentences
+import vad
 
 
 def test_config_profiles_have_same_keys():
@@ -49,6 +53,29 @@ def test_animation_keywords():
     assert animations.match("ADIOS, amigo") == ["despedir"]        # case and accents don't matter
     assert animations.match("Me gusta Holanda") == []               # whole words only
     assert animations.match("Hola, hola") == ["saludar"]            # no duplicates
+
+
+def test_piper_urls():
+    onnx, cfg = download_models.piper_urls("es_MX-ald-medium")
+    base = "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/ald/medium/es_MX-ald-medium"
+    assert onnx == base + ".onnx" and cfg == base + ".onnx.json"
+
+
+def test_turn_detector():
+    # 96 ms silence = 3 chunks ends a turn; 64 ms = 2 chunks of speech minimum; keep 2 chunks before speech.
+    td = vad.TurnDetector(silence_ms=96, min_speech_ms=64, pre_roll_chunks=2)
+    s, q = np.ones(512, np.float32), np.zeros(512, np.float32)   # s = speech chunk, q = quiet chunk
+    feed = lambda seq: [td.feed(c, c is s) for c in seq]
+
+    assert all(r is None for r in feed([q, q, q, q]))            # silence only → no turn
+    res = feed([s, s, q, q, q])                                    # speech then 3 silences → turn ends
+    assert all(r is None for r in res[:-1])
+    assert len(res[-1]) == 7 * 512                                 # 2 pre-roll + 2 speech + 3 silence
+    assert all(r is None for r in feed([s, q, q, q]))            # 1-chunk click → dropped as noise
+    # Review Focus #4: a pause shorter than silence_ms does NOT split the turn.
+    res = feed([s, s, q, q, s, s, q, q, q])
+    assert all(r is None for r in res[:-1]) and res[-1] is not None
+    assert len(res[-1]) == 9 * 512                                 # the whole thing is ONE turn
 
 
 if __name__ == "__main__":
