@@ -19,7 +19,6 @@ ollama_host = "http://127.0.0.1:11434"
 # Knowledge (RAG) — see docs/superpowers/specs/2026-09-26-uao-knowledge-rag-design.md
 embed_model = "embeddinggemma"   # Ollama embedding model (CPU); 21/25 in knowledge/eval.py, cleanest off-topic rejection
 rag_threshold = 0.30             # embeddinggemma: off-topic scores 0.09–0.26, relevant 0.27–0.66 (knowledge/eval.py)
-rag_max_cards = 2                # cards per detail turn (each ~60 words ≈ +1.5 s on a Pi)
 recommend_after_turns = 6        # on this turn the agent recommends programs even if not asked
 
 [pc]
@@ -29,6 +28,7 @@ whisper_device = "cuda"
 whisper_compute = "float16"  # GPU-native half precision
 llm_model = "llama3.2:3b"   # best of the replay test: answers questions, reads through STT errors
 llm_num_gpu = 99             # LLM layers offloaded to the GPU; 99 means "all of them"
+rag_max_cards = 2            # cards per detail turn (free on the GPU)
 barge_in = false             # set true only when testing with headphones (the speaker would trigger it)
 tts_engine = "kokoro"        # natural voice (Piper is faster but sounds more robotic)
 tts_device = "cuda"          # Kokoro on the GPU: ~0.5 s per sentence instead of ~3 s on the CPU
@@ -42,6 +42,7 @@ whisper_device = "cpu"
 whisper_compute = "int8"     # 8-bit weights: ~2x faster on CPU with tiny accuracy loss
 llm_model = "qwen2.5:1.5b"
 llm_num_gpu = 0              # 0 = LLM runs on the CPU only, like on the Pi
+rag_max_cards = 1            # each card ~60 words ≈ +1.5 s of prompt reading on the Pi CPU
 barge_in = false             # the Waveshare module has no hardware echo cancellation
 tts_engine = "piper"         # Kokoro is slower than real time on a Pi 5 CPU; Piper is ~4x faster than real time
 tts_device = "cpu"           # the Pi has no CUDA GPU

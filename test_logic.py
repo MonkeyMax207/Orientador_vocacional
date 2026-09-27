@@ -448,20 +448,25 @@ def test_retrieve():
             calls.append((query, k, threshold, kinds))
             return [{"id": "x"}]
 
+        def search_best(self, queries, k, threshold, kinds=None):
+            calls.append((queries, k, threshold, kinds))
+            return [{"id": "x"}]
+
     cfg = SimpleNamespace(recommend_after_turns=6, rag_max_cards=2, rag_threshold=0.45)
     assert rag.retrieve(KB(), "¿cuánto vale?", ["¿cuánto vale?"], "", cfg) == ("precio", [rag.PRICE_CARD])
     assert calls == []                                                   # no search for prices
-    # Detail: the student's own words first. The agent's previous (long) reply must NOT steer the
-    # search: in the replay it made "¿Qué laboratorios…?" fetch the cards of the previous topic.
-    mode, _ = rag.retrieve(KB(), "¿Qué laboratorios hay?", ["hola", "¿Qué laboratorios hay?"],
-                           "La mecatrónica tiene muchas materias interesantes…", cfg)
-    assert mode == "detalle" and calls[-1] == ("¿Qué laboratorios hay?", 2, 0.45, None)
+    # Detail: the student's words alone AND with their previous turn (keeps an implicit topic:
+    # "¿qué materias…?" right after asking about mecatrónica). The agent's long reply is not used.
+    mode, _ = rag.retrieve(KB(), "¿Qué materias hay?", ["¿Labs de mecatrónica?", "¿Qué materias hay?"],
+                           "La mecatrónica tiene muchos laboratorios…", cfg)
+    assert mode == "detalle"
+    assert calls[-1] == (["¿Qué materias hay?", "¿Labs de mecatrónica? ¿Qué materias hay?"], 2, 0.45, None)
     mode, _ = rag.retrieve(KB(), "¿qué me recomiendas?", ["me gusta dibujar", "¿qué me recomiendas?"], "", cfg)
     assert mode == "recomendacion" and calls[-1] == ("me gusta dibujar ¿qué me recomiendas?", 3, -1.0, {"perfil"})
 
 
 def test_retrieve_falls_back_to_context():
-    # A short answer like "sí, esa" finds nothing alone: then retry with the agent's last question.
+    # A short answer like "sí, esa" finds nothing: then retry with the agent's last question.
     calls = []
 
     class KB:
@@ -469,10 +474,24 @@ def test_retrieve_falls_back_to_context():
             calls.append(query)
             return [{"id": "robotica"}] if "robótica" in query else []
 
+        def search_best(self, queries, k, threshold, kinds=None):
+            calls.append(queries)
+            return []
+
     cfg = SimpleNamespace(recommend_after_turns=6, rag_max_cards=2, rag_threshold=0.45)
     mode, cards = rag.retrieve(KB(), "sí, esa", ["hola", "sí, esa"], "¿Te gusta la robótica?", cfg)
     assert (mode, cards) == ("detalle", [{"id": "robotica"}])
-    assert calls == ["sí, esa", "¿Te gusta la robótica? sí, esa"]
+    assert calls == [["sí, esa", "hola sí, esa"], "¿Te gusta la robótica? sí, esa"]
+
+
+def test_search_best_picks_strongest_query():
+    # Both queries embedded in ONE call; the one with the strongest match decides the cards.
+    calls = []
+    kb = _kb(calls, Path(tempfile.mkdtemp()))
+    calls.clear()
+    assert [c["id"] for c in kb.search_best(["nada", "q-ab"], k=1, threshold=0.3)] == ["a"]
+    assert kb.search_best(["nada"], k=1, threshold=0.3) == []
+    assert calls == [2, 1]                        # one embedding request per search_best call
 
 
 def test_find_cards_without_knowledge():

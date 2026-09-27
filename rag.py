@@ -70,12 +70,16 @@ class Knowledge:
         np.savez(cache, key=key, vectors=self.vectors)
 
     def ranked(self, query: str) -> list[tuple[float, dict]]:
-        scores = self.vectors @ self.embed([query], query=True)[0]   # one dot product per card
+        return self._ranked_by(self.embed([query], query=True)[0])
+
+    def _ranked_by(self, query_vector) -> list[tuple[float, dict]]:
+        scores = self.vectors @ query_vector   # one dot product per card
         return [(float(scores[i]), self.cards[i]) for i in np.argsort(-scores)]
 
-    def search(self, query: str, k: int, threshold: float, kinds=None) -> list[dict]:
+    @staticmethod
+    def _pick(ranked, k: int, threshold: float, kinds) -> list[dict]:
         hits = []
-        for score, card in self.ranked(query):
+        for score, card in ranked:
             if score < threshold:
                 break   # sorted: everything after this is even less similar
             if kinds and card["tipo"] not in kinds:
@@ -84,6 +88,16 @@ class Knowledge:
             if len(hits) == k:
                 break
         return hits
+
+    def search(self, query: str, k: int, threshold: float, kinds=None) -> list[dict]:
+        return self._pick(self.ranked(query), k, threshold, kinds)
+
+    def search_best(self, queries: list[str], k: int, threshold: float, kinds=None) -> list[dict]:
+        # Several phrasings of the same need, embedded in ONE request (cheap on the Pi); the one
+        # whose best card matches most strongly decides which cards are returned.
+        rankings = [self._ranked_by(v) for v in self.embed(queries, query=True)]
+        best = max(rankings, key=lambda ranked: ranked[0][0])
+        return self._pick(best, k, threshold, kinds)
 
     def program_names(self) -> list[str]:
         return sorted({c["programa"] for c in self.cards if c["programa"]})
@@ -105,10 +119,13 @@ def retrieve(kb, text: str, user_turns: list[str], last_reply: str, cfg) -> tupl
     if mode == "recomendacion":
         # Everything the student has said vs. the "who is this program for" cards; always top 3.
         return mode, kb.search(" ".join(user_turns), 3, -1.0, kinds={"perfil"})
-    # Detail: search with the student's own words. Only if that finds nothing (short answers
-    # like "sí, esa") retry with the agent's last reply as context. Mixing them always would let
-    # the previous (longer) reply steer the search back to the previous topic.
-    cards = kb.search(text, cfg.rag_max_cards, cfg.rag_threshold)
+    # Detail: the student's words alone, and together with their previous turn. The previous
+    # turn keeps an implicit topic ("¿qué materias hay?" right after asking about mecatrónica);
+    # search_best keeps whichever matches more strongly, so a change of topic still wins.
+    # The agent's own (longer) reply is used only as a last resort: it would steer the search.
+    previous = user_turns[-2] if len(user_turns) > 1 else ""
+    queries = [text] + ([f"{previous} {text}"] if previous else [])
+    cards = kb.search_best(queries, cfg.rag_max_cards, cfg.rag_threshold)
     if not cards and last_reply:
         cards = kb.search(f"{last_reply} {text}", cfg.rag_max_cards, cfg.rag_threshold)
     return mode, cards
