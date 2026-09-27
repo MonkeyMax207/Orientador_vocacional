@@ -38,8 +38,16 @@ def _soup(html: str) -> BeautifulSoup:
 
 
 def page_title(html: str) -> str:
-    h1 = _soup(html).find("h1")
-    return h1.get_text(" ", strip=True) if h1 else ""
+    soup = _soup(html)
+    h1 = soup.find("h1")
+    if h1:
+        return h1.get_text(" ", strip=True)
+    # Some templates (virtual programs) have no <h1>. Their <title> holds the name plus SEO text,
+    # e.g. "¿Administración de Empresas Virtual – UAO | Gestión y Liderazgo": keep what comes before
+    # the first separator, then drop a trailing "UAO" / "en la UAO" and stray punctuation.
+    title = soup.title.get_text(" ", strip=True) if soup.title else ""
+    name = re.split(r"\s*[|–]\s*|\s-\s", title)[0]
+    return re.sub(r"\s+(en la\s+)?UAO\b.*$", "", name).strip(" ¿?¡!.")
 
 
 def _sections(html: str) -> list[tuple[str | None, str]]:

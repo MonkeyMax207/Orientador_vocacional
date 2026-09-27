@@ -1,0 +1,1568 @@
+[
+ {
+  "id": "administracion-de-empresas-modalidad-dual-perfil",
+  "tipo": "perfil",
+  "programa": "Administración de Empresas – modelo dual Alemán",
+  "titulo": "Administración de Empresas – modelo dual Alemán: para quién es",
+  "texto": "Este programa está diseñado para estudiantes con un fuerte sentido de responsabilidad, vocación empresarial y habilidades de liderazgo. Si te interesa el mundo de los negocios, la innovación y la sostenibilidad, y quieres desarrollar tus habilidades en áreas como marketing, finanzas, recursos humanos y gestión de proyectos, este programa es ideal para ti. Te prepara para trabajar en empresas turísticas, comerciales e industriales, aplicando conocimientos en la resolución de problemas reales.",
+  "fuente": "https://www.uao.edu.co/programa/administracion-de-empresas-modalidad-dual/",
+  "revisar": false
+ },
+ {
+  "id": "administracion-de-empresas-modalidad-dual-egresado",
+  "tipo": "egresado",
+  "programa": "Administración de Empresas – modelo dual Alemán",
+  "titulo": "Administración de Empresas – modelo dual Alemán: qué hace el egresado",
+  "texto": "Al graduarte como Administrador de Empresas en el modelo dual, serás un profesional con capacidad para diseñar y ejecutar estrategias empresariales. Podrás trabajar en áreas como marketing, finanzas, recursos humanos, alta gerencia y desarrollo de proyectos, aplicando tus conocimientos en empresas turísticas, industriales y comerciales, con un enfoque en la sostenibilidad y la innovación. Además, estarás preparado para liderar equipos y tomar decisiones estratégicas.",
+  "fuente": "https://www.uao.edu.co/programa/administracion-de-empresas-modalidad-dual/",
+  "revisar": false
+ },
+ {
+  "id": "administracion-de-empresas-modalidad-dual-materias",
+  "tipo": "materias",
+  "programa": "Administración de Empresas – modelo dual Alemán",
+  "titulo": "Administración de Empresas – modelo dual Alemán: plan de estudios",
+  "texto": "El programa tiene una duración de 8 periodos académicos, lo que equivale a 171 créditos académicos. En el primer y tercer semestre, cursarás materias básicas como Ética, Matemática aplicada a la administración, Estadística descriptiva, Fundamentos en matemáticas, Mercadeo y ventas, y Metodología de la investigación. En los semestres siguientes, profundizarás en temas como Estadística inferencial, Legislación comercial y tributaria, Teoría organizacional, Microeconomía, Macroeconomía y Gestión del talento humano.",
+  "fuente": "https://www.uao.edu.co/programa/administracion-de-empresas-modalidad-dual/",
+  "revisar": true,
+  "faltan": [
+   "Curso introductorio"
+  ]
+ },
+ {
+  "id": "arquitectura-perfil",
+  "tipo": "perfil",
+  "programa": "Arquitectura",
+  "titulo": "Arquitectura: para quién es",
+  "texto": "El programa de Arquitectura de la Universidad Autónoma de Occidente está diseñado para aspirantes con una fuerte inclinación por el arte, el diseño y la tecnología. Busca personas con interés en el entorno social, medioambiental y urbano, que posean habilidades de pensamiento lógico, creatividad y capacidad de trabajo en equipo. El objetivo es formar arquitectos capaces de diseñar espacios innovadores y sostenibles, respondiendo a las necesidades reales de la sociedad.",
+  "fuente": "https://www.uao.edu.co/programa/arquitectura/",
+  "revisar": false
+ },
+ {
+  "id": "arquitectura-egresado",
+  "tipo": "egresado",
+  "programa": "Arquitectura",
+  "titulo": "Arquitectura: qué hace el egresado",
+  "texto": "Al graduarse, el egresado de Arquitectura de la UAO estará capacitado para desarrollar proyectos de diseño arquitectónico y urbano, utilizando herramientas tecnológicas avanzadas. Será capaz de analizar contextos complejos, integrando consideraciones sociales, ambientales y económicas, y de proponer soluciones creativas y sostenibles para el hábitat humano. Además, podrá gestionar proyectos, trabajar en equipo y comprender los aspectos del negocio inmobiliario.",
+  "fuente": "https://www.uao.edu.co/programa/arquitectura/",
+  "revisar": false
+ },
+ {
+  "id": "arquitectura-materias",
+  "tipo": "materias",
+  "programa": "Arquitectura",
+  "titulo": "Arquitectura: plan de estudios",
+  "texto": "El programa de Arquitectura de la UAO se extiende a lo largo de 9 periodos académicos, totalizando 150 créditos. En los primeros semestres, se cursarán materias como Inglés, Introducción a la Historia y el Pensamiento Crítico, y Cultura Arquitectónica 1. En los semestres intermedios, se abordarán temas como Hábitat Urbano, Sostenibilidad y Convivencia, y Diseño + Tecnología + Urbanismo.",
+  "fuente": "https://www.uao.edu.co/programa/arquitectura/",
+  "revisar": true,
+  "faltan": [
+   "Espacio Público y Experiencias"
+  ]
+ },
+ {
+  "id": "arquitectura-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Arquitectura",
+  "titulo": "Arquitectura: laboratorios",
+  "texto": "El programa cuenta con laboratorios de Meta Diseño, Interiorismo y Urbanismo, donde los estudiantes podrán desarrollar proyectos utilizando herramientas digitales de modelado en 3D y tecnologías de realidad virtual. También se cuenta con un laboratorio interdisciplinar, el 'Habitar Contemporáneo', que fomenta el trabajo colaborativo y la exploración de nuevas ideas.",
+  "fuente": "https://www.uao.edu.co/programa/arquitectura/",
+  "revisar": true,
+  "faltan": [
+   "Interdisciplinar: El Habitar Contemporáneo"
+  ]
+ },
+ {
+  "id": "cine-perfil",
+  "tipo": "perfil",
+  "programa": "Cine",
+  "titulo": "Cine: para quién es",
+  "texto": "Este programa de Cine de la Universidad Autónoma de Occidente está diseñado para personas con una gran pasión por el cine, la animación y la comunicación. Buscas explorar nuevas formas de contar historias y crear contenido audiovisual, utilizando tecnología y diferentes formatos. Si te interesa la industria audiovisual y tienes un espíritu creativo, crítico e innovador, este programa es para ti.",
+  "fuente": "https://www.uao.edu.co/programa/cine/",
+  "revisar": false
+ },
+ {
+  "id": "cine-egresado",
+  "tipo": "egresado",
+  "programa": "Cine",
+  "titulo": "Cine: qué hace el egresado",
+  "texto": "Al graduarte, serás un profesional autónomo y proactivo, capaz de desarrollar proyectos cinematográficos en diversos soportes y géneros. Podrás trabajar en la industria audiovisual, en la comunicación, el arte, la publicidad, el diseño y el entretenimiento, aprovechando tus habilidades técnicas y creativas en un mercado laboral competitivo.",
+  "fuente": "https://www.uao.edu.co/programa/cine/",
+  "revisar": false
+ },
+ {
+  "id": "cine-materias",
+  "tipo": "materias",
+  "programa": "Cine",
+  "titulo": "Cine: plan de estudios",
+  "texto": "El programa de Cine tiene una duración de 8 periodos académicos, que equivalen a 143 créditos. En el primer semestre, te enfocarás en Formación Ciudadana, Historia del Cine y Introducción al Campo Cinematográfico. En el tercer semestre, estudiarás Cine, Cultura y Sociedad y el Taller de Experimentación Cinematográfica. En el quinto semestre, realizarás Investigación y Creación Cinematográfica y trabajarás en el Laboratorio de Creación Cinematográfica 2 – Cine Narrativo.",
+  "fuente": "https://www.uao.edu.co/programa/cine/",
+  "revisar": false
+ },
+ {
+  "id": "cine-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Cine",
+  "titulo": "Cine: laboratorios",
+  "texto": "El programa cuenta con Laboratorio de Creación Cinematográfica 1 – Cine Expresivo, Laboratorio de Creación Cinematográfica 2 – Cine Narrativo y Laboratorio de Creación Cinematográfica 3 – Cine Expandido. Estos espacios te permitirán experimentar con diferentes técnicas y herramientas de producción audiovisual.",
+  "fuente": "https://www.uao.edu.co/programa/cine/",
+  "revisar": false
+ },
+ {
+  "id": "comunicacion-social-periodismo-perfil",
+  "tipo": "perfil",
+  "programa": "Comunicación Social – Periodismo",
+  "titulo": "Comunicación Social – Periodismo: para quién es",
+  "texto": "Este programa está diseñado para personas apasionadas por contar historias y comunicar ideas de manera efectiva. Si te interesa el periodismo, la producción audiovisual, la comunicación en empresas o el mundo digital, este es tu camino. Necesitarás habilidades para analizar información, expresarte con claridad y creatividad, y trabajar en diferentes medios.",
+  "fuente": "https://www.uao.edu.co/programa/comunicacion-social-periodismo/",
+  "revisar": false
+ },
+ {
+  "id": "comunicacion-social-periodismo-egresado",
+  "tipo": "egresado",
+  "programa": "Comunicación Social – Periodismo",
+  "titulo": "Comunicación Social – Periodismo: qué hace el egresado",
+  "texto": "Al graduarte como Comunicador Social – Periodista de la Universidad Autónoma de Occidente, podrás desarrollar estrategias de comunicación para organizaciones de todos los tamaños, desde empresas hasta ONGs. También podrás trabajar como periodista en medios tradicionales o digitales, produciendo contenido audiovisual de alta calidad y adaptando tus habilidades a las nuevas tendencias del mercado laboral.",
+  "fuente": "https://www.uao.edu.co/programa/comunicacion-social-periodismo/",
+  "revisar": false
+ },
+ {
+  "id": "comunicacion-social-periodismo-materias",
+  "tipo": "materias",
+  "programa": "Comunicación Social – Periodismo",
+  "titulo": "Comunicación Social – Periodismo: plan de estudios",
+  "texto": "El programa se extiende a lo largo de 8 periodos académicos, otorgando un total de 144 créditos. En los primeros semestres, te enfocarás en materias fundamentales como Introducción a la Comunicación Social, Fotografía, Comunicación Oral y Escrita, y Narrativas Periodísticas. En semestres intermedios, profundizarás en temas como Periodismo Multiformato, Big Data y Analítica para Comunicadores, y Comunicación en las Organizaciones.",
+  "fuente": "https://www.uao.edu.co/programa/comunicacion-social-periodismo/",
+  "revisar": true,
+  "faltan": [
+   "Comunicación gráfica digital"
+  ]
+ },
+ {
+  "id": "comunicacion-social-periodismo-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Comunicación Social – Periodismo",
+  "titulo": "Comunicación Social – Periodismo: laboratorios",
+  "texto": "La Universidad pone a tu disposición un amplio conjunto de laboratorios para que puedas desarrollar tus habilidades. Tendrás acceso a laboratorios de edición de imagen, video y audio, así como a salas Mac equipadas con programas especializados en comunicación digital y producción de contenido multimedia. Además, contamos con el estudio de televisión más relevante del suroccidente colombiano, donde podrás poner en práctica tus conocimientos y producir contenidos de alta calidad e impacto.",
+  "fuente": "https://www.uao.edu.co/programa/comunicacion-social-periodismo/",
+  "revisar": false
+ },
+ {
+  "id": "contaduria-publica-perfil",
+  "tipo": "perfil",
+  "programa": "Contaduría Pública",
+  "titulo": "Contaduría Pública: para quién es",
+  "texto": "Este programa de Contaduría Pública de la Universidad Autónoma de Occidente está diseñado para personas con una fuerte inclinación por los números, el análisis y la comprensión de los procesos financieros.",
+  "fuente": "https://www.uao.edu.co/programa/contaduria-publica/",
+  "revisar": false
+ },
+ {
+  "id": "contaduria-publica-egresado",
+  "tipo": "egresado",
+  "programa": "Contaduría Pública",
+  "titulo": "Contaduría Pública: qué hace el egresado",
+  "texto": "Al graduarte como Contador Público UAO, serás competente para gestionar la información financiera de manera sostenible, asegurando los procesos organizacionales, planificando y gestionando los impuestos de los negocios. Además, podrás aportar una visión estratégica para la toma de decisiones que generen valor para empresas privadas, solidarias y públicas, contribuyendo al desarrollo económico y social.",
+  "fuente": "https://www.uao.edu.co/programa/contaduria-publica/",
+  "revisar": false
+ },
+ {
+  "id": "contaduria-publica-materias",
+  "tipo": "materias",
+  "programa": "Contaduría Pública",
+  "titulo": "Contaduría Pública: plan de estudios",
+  "texto": "El programa de Contaduría Pública tiene una duración de 3.5 años, equivalente a 150 créditos académicos, y se imparte de forma presencial en horario de día y noche. En el primer y segundo semestre, cursarás Fundamentos en Contabilidad, Economía de los Negocios, Matemáticas Financieras y Cálculo, además de Introducción a la Inteligencia de Negocios y Inglés 1.",
+  "fuente": "https://www.uao.edu.co/programa/contaduria-publica/",
+  "revisar": true,
+  "faltan": [
+   "Matemáticas Financieras",
+   "Contabilidad Financiera"
+  ]
+ },
+ {
+  "id": "contaduria-publica-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Contaduría Pública",
+  "titulo": "Contaduría Pública: laboratorios",
+  "texto": "El programa cuenta con el Salón Contable UAO, un espacio de actualización profesional donde podrás acceder a temas de interés. Además, se ofrecen núcleos contables con orientación gratuita en trámites tributarios y aduaneros gracias a la alianza con la DIAN. También se utilizan los Núcleos de Apoyo Contable y Fiscal – NAF para el desarrollo de tus habilidades.",
+  "fuente": "https://www.uao.edu.co/programa/contaduria-publica/",
+  "revisar": false
+ },
+ {
+  "id": "derecho-perfil",
+  "tipo": "perfil",
+  "programa": "Derecho",
+  "titulo": "Derecho: para quién es",
+  "texto": "Este programa de Derecho de la UAO está diseñado para personas apasionadas por resolver problemas sociales de manera creativa y ética, con una fuerte habilidad para la argumentación y el análisis. Si eres curioso, te gusta investigar y mantenerte al día con las novedades, esta carrera es ideal para ti. Te formará para ser un líder legal con un enfoque en la justicia y la sostenibilidad.",
+  "fuente": "https://www.uao.edu.co/programa/derecho/",
+  "revisar": false
+ },
+ {
+  "id": "derecho-egresado",
+  "tipo": "egresado",
+  "programa": "Derecho",
+  "titulo": "Derecho: qué hace el egresado",
+  "texto": "Al graduarte, serás un abogado capaz de analizar problemas jurídicos complejos, argumentar de manera persuasiva en diferentes contextos, y proponer soluciones innovadoras, especialmente en áreas como la sostenibilidad y las nuevas tecnologías. Podrás ejercer en asesoría, litigio, políticas públicas y contribuir al desarrollo de la sociedad.",
+  "fuente": "https://www.uao.edu.co/programa/derecho/",
+  "revisar": false
+ },
+ {
+  "id": "derecho-materias",
+  "tipo": "materias",
+  "programa": "Derecho",
+  "titulo": "Derecho: plan de estudios",
+  "texto": "El plan de estudios de Derecho en la UAO se extiende a lo largo de 8 periodos académicos, otorgando un total de 140 créditos. En el primer y segundo semestre, te enfocarás en la Interpretación y Argumentación Jurídica y Teoría General del Proceso y Justicia Digital. Posteriormente, explorarás Investigación Socio-Jurídica, Derecho Civil y Penal, Teoría Constitucional y Derecho Laboral.",
+  "fuente": "https://www.uao.edu.co/programa/derecho/",
+  "revisar": true,
+  "faltan": [
+   "Derecho público: actos y procedimientos administrativos",
+   "Mecanismos alternativos de solución de conflictos y arbitraje"
+  ]
+ },
+ {
+  "id": "diseno-de-la-comunicacion-grafica-perfil",
+  "tipo": "perfil",
+  "programa": "Diseño de la Comunicación Gráfica",
+  "titulo": "Diseño de la Comunicación Gráfica: para quién es",
+  "texto": "El programa de Diseño de la Comunicación Gráfica de la UAO está diseñado para personas creativas, con una fuerte inclinación por la imagen y la comunicación visual. Buscamos individuos curiosos, con interés en la cultura, el arte, los videojuegos y los medios de comunicación, que deseen desarrollar habilidades en diseño gráfico, animación, interacción y videografía.",
+  "fuente": "https://www.uao.edu.co/programa/diseno-de-la-comunicacion-grafica/",
+  "revisar": false
+ },
+ {
+  "id": "diseno-de-la-comunicacion-grafica-egresado",
+  "tipo": "egresado",
+  "programa": "Diseño de la Comunicación Gráfica",
+  "titulo": "Diseño de la Comunicación Gráfica: qué hace el egresado",
+  "texto": "El egresado del programa de Diseño de la Comunicación Gráfica se convierte en un creador con un sólido pensamiento crítico y una formación interdisciplinaria. Será competente para desarrollar proyectos de investigación y creación que aseguren resultados duraderos, aplicando conocimientos en gestión de proyectos, emprendimiento e innovación en diseño. Dominará habilidades expresivas y el manejo de tecnologías avanzadas para ofrecer soluciones efectivas a desafíos de comunicación gráfica, utilizando artefactos, contenidos y experiencias innovadoras.",
+  "fuente": "https://www.uao.edu.co/programa/diseno-de-la-comunicacion-grafica/",
+  "revisar": false
+ },
+ {
+  "id": "diseno-de-la-comunicacion-grafica-materias",
+  "tipo": "materias",
+  "programa": "Diseño de la Comunicación Gráfica",
+  "titulo": "Diseño de la Comunicación Gráfica: plan de estudios",
+  "texto": "El programa se extiende a lo largo de 9 periodos académicos, otorgando un total de 150 créditos académicos. En el primer y segundo semestre, se cursarán materias como Inglés 1, Inglés 2, Diseño Básico, Diseño de Signo y Símbolo, y Taller de Dibujo. En semestres posteriores, se incluyen cursos como Espacio Virtual y Experiencias, Espacio Interior y Experiencias, Espacio Público y Experiencias, y Seminario Interdisciplinar.",
+  "fuente": "https://www.uao.edu.co/programa/diseno-de-la-comunicacion-grafica/",
+  "revisar": false
+ },
+ {
+  "id": "diseno-de-la-comunicacion-grafica-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Diseño de la Comunicación Gráfica",
+  "titulo": "Diseño de la Comunicación Gráfica: laboratorios",
+  "texto": "Los estudiantes tendrán acceso al Laboratorio de Meta Diseño, Laboratorio de Interiorismo, Laboratorio de Urbanismo, Laboratorio 2 de Meta Diseño, Laboratorio 2 de Interiorismo, Laboratorio 2 de Urbanismo, Laboratorio de Imagen Digital, Laboratorio de Imagen en Movimiento, Laboratorio de Animación 3D, Laboratorio UX/UI y Laboratorio de Videojuegos.",
+  "fuente": "https://www.uao.edu.co/programa/diseno-de-la-comunicacion-grafica/",
+  "revisar": false
+ },
+ {
+  "id": "diseno-industrial-perfil",
+  "tipo": "perfil",
+  "programa": "Diseño Industrial",
+  "titulo": "Diseño Industrial: para quién es",
+  "texto": "El programa de Diseño Industrial en la Universidad Autónoma de Occidente está diseñado para aspirantes con una inclinación hacia el arte, el modelado y la resolución de problemas. Si te apasiona crear productos innovadores y funcionales, analizando las necesidades de los usuarios y buscando soluciones sostenibles, esta carrera te puede interesar. Se enfoca en el desarrollo de habilidades tanto creativas como técnicas para el diseño y la fabricación de productos.",
+  "fuente": "https://www.uao.edu.co/programa/diseno-industrial/",
+  "revisar": false
+ },
+ {
+  "id": "diseno-industrial-egresado",
+  "tipo": "egresado",
+  "programa": "Diseño Industrial",
+  "titulo": "Diseño Industrial: qué hace el egresado",
+  "texto": "Al graduarte como Diseñador Industrial de la UAO, podrás desarrollar conceptos de productos con una visión innovadora, adaptándolos a las exigencias de los usuarios y a las posibilidades tecnológicas. Serás capaz de gestionar procesos de innovación y desarrollo de productos y servicios, mejorando la oferta de una organización. Además, podrás realizar análisis y evaluaciones con modelos físicos, utilizando recursos tecnológicos para la creación de prototipos y la validación de tus diseños.",
+  "fuente": "https://www.uao.edu.co/programa/diseno-industrial/",
+  "revisar": false
+ },
+ {
+  "id": "diseno-industrial-materias",
+  "tipo": "materias",
+  "programa": "Diseño Industrial",
+  "titulo": "Diseño Industrial: plan de estudios",
+  "texto": "El plan de estudios de Diseño Industrial de 9 periodos académicos comienza con fundamentos matemáticos, dibujo y inglés. Posteriormente, se profundiza en el pensamiento de diseño, el pensamiento creativo y la ergonomía. En los semestres avanzados, se estudian procesos y materiales, diseño de objetos interactivos y modelado 3D. También se incluyen asignaturas como semiótica de productos, diseño de experiencias y gestión de la innovación.",
+  "fuente": "https://www.uao.edu.co/programa/diseno-industrial/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-ambiental-hibrida-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Ambiental – híbrida",
+  "titulo": "Ingeniería Ambiental – híbrida: para quién es",
+  "texto": "Este programa de Ingeniería Ambiental híbrida de la UAO está diseñado para personas con un fuerte interés en la sostenibilidad, la naturaleza y la conservación de los recursos. Buscas soluciones para minimizar el impacto ambiental de la producción y el consumo, y te apasiona contribuir al desarrollo sostenible.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-ambiental-hibrida/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-ambiental-hibrida-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Ambiental – híbrida",
+  "titulo": "Ingeniería Ambiental – híbrida: qué hace el egresado",
+  "texto": "Al graduarte como Ingeniero Ambiental de la UAO, estarás capacitado para prevenir y mitigar daños ambientales, diseñar sistemas de gestión de recursos, implementar soluciones innovadoras y contribuir al desarrollo sostenible de las regiones. Podrás trabajar en proyectos de consultoría, en empresas buscando eficiencia, en el sector público regulando actividades, o en el ámbito académico investigando y enseñando.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-ambiental-hibrida/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-ambiental-hibrida-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Ambiental – híbrida",
+  "titulo": "Ingeniería Ambiental – híbrida: plan de estudios",
+  "texto": "El programa tiene una duración de 9 periodos académicos, con un total de 158 créditos. En los primeros semestres, te enfocarás en materias fundamentales como Matemáticas Fundamentales, Fundamentos de Ingeniería Ambiental, Química Ambiental y Cálculo 1. En los semestres intermedios, estudiarás Álgebra Lineal, Diseño Conceptual, Cálculo 2, Física 1 y  Inglés 2. En los últimos semestres, abordarás temas avanzados como Mecánica de Fluidos Ambientales, Hidráulica, Microbiología Ambiental y Gestión Ambiental.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-ambiental-hibrida/",
+  "revisar": true,
+  "faltan": [
+   "Mecánica de Fluidos Ambientales",
+   "Gestión de la Innovación"
+  ]
+ },
+ {
+  "id": "ingenieria-ambiental-hibrida-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Ingeniería Ambiental – híbrida",
+  "titulo": "Ingeniería Ambiental – híbrida: laboratorios",
+  "texto": "Durante tu formación, tendrás acceso a laboratorios como el Laboratorio QCA Ambiental, donde realizarás experimentos y análisis relacionados con la calidad del agua y el aire. También podrás participar en prácticas en el Campus Sostenible de la UAO, que funciona como un laboratorio vivo para aplicar tus conocimientos y desarrollar habilidades prácticas en el manejo de recursos y la prevención de impactos ambientales.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-ambiental-hibrida/",
+  "revisar": true,
+  "faltan": [
+   "Campus Sostenible de la UAO"
+  ]
+ },
+ {
+  "id": "ingenieria-ambiental-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Ambiental",
+  "titulo": "Ingeniería Ambiental: para quién es",
+  "texto": "Este programa de Ingeniería Ambiental de la UAO está diseñado para personas con un fuerte interés en la sostenibilidad, la naturaleza y la conservación de los recursos. Necesitarás habilidades para analizar problemas ambientales, proponer soluciones innovadoras y contribuir al desarrollo sostenible. Al graduarte, podrás trabajar en consultoría ambiental, en empresas productivas buscando soluciones de producción limpia, en organismos gubernamentales o en proyectos internacionales relacionados con la sostenibilidad.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-ambiental/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-ambiental-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Ambiental",
+  "titulo": "Ingeniería Ambiental: qué hace el egresado",
+  "texto": "Como ingeniero ambiental UAO, podrás diseñar y ejecutar proyectos para minimizar el impacto ambiental, gestionar recursos naturales de manera eficiente, controlar la contaminación y contribuir a la planificación del desarrollo sostenible. Además, podrás participar en la investigación y docencia en el campo de la ingeniería ambiental, buscando soluciones innovadoras para los desafíos ambientales globales.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-ambiental/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-ambiental-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Ambiental",
+  "titulo": "Ingeniería Ambiental: plan de estudios",
+  "texto": "El programa de 9 periodos académicos comienza con materias básicas como Matemáticas Fundamentales, Fundamentos de Ingeniería Ambiental, Química Ambiental y Cálculo 1. Posteriormente, se profundiza con temas como Álgebra Lineal, Diseño Conceptual, Cálculo 2, Física 1 y 2, Química General, y Geometría. En los semestres avanzados, se estudian temas especializados como Mecánica de Fluidos Ambientales, Ecología, Hidráulica, Microbiología Ambiental, Gestión Ambiental, Modelación Ambiental y Evaluación de Impacto Ambiental.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-ambiental/",
+  "revisar": true,
+  "faltan": [
+   "Mecánica de Fluidos Ambientales",
+   "Geometría",
+   "Gestión de la Innovación"
+  ]
+ },
+ {
+  "id": "ingenieria-ambiental-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Ingeniería Ambiental",
+  "titulo": "Ingeniería Ambiental: laboratorios",
+  "texto": "Durante tu formación, tendrás acceso a laboratorios como el Laboratorio de Química Ambiental, donde realizarás análisis de calidad del agua y del aire. Además, podrás participar en prácticas en la Planta de Tratamiento de Agua Potable Emcali y en el relleno sanitario, lo que te permitirá aplicar tus conocimientos en situaciones reales y desarrollar habilidades prácticas para enfrentar los retos del sector ambiental.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-ambiental/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-biomedica-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Biomédica",
+  "titulo": "Ingeniería Biomédica: para quién es",
+  "texto": "Si te apasionan las carreras de la salud, la tecnología, eres innovador, creativo y además cuentas con vocación de servicio e interés por mejorar la calidad de vida de las personas, esta carrera es para ti. El programa de Ingeniería Biomédica en la UAO te prepara para diseñar, aplicar y gestionar la tecnología biomédica en el diagnóstico, monitoreo y tratamiento de pacientes, contribuyendo a mejorar su calidad de vida.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-biomedica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-biomedica-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Biomédica",
+  "titulo": "Ingeniería Biomédica: qué hace el egresado",
+  "texto": "Al graduarte como Ingeniero Biomédico en la UAO, podrás reconocer los principios que rigen los equipos médicos, diseñar herramientas tecnológicas para facilitar el diagnóstico y tratamiento, optimizar procesos en hospitales y evaluar las necesidades de personas con discapacidad para crear soluciones adaptadas. Además, tendrás la oportunidad de trabajar en convenios con instituciones líderes como el Hospital Universitario del Valle y la Clínica Colombia.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-biomedica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-biomedica-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Biomédica",
+  "titulo": "Ingeniería Biomédica: plan de estudios",
+  "texto": "El programa de Ingeniería Biomédica tiene una duración de 157 créditos académicos, distribuidos en nueve periodos académicos. En los primeros semestres, cursarás materias como Expresión Oral y Escrita, Introducción a la Ingeniería, Matemáticas Fundamentales, Inglés y Fundamentos de Ingeniería Biomédica, que te darán las bases para comprender el campo. En los semestres siguientes, profundizarás en áreas como Circuitos Eléctricos, Física, Electrónica, Morfoﬁsiología y Biomateriales.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-biomedica/",
+  "revisar": true,
+  "faltan": [
+   "Microprocesadores"
+  ]
+ },
+ {
+  "id": "ingenieria-de-datos-e-inteligencia-artificial-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería de Datos e Inteligencia Artificial",
+  "titulo": "Ingeniería de Datos e Inteligencia Artificial: para quién es",
+  "texto": "Este programa de Ingeniería de Datos e Inteligencia Artificial está diseñado para personas con una gran interés en la innovación y la tecnología, especialmente en el campo de la inteligencia artificial. Si te gusta anticiparte, buscar información, manejar datos y resolver problemas complejos, este programa es ideal para ti. Desarrollarás habilidades para aplicar técnicas de análisis de datos y crear soluciones inteligentes para mejorar los procesos de las organizaciones.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-de-datos-e-inteligencia-artificial/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-de-datos-e-inteligencia-artificial-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería de Datos e Inteligencia Artificial",
+  "titulo": "Ingeniería de Datos e Inteligencia Artificial: qué hace el egresado",
+  "texto": "Al graduarte como Ingeniero de Datos e Inteligencia Artificial, podrás diseñar, implementar y optimizar sistemas de análisis de datos, utilizando herramientas de inteligencia artificial para generar modelos predictivos y prescriptivos. Serás capaz de desarrollar soluciones innovadoras para empresas y organizaciones, mejorando su competitividad y tomando decisiones estratégicas basadas en datos, además de gestionar grandes volúmenes de información.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-de-datos-e-inteligencia-artificial/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-de-datos-e-inteligencia-artificial-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería de Datos e Inteligencia Artificial",
+  "titulo": "Ingeniería de Datos e Inteligencia Artificial: plan de estudios",
+  "texto": "El programa se estructura en 8 periodos académicos y 141 créditos. En los primeros semestres, te enfocarás en materias fundamentales como Estadística y Probabilidad, Matemáticas Fundamentales, Lógica y Matemática Discreta, y Álgebra Lineal. En los semestres intermedios, profundizarás en temas como Sistemas Operativos, Inteligencia Artificial, Analítica de Datos y Almacenamiento de Datos.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-de-datos-e-inteligencia-artificial/",
+  "revisar": true,
+  "faltan": [
+   "Introducción a la ingeniería de datos artificial",
+   "Seminario de ing. de datos e inteligencia artificial"
+  ]
+ },
+ {
+  "id": "ingenieria-electrica-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Eléctrica",
+  "titulo": "Ingeniería Eléctrica: para quién es",
+  "texto": "Si te apasionan los sistemas que hacen funcionar el mundo, si te interesa la eficiencia energética, las energías renovables y la tecnología aplicada a la electricidad, este programa es para ti. La carrera de Ingeniería Eléctrica en la Universidad Autónoma de Occidente te prepara para diseñar, operar y mantener sistemas eléctricos complejos, contribuyendo a soluciones innovadoras para el futuro.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-electrica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-electrica-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Eléctrica",
+  "titulo": "Ingeniería Eléctrica: qué hace el egresado",
+  "texto": "Al graduarte como Ingeniero Eléctrico, podrás diseñar y supervisar proyectos de generación, transmisión y distribución de energía eléctrica, trabajar en el desarrollo de sistemas de energías renovables, implementar soluciones de eficiencia energética y aplicar herramientas de simulación y modelado para optimizar el rendimiento de los sistemas eléctricos. Además, adquirirás habilidades para gestionar proyectos y trabajar en equipos multidisciplinarios.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-electrica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-electrica-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Eléctrica",
+  "titulo": "Ingeniería Eléctrica: plan de estudios",
+  "texto": "El programa de Ingeniería Eléctrica de la UAO te ofrece una formación completa, comenzando con fundamentos como Matemáticas Fundamentales, Física y Circuitos Eléctricos. A medida que avanzas, te especializarás en áreas como Sistemas de Potencia Eléctrica, Electrónica y Energías Renovables. El plan de estudios incluye asignaturas como Álgebra Lineal, Cálculo 1 y 2, y Circuitos Eléctricos 1 y 2, además de temas avanzados como Sistemas Dinámicos y Líneas y Redes.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-electrica/",
+  "revisar": true,
+  "faltan": [
+   "Electrónica Analógica y Digital",
+   "Sistemas de Potencia Eléctrica"
+  ]
+ },
+ {
+  "id": "ingenieria-electrica-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Ingeniería Eléctrica",
+  "titulo": "Ingeniería Eléctrica: laboratorios",
+  "texto": "Durante tu formación, tendrás acceso a laboratorios especializados como el Laboratorio de Circuitos Eléctricos, donde podrás realizar experimentos prácticos con componentes electrónicos. Además, podrás desarrollar proyectos en el Laboratorio de Energías Renovables, trabajando con sistemas solares y vehículos eléctricos. También tendrás la oportunidad de participar en actividades de construcción de sistemas solares y carros eléctricos, aplicando tus conocimientos en un entorno práctico y colaborativo.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-electrica/",
+  "revisar": true,
+  "faltan": [
+   "Laboratorio de Circuitos Eléctricos",
+   "Laboratorio de Energías Renovables"
+  ]
+ },
+ {
+  "id": "ingenieria-electronica-y-telecomunicaciones-virtual-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Electrónica y Telecomunicaciones – Virtual",
+  "titulo": "Ingeniería Electrónica y Telecomunicaciones – Virtual: para quién es",
+  "texto": "Este programa de Ingeniería Electrónica y Telecomunicaciones está diseñado para estudiantes con interés en la electrónica, las comunicaciones y la tecnología. Se busca a personas con habilidades analíticas, de resolución de problemas y con una buena base matemática, que deseen formar parte de la transformación digital y el desarrollo de soluciones innovadoras en diversos sectores.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-electronica-y-telecomunicaciones-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-electronica-y-telecomunicaciones-virtual-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Electrónica y Telecomunicaciones – Virtual",
+  "titulo": "Ingeniería Electrónica y Telecomunicaciones – Virtual: qué hace el egresado",
+  "texto": "Al graduarte, serás un ingeniero capaz de diseñar, gestionar e implementar sistemas electrónicos y de telecomunicaciones. Podrás trabajar en el desarrollo de dispositivos inteligentes, sistemas de automatización, redes de comunicación, sistemas IoT y en la optimización de procesos en la Industria 4.0, además de investigar y asesorar en áreas de vanguardia.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-electronica-y-telecomunicaciones-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-electronica-y-telecomunicaciones-virtual-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Electrónica y Telecomunicaciones – Virtual",
+  "titulo": "Ingeniería Electrónica y Telecomunicaciones – Virtual: plan de estudios",
+  "texto": "El programa tiene una duración de 9 períodos académicos, divididos en 3 ciclos bimestrales. En los primeros semestres, te enfocarás en materias como Circuitos Eléctricos, Teoría de Circuitos, Electromagnetismo y Procesamiento Digital de Señales. En semestres intermedios, estudiarás Sistemas de Telecomunicaciones, Electrónica Digital y Control Automático. En los últimos semestres, abordarás temas avanzados como Redes de Comunicación,  Procesamiento de Señales Digitales y  Sistemas de Comunicación Avanzada. El programa cuenta con un total de 159 créditos.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-electronica-y-telecomunicaciones-virtual/",
+  "revisar": true,
+  "faltan": [
+   "Circuitos Eléctricos",
+   "Teoría de Circuitos",
+   "Electromagnetismo",
+   "Procesamiento Digital de Señales",
+   "Sistemas de Telecomunicaciones",
+   "Electrónica Digital",
+   "Control Automático",
+   "Redes de Comunicación",
+   "Procesamiento de Señales Digitales",
+   "Sistemas de Comunicación Avanzada"
+  ]
+ },
+ {
+  "id": "ingenieria-electronica-y-telecomunicaciones-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Electrónica y Telecomunicaciones",
+  "titulo": "Ingeniería Electrónica y Telecomunicaciones: para quién es",
+  "texto": "Este programa de Ingeniería Electrónica y Telecomunicaciones de la Universidad Autónoma de Occidente está diseñado para personas con interés en la tecnología y la innovación. Buscas desarrollar soluciones creativas para problemas complejos, aplicando conocimientos científicos y tecnológicos avanzados. Te interesa la automatización, la inteligencia artificial, las telecomunicaciones y la transformación digital, buscando un futuro en un mundo cada vez más conectado y digitalizado.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-electronica-y-telecomunicaciones/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-electronica-y-telecomunicaciones-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Electrónica y Telecomunicaciones",
+  "titulo": "Ingeniería Electrónica y Telecomunicaciones: qué hace el egresado",
+  "texto": "Al graduarte como Ingeniero Electrónico y Telecomunicaciones de la UAO, serás un profesional altamente capacitado para diseñar, instalar y mantener sistemas electrónicos y de telecomunicaciones. Podrás trabajar como diseñador de sistemas, investigador en áreas como inteligencia artificial o internet de las cosas, desarrollador de hardware y software, consultor en electrónica y telecomunicaciones, o incluso administrador de proyectos en el sector industrial. Tu formación te permitirá aplicar normas y estándares internacionales en tus proyectos.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-electronica-y-telecomunicaciones/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-electronica-y-telecomunicaciones-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Electrónica y Telecomunicaciones",
+  "titulo": "Ingeniería Electrónica y Telecomunicaciones: plan de estudios",
+  "texto": "El plan de estudios de nueve periodos académicos te prepara para una formación completa. En los primeros semestres, adquirirás bases sólidas en matemáticas, electrónica y telecomunicaciones, además de desarrollar habilidades de comunicación y aprendizaje en inglés. En semestres avanzados, estudiarás cálculo, física, programación y temas específicos como control, microprocesadores y telecomunicaciones. También tendrás la oportunidad de elegir electivas profesionales y virtuales, y culminarás con un trabajo de grado y un seminario de ingeniería.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-electronica-y-telecomunicaciones/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-industrial-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Industrial",
+  "titulo": "Ingeniería Industrial: para quién es",
+  "texto": "El programa de Ingeniería Industrial de la Universidad Autónoma de Occidente está diseñado para aspirantes con una fuerte curiosidad por el mundo empresarial y el mejoramiento de procesos en la producción de bienes y servicios. Busca personas que deseen contribuir al desarrollo sostenible a través de proyectos innovadores.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-industrial/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-industrial-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Industrial",
+  "titulo": "Ingeniería Industrial: qué hace el egresado",
+  "texto": "Al graduarse como Ingeniero Industrial de la UAO, podrás desarrollar soluciones integrales para optimizar sistemas de producción, gestionando recursos y riesgos para tomar decisiones estratégicas. Serás un profesional ético y líder, con competencias en sistemas integrados de gestión, responsabilidad social, innovación y emprendimiento, preparado para destacar en la industria regional y nacional.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-industrial/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-industrial-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Industrial",
+  "titulo": "Ingeniería Industrial: plan de estudios",
+  "texto": "El programa se imparte en 9 periodos académicos, otorgando un total de 155 créditos. En los primeros semestres, te enfocarás en materias como Algoritma y Programación, Matemáticas Fundamentales, Álgebra Lineal y Cálculo 1, además de Inglés y Comunicación Oral y Escrita. En semestres intermedios, estudiarás Fundamentos de Ingeniería Industrial, Diseño Conceptual, Cálculo 2, Estadística 1 y Electiva en Ciencias Sociales.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-industrial/",
+  "revisar": true,
+  "faltan": [
+   "Ingeniería económica y financiera"
+  ]
+ },
+ {
+  "id": "ingenieria-industrial-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Ingeniería Industrial",
+  "titulo": "Ingeniería Industrial: laboratorios",
+  "texto": "La UAO ofrece laboratorios de vanguardia en el suroccidente colombiano, brindando experiencias prácticas durante toda tu carrera. Además, se realizan visitas empresariales y se trabaja con certificaciones en procesos de mejoramiento de calidad. También se utilizan espacios para la realización de proyectos de investigación y simulaciones.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-industrial/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-informatica-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Informática",
+  "titulo": "Ingeniería Informática: para quién es",
+  "texto": "Si te apasiona la tecnología, la programación y la resolución de problemas, este programa es para ti. Si eres una persona innovadora, curiosa y te gusta estar al día con las últimas tendencias, ser ingeniero informático en la UAO te abrirá muchas puertas. Este programa te formará para diseñar y desarrollar soluciones informáticas eficientes y seguras, contribuyendo al desarrollo de organizaciones y al avance tecnológico.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-informatica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-informatica-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Informática",
+  "titulo": "Ingeniería Informática: qué hace el egresado",
+  "texto": "Al graduarte como ingeniero informático en la UAO, podrás abordar problemas complejos en áreas como el desarrollo de software, la seguridad informática, la gestión de redes y la analítica de datos. Tendrás la capacidad de liderar proyectos, tomar decisiones estratégicas y aplicar tus conocimientos para mejorar procesos y sistemas, tanto a nivel nacional como internacional.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-informatica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-informatica-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Informática",
+  "titulo": "Ingeniería Informática: plan de estudios",
+  "texto": "El programa se extiende a lo largo de nueve periodos académicos, otorgando un total de 156 créditos. En los primeros semestres, te enfocarás en materias fundamentales como Matemáticas Fundamentales, Cálculo, Física y Álgebra Lineal. Posteriormente, profundizarás en Ingeniería de Software, Estructuras de Datos y Algoritmos, y Seguridad Informática.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-informatica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-mecanica-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Mecánica",
+  "titulo": "Ingeniería Mecánica: para quién es",
+  "texto": "El programa de Ingeniería Mecánica de la Universidad Autónoma de Occidente está diseñado para personas creativas, innovadoras y con interés en la creación de maquinaria, sistemas industriales y soluciones funcionales. Se busca aspirantes curiosos, con habilidades de trabajo en equipo y liderazgo, que deseen aplicar principios físicos para resolver problemas y desarrollar proyectos de alta calidad.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-mecanica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-mecanica-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Mecánica",
+  "titulo": "Ingeniería Mecánica: qué hace el egresado",
+  "texto": "Como ingeniero mecánico de la UAO, estarás capacitado para diseñar y construir equipos y sistemas mecánicos, instalaciones energéticas y procesos de fabricación. Podrás realizar cálculos, diseñar y evaluar elementos de máquinas herramientas, motores y sistemas de control. Además, podrás aplicar software de diseño y simulación, y trabajar con normas y estándares nacionales e internacionales, asegurando la calidad y eficiencia de tus proyectos.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-mecanica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-mecanica-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Mecánica",
+  "titulo": "Ingeniería Mecánica: plan de estudios",
+  "texto": "El plan de estudios de 9 periodos académicos, con 155 créditos, te ofrece una base sólida en mecánica, termodinámica, materiales y procesos de fabricación. En los primeros semestres, cursarás Fundamentos de Ingeniería Mecánica, Matemáticas Fundamentales, Física 1 y Álgebra Lineal, sentando las bases para comprender los principios de la ingeniería. En los semestres intermedios, profundizarás en Mecánica 1 y 2, Cálculo 2, Química de Materias y Combustión, y Diseño Conceptual.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-mecanica/",
+  "revisar": true,
+  "faltan": [
+   "Mecánica de Fluidos"
+  ]
+ },
+ {
+  "id": "ingenieria-mecanica-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Ingeniería Mecánica",
+  "titulo": "Ingeniería Mecánica: laboratorios",
+  "texto": "La Universidad Autónoma de Occidente cuenta con laboratorios de vanguardia equipados con software de diseño y simulación, permitiéndote realizar prácticas profesionales y desarrollar proyectos de manera realista. Además, tendrás acceso a laboratorios de Mecánica, Termodinámica, Materiales y Procesos de Fabricación, donde podrás aplicar los conocimientos teóricos y desarrollar habilidades prácticas en el diseño y la experimentación. También se cuenta con espacios de práctica para el manejo de equipos industriales y sistemas de control oleoneumáticos.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-mecanica/",
+  "revisar": true,
+  "faltan": [
+   "Laboratorio de Mecánica",
+   "Laboratorio de Termodinámica",
+   "Laboratorio de Materiales",
+   "Laboratorio de Procesos de Fabricación",
+   "Laboratorio de Diseño Mecánico",
+   "Laboratorio de Control y Automatización"
+  ]
+ },
+ {
+  "id": "ingenieria-mecatronica-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Mecatrónica",
+  "titulo": "Ingeniería Mecatrónica: para quién es",
+  "texto": "Este programa de Ingeniería Mecatrónica está diseñado para personas con interés en resolver problemas de manera creativa, utilizando herramientas tecnológicas y conocimientos de mecánica, electrónica, informática y robótica. Si te apasiona la automatización, la creación de modelos 3D y la innovación, esta carrera te brindará las habilidades necesarias para diseñar y desarrollar soluciones avanzadas en diversos campos industriales y sociales.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-mecatronica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-mecatronica-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Mecatrónica",
+  "titulo": "Ingeniería Mecatrónica: qué hace el egresado",
+  "texto": "Al graduarte como Ingeniero Mecatrónico, podrás diseñar e implementar sistemas automáticos para procesos industriales, mejorando la eficiencia y la calidad en la industria. También podrás desarrollar dispositivos mecatrónicos personalizados para aplicaciones no industriales, contribuyendo al bienestar de las personas. Además, adquirirás habilidades para gestionar proyectos de innovación y aplicar tus conocimientos en el diseño y fabricación de prototipos, utilizando herramientas de CAD/CAM.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-mecatronica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-mecatronica-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Mecatrónica",
+  "titulo": "Ingeniería Mecatrónica: plan de estudios",
+  "texto": "El programa de Ingeniería Mecatrónica tiene una duración de 9 periodos académicos, totalizando 156 créditos. En el primer y segundo semestre, cursarás Formación Ciudadana y materias básicas como Fundamentos de Ingeniería Mecatrónica, Matemáticas Fundamentales y Álgebra Lineal. En semestres posteriores, te enfocarás en áreas como Electrónica Analógica, Instrumentación, Robótica y Control. También desarrollarás habilidades en Diseño Conceptual y Diseño Mecatrónico, además de temas como Sistemas Dinámicos y Probabilidad y Estadística.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-mecatronica/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-mecatronica-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Ingeniería Mecatrónica",
+  "titulo": "Ingeniería Mecatrónica: laboratorios",
+  "texto": "La Universidad Autónoma de Occidente cuenta con un amplio laboratorio de Fab-Lab, un Laboratorio de Automática, un Laboratorio de Electrónica, un Laboratorio de Manufactura y un Laboratorio de Mecánica, equipados con herramientas de impresión 3D, robótica, corte de materiales e impresoras de resinas. También tendrás acceso a laboratorios de Electrónica Digital, Instrumentación y Microprocesadores, así como a espacios para el diseño y prototipado de dispositivos mecatrónicos utilizando herramientas CAD/CAM.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-mecatronica/",
+  "revisar": true,
+  "faltan": [
+   "Lab de Electrónica",
+   "Lab de Manufactura",
+   "Lab de Mecánica",
+   "Lab de Electrónica Digital",
+   "Lab de Instrumentación",
+   "Lab de Microprocesadores"
+  ]
+ },
+ {
+  "id": "ingenieria-multimedia-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Multimedia",
+  "titulo": "Ingeniería Multimedia: para quién es",
+  "texto": "Este programa de Ingeniería Multimedia es ideal para ti si te apasionan la tecnología, los videojuegos, la producción de contenidos digitales, la realidad virtual y el diseño de interfaces. Si tienes curiosidad por crear sistemas interactivos y nuevas formas de relación entre personas y entornos, esta carrera te abrirá muchas puertas. Se trata de un programa interdisciplinario que combina habilidades de diseño, informática, electrónica y telecomunicaciones.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-multimedia/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-multimedia-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Multimedia",
+  "titulo": "Ingeniería Multimedia: qué hace el egresado",
+  "texto": "Al graduarte como Ingeniero Multimedia UAO, podrás trabajar en industrias creativas, desarrollando aplicaciones multimedia y servicios digitales. También podrás ejercer en el sector de las telecomunicaciones, diseñando servicios multimedia para internet y la ‘Internet de las Cosas’. Además, podrás trabajar en el entretenimiento, creando experiencias de realidad virtual y videojuegos, o en el sector gubernamental, desarrollando soluciones interactivas para ciudades inteligentes.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-multimedia/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-multimedia-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Multimedia",
+  "titulo": "Ingeniería Multimedia: plan de estudios",
+  "texto": "El programa se imparte en 9 periodos académicos, lo que suma un total de 160 créditos. En los primeros semestres, cursarás materias como Fundamentos de Ingeniería Multimedia, Álgebra Lineal, Cálculo 1 y Inglés 3. En los semestres intermedios, estudiarás Algoritmia y Programación, Cálculo 2, Inglés 4 y Taller de Audio y Video Digital. En los últimos semestres, te enfocarás en temas como Diseño Multimedia 2, Interacción Humano-Computador y Trabajo de Grado.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-multimedia/",
+  "revisar": true,
+  "faltan": [
+   "Fundamentos de ingeniería",
+   "Computación gráfica",
+   "Seminario de ingeniería multimedia"
+  ]
+ },
+ {
+  "id": "ingenieria-multimedia-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Ingeniería Multimedia",
+  "titulo": "Ingeniería Multimedia: laboratorios",
+  "texto": "El programa cuenta con laboratorios especializados como UAO Labs, donde podrás desarrollar proyectos utilizando recursos hardware y software. También tendrás acceso a laboratorios de diseño conceptual y a espacios para la creación de experiencias interactivas. Además, se ofrecen talleres complementarios en UAO Labs para potenciar tus habilidades.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-multimedia/",
+  "revisar": false
+ },
+ {
+  "id": "mercadeo-global-virtual-perfil",
+  "tipo": "perfil",
+  "programa": "Mercadeo Global – Virtual",
+  "titulo": "Mercadeo Global – Virtual: para quién es",
+  "texto": "Esta carrera está pensada para personas con una gran visión, que les gusta analizar datos y que sienten un fuerte interés en el mundo del comercio internacional. Si te apasiona la idea de crear campañas de marketing que funcionen en diferentes países y tienes la capacidad de adaptarte a un entorno virtual de aprendizaje, este programa es ideal para ti.",
+  "fuente": "https://www.uao.edu.co/programa/mercadeo-global-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "mercadeo-global-virtual-egresado",
+  "tipo": "egresado",
+  "programa": "Mercadeo Global – Virtual",
+  "titulo": "Mercadeo Global – Virtual: qué hace el egresado",
+  "texto": "Al graduarte como Profesional en Mercadeo Global, estarás preparado para liderar equipos de marketing en empresas multinacionales, diseñar estrategias de lanzamiento de productos en mercados internacionales, analizar tendencias de consumo a nivel global y gestionar campañas de publicidad en diversos canales. Tendrás las herramientas necesarias para desarrollar soluciones innovadoras y adaptadas a las necesidades de cada mercado, convirtiéndote en un profesional altamente valorado en el sector del marketing globalizado.",
+  "fuente": "https://www.uao.edu.co/programa/mercadeo-global-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "mercadeo-global-virtual-materias",
+  "tipo": "materias",
+  "programa": "Mercadeo Global – Virtual",
+  "titulo": "Mercadeo Global – Virtual: plan de estudios",
+  "texto": "El programa se extiende a lo largo de 8 períodos académicos, lo que equivale a 140 créditos. En los primeros semestres, te enfocarás en materias fundamentales como Marketing Digital, Investigación de Mercados y Estrategias de Comunicación Global. En los semestres intermedios, profundizarás en temas como Marketing Internacional, Comportamiento del Consumidor y Análisis de Datos para el Marketing.",
+  "fuente": "https://www.uao.edu.co/programa/mercadeo-global-virtual/",
+  "revisar": true,
+  "faltan": [
+   "Marketing Digital",
+   "Investigación de Mercados",
+   "Estrategias de Comunicación Global",
+   "Marketing Internacional",
+   "Comportamiento del Consumidor",
+   "Análisis de Datos para el Marketing",
+   "Marketing de Producto",
+   "Gestión de Marca Global",
+   "Marketing de Contenidos",
+   "Marketing de Redes Sociales",
+   "Análisis de Tendencias del Mercado"
+  ]
+ },
+ {
+  "id": "mercadeo-y-negocios-internacionales-perfil",
+  "tipo": "perfil",
+  "programa": "Mercadeo y Negocios Internacionales",
+  "titulo": "Mercadeo y Negocios Internacionales: para quién es",
+  "texto": "Este programa está diseñado para estudiantes apasionados por el mundo del mercadeo, la comercialización y la negociación a nivel internacional. Buscamos personas con una base sólida en tecnología, excelentes habilidades de comunicación y, sobre todo, con un fuerte sentido ético y una actitud responsable y disciplinada. Si te interesa el crecimiento de las empresas y la creación de valor, este programa es ideal para ti.",
+  "fuente": "https://www.uao.edu.co/programa/mercadeo-y-negocios-internacionales/",
+  "revisar": false
+ },
+ {
+  "id": "mercadeo-y-negocios-internacionales-egresado",
+  "tipo": "egresado",
+  "programa": "Mercadeo y Negocios Internacionales",
+  "titulo": "Mercadeo y Negocios Internacionales: qué hace el egresado",
+  "texto": "Al graduarte como Profesional en Mercadeo y Negocios Internacionales, podrás asumir roles de liderazgo en organizaciones de cualquier tamaño, desde empresas nacionales hasta multinacionales. Serás capaz de gestionar estrategias de mercadeo, dirigir equipos de ventas, negociar acuerdos comerciales internacionales y, en definitiva, impulsar el crecimiento y la sostenibilidad de las organizaciones, aplicando tus conocimientos en un entorno global dinámico y en constante evolución.",
+  "fuente": "https://www.uao.edu.co/programa/mercadeo-y-negocios-internacionales/",
+  "revisar": false
+ },
+ {
+  "id": "mercadeo-y-negocios-internacionales-materias",
+  "tipo": "materias",
+  "programa": "Mercadeo y Negocios Internacionales",
+  "titulo": "Mercadeo y Negocios Internacionales: plan de estudios",
+  "texto": "El programa se extiende a lo largo de 8 periodos académicos, otorgando un total de 143 créditos académicos. Comenzarás con materias fundamentales como Estadística y Economía y Finanzas, mientras que en semestres avanzados, te enfocarás en Mercadeo y Negocios Internacionales, Investigación Aplicada y Tecnologías y Comunicaciones. También desarrollarás habilidades investigativas y creativas a través de cursos como la Investigación Creativa e Innovadora.",
+  "fuente": "https://www.uao.edu.co/programa/mercadeo-y-negocios-internacionales/",
+  "revisar": true,
+  "faltan": [
+   "Economía y Finanzas"
+  ]
+ },
+ {
+  "id": "narrativas-y-entretenimiento-digital-perfil",
+  "tipo": "perfil",
+  "programa": "Narrativas y Entretenimiento Digital",
+  "titulo": "Narrativas y Entretenimiento Digital: para quién es",
+  "texto": "Buscamos jóvenes creativos, curiosos y apasionados que quieran transformar ideas en historias interactivas e inmersivas. Si amas la producción audiovisual, los videojuegos, la creación de contenidos, las redes sociales, la escritura de ficción, el diseño o la tecnología, esta carrera es para ti. El programa está diseñado para formar profesionales capaces de conectar con audiencias a través de diversas plataformas y formatos, aprovechando las últimas herramientas y tecnologías del entretenimiento digital.",
+  "fuente": "https://www.uao.edu.co/programa/narrativas-y-entretenimiento-digital/",
+  "revisar": false
+ },
+ {
+  "id": "narrativas-y-entretenimiento-digital-egresado",
+  "tipo": "egresado",
+  "programa": "Narrativas y Entretenimiento Digital",
+  "titulo": "Narrativas y Entretenimiento Digital: qué hace el egresado",
+  "texto": "Al graduarte como Profesional en Narrativas y Entretenimiento Digital, estarás preparado para trabajar en agencias de medios, empresas de entretenimiento o entidades públicas, integrando equipos de comunicación y marketing. También podrás emprender proyectos propios de creación de contenido digital, liderar equipos en el desarrollo de videojuegos, experiencias inmersivas o proyectos audiovisuales, y fortalecer la comunicación digital de organizaciones con soluciones innovadoras.",
+  "fuente": "https://www.uao.edu.co/programa/narrativas-y-entretenimiento-digital/",
+  "revisar": false
+ },
+ {
+  "id": "narrativas-y-entretenimiento-digital-materias",
+  "tipo": "materias",
+  "programa": "Narrativas y Entretenimiento Digital",
+  "titulo": "Narrativas y Entretenimiento Digital: plan de estudios",
+  "texto": "El programa se imparte en un período de 8 periodos académicos, otorgando un total de 144 créditos académicos. En el primer y segundo semestre, te enfocarás en materias como Diseño Digital, Introducción a la Programación, Teoría de la Comunicación y Producción Audiovisual Básica. En los semestres siguientes, profundizarás en áreas como Desarrollo de Videojuegos, Marketing Digital, Diseño de Experiencias Inmersivas y Narrativas Multiformato.",
+  "fuente": "https://www.uao.edu.co/programa/narrativas-y-entretenimiento-digital/",
+  "revisar": true,
+  "faltan": [
+   "Diseño Digital",
+   "Introducción a la Programación",
+   "Teoría de la Comunicación",
+   "Producción Audiovisual Básica",
+   "Desarrollo de Videojuegos",
+   "Marketing Digital",
+   "Diseño de Experiencias Inmersivas",
+   "Narrativas Multiformato",
+   "Realidad Virtual y Aumentada",
+   "Gestión de Proyectos Creativos"
+  ]
+ },
+ {
+  "id": "psicologia-perfil",
+  "tipo": "perfil",
+  "programa": "Psicología",
+  "titulo": "Psicología: para quién es",
+  "texto": "El programa de Psicología de la UAO está diseñado para aspirantes con una vocación de servicio y un interés genuino en comprender el comportamiento humano. Busca desarrollar habilidades de comunicación, escucha y reflexión, además de fomentar una sensibilidad para analizar tanto los propios como el entorno. Este programa te permitirá contribuir a la transformación social y económica del país, aplicando conocimientos sólidos en diversos campos de la psicología.",
+  "fuente": "https://www.uao.edu.co/programa/psicologia/",
+  "revisar": false
+ },
+ {
+  "id": "psicologia-egresado",
+  "tipo": "egresado",
+  "programa": "Psicología",
+  "titulo": "Psicología: qué hace el egresado",
+  "texto": "Al graduarte como Psicólogo de la UAO, serás un profesional ético, innovador y socialmente responsable, capaz de analizar problemáticas psicosociales a nivel local y global. Podrás intervenir en campos como la Clínica y de la Salud, la Educativa, la Social Comunitaria, la Organizacional y del Trabajo, desarrollando propuestas de valor para el bienestar humano en un mundo en constante cambio, influenciado por las nuevas tecnologías.",
+  "fuente": "https://www.uao.edu.co/programa/psicologia/",
+  "revisar": false
+ },
+ {
+  "id": "psicologia-materias",
+  "tipo": "materias",
+  "programa": "Psicología",
+  "titulo": "Psicología: plan de estudios",
+  "texto": "El programa se imparte en un total de 139 créditos académicos distribuidos en 8 periodos académicos. En el primer ciclo, adquirirás conocimientos básicos en Introducción a la Psicología, Psicobiología y Teorías Socioculturales. En el segundo ciclo, profundizarás en Psicología Comunitaria, Psicología del Consumidor y Psicología Educativa. El tercer ciclo se centra en Psicología Clínica, Entrevista Clínica y Psicología Social, además de Neurociencias y Procesos Psicológicos.",
+  "fuente": "https://www.uao.edu.co/programa/psicologia/",
+  "revisar": false
+ },
+ {
+  "id": "publicidad-en-medios-digitales-perfil",
+  "tipo": "perfil",
+  "programa": "Publicidad en Medios Digitales",
+  "titulo": "Publicidad en Medios Digitales: para quién es",
+  "texto": "Este programa de Publicidad en Medios Digitales está diseñado para personas creativas, apasionadas por el arte y con una mentalidad disruptiva. Si te interesa contribuir al crecimiento de marcas y organizaciones, y te atraen los desafíos de la comunicación en el mundo digital, esta carrera es para ti. El objetivo es formar profesionales capaces de desarrollar estrategias publicitarias innovadoras y efectivas en diversos entornos online y offline.",
+  "fuente": "https://www.uao.edu.co/programa/publicidad-en-medios-digitales/",
+  "revisar": false
+ },
+ {
+  "id": "publicidad-en-medios-digitales-egresado",
+  "tipo": "egresado",
+  "programa": "Publicidad en Medios Digitales",
+  "titulo": "Publicidad en Medios Digitales: qué hace el egresado",
+  "texto": "Al graduarte, serás un publicista UAO con la capacidad de resolver problemas publicitarios de forma estratégica, utilizando la investigación y entendiendo las expectativas de los consumidores. Podrás trabajar en el posicionamiento de marcas, desarrollar propuestas publicitarias responsables y crear contenido multiformato para medios digitales y tradicionales, además de gestionar campañas publicitarias y explorar nuevas tecnologías como el e-commerce y el influencer marketing.",
+  "fuente": "https://www.uao.edu.co/programa/publicidad-en-medios-digitales/",
+  "revisar": false
+ },
+ {
+  "id": "publicidad-en-medios-digitales-materias",
+  "tipo": "materias",
+  "programa": "Publicidad en Medios Digitales",
+  "titulo": "Publicidad en Medios Digitales: plan de estudios",
+  "texto": "El programa se extiende a lo largo de 8 semestres, otorgando un total de 144 créditos académicos. En el primer y segundo semestres, te enfocarás en los Fundamentos en medios online y offline, Diseño publicitario y Marketing y publicidad. En los semestres siguientes, estudiarás Gráfica digital, Comunicación oral y escrita, y Fundamentos de publicidad.",
+  "fuente": "https://www.uao.edu.co/programa/publicidad-en-medios-digitales/",
+  "revisar": true,
+  "faltan": [
+   "Gráfica digital",
+   "Estrategia y planificación de medios",
+   "Publicidad para e-commerce"
+  ]
+ },
+ {
+  "id": "publicidad-en-medios-digitales-laboratorios",
+  "tipo": "laboratorios",
+  "programa": "Publicidad en Medios Digitales",
+  "titulo": "Publicidad en Medios Digitales: laboratorios",
+  "texto": "Durante tu formación, tendrás acceso al laboratorio Publilab, donde podrás analizar contextos y desarrollar soluciones estratégicas. También trabajarás con espacios de práctica para la creación de contenidos digitales y la gestión de campañas publicitarias. Además, utilizaremos laboratorios para el estudio de la fotografía publicitaria y el diseño web.",
+  "fuente": "https://www.uao.edu.co/programa/publicidad-en-medios-digitales/",
+  "revisar": false
+ },
+ {
+  "id": "publicidad-virtual-perfil",
+  "tipo": "perfil",
+  "programa": "Publicidad en Medios Digitales – Virtual",
+  "titulo": "Publicidad en Medios Digitales – Virtual: para quién es",
+  "texto": "Este programa de Publicidad en Medios Digitales Virtual está pensado para personas con una gran interés en la comunicación, el marketing y las nuevas tecnologías. Si te atrae la idea de crear campañas publicitarias innovadoras para empresas y marcas, y tienes habilidades analíticas y creativas, este curso es ideal para ti. Se busca que los aspirantes tengan una predisposición a aprender y adaptarse a los constantes cambios del mundo digital.",
+  "fuente": "https://www.uao.edu.co/programa/publicidad-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "publicidad-virtual-egresado",
+  "tipo": "egresado",
+  "programa": "Publicidad en Medios Digitales – Virtual",
+  "titulo": "Publicidad en Medios Digitales – Virtual: qué hace el egresado",
+  "texto": "Al graduarte, serás un profesional capacitado para gestionar campañas de marketing digital, analizar datos de audiencias, diseñar estrategias de comunicación y trabajar en empresas de diversos sectores. Podrás desempeñarte como gestor de marcas, analista de marketing digital, consultor de comunicación estratégica o especialista en comercio electrónico, adaptándote a las necesidades de mercados globales y organizaciones de cualquier tipo.",
+  "fuente": "https://www.uao.edu.co/programa/publicidad-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "publicidad-virtual-materias",
+  "tipo": "materias",
+  "programa": "Publicidad en Medios Digitales – Virtual",
+  "titulo": "Publicidad en Medios Digitales – Virtual: plan de estudios",
+  "texto": "El programa tiene una duración de 144 créditos académicos, distribuidos en 8 períodos académicos, cada uno dividido en 3 ciclos bimestrales. En los primeros semestres, te enfocarás en materias como Estrategias de Marketing Digital, Análisis de Datos para el Marketing, Diseño de Campañas en Redes Sociales y Fundamentos de la Comunicación Digital.",
+  "fuente": "https://www.uao.edu.co/programa/publicidad-virtual/",
+  "revisar": true,
+  "faltan": [
+   "Análisis de Datos para el Marketing",
+   "Diseño de Campañas en Redes Sociales",
+   "Fundamentos de la Comunicación Digital",
+   "Publicidad en Motores de Búsqueda",
+   "Gestión de la Reputación Online",
+   "Marketing de Contenidos",
+   "Medición de Resultados",
+   "Marketing de Influencia"
+  ]
+ },
+ {
+  "id": "uao-labs-laboratorios-uao-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Acceso a Laboratorios 24/7",
+  "texto": "Laboratorios UAO ofrece un servicio excepcional para estudiantes que requieren espacio y recursos para sus proyectos académicos y de investigación. Puedes acceder a laboratorios de ingeniería y ciencias básicas las veinticuatro horas del día, lo cual te brinda la flexibilidad necesaria para trabajar en tus proyectos en cualquier momento. Para reservar un laboratorio en jornada extendida, te invitamos a ingresar a nuestra plataforma de reservas online.",
+  "fuente": "https://www.uao.edu.co/uao-labs/laboratorios-uao/",
+  "revisar": false
+ },
+ {
+  "id": "uao-labs-laboratorios-uao-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Préstamo de Equipamiento Virtual",
+  "texto": "El proceso de préstamo de equipos en Laboratorios UAO es completamente digital y accesible desde tu computadora o dispositivo móvil. Puedes solicitar y retirar los elementos de laboratorio siguiendo un procedimiento sencillo y detallado. Asegúrate de consultar el paso a paso y diligenciar el formulario de reserva para asegurar el acceso a los equipos que necesitas para tus estudios.",
+  "fuente": "https://www.uao.edu.co/uao-labs/laboratorios-uao/",
+  "revisar": false
+ },
+ {
+  "id": "uao-labs-laboratorios-uao-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Reservas Diurnas: Portal Único",
+  "texto": "Reservar un laboratorio durante el horario diurno es muy fácil a través de nuestro Portal de Reservas. Este portal te permite seleccionar el laboratorio que necesitas y confirmar tu reserva de manera rápida y eficiente. Si requieres asistencia, puedes contactar a la Dirección Administrativa de Laboratorios a través de correo electrónico o llamando al número de extensión proporcionado.",
+  "fuente": "https://www.uao.edu.co/uao-labs/laboratorios-uao/",
+  "revisar": false
+ },
+ {
+  "id": "uao-labs-laboratorios-uao-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Laboratorios Especializados y Servicios",
+  "texto": "La infraestructura de Laboratorios UAO abarca 78 laboratorios distribuidos en 5.840 metros cuadrados, equipados con tecnología de punta y personal altamente capacitado. Dentro de estos laboratorios encontrarás espacios dedicados a la experimentación, la investigación y el desarrollo, incluyendo laboratorios de bioprocesos, química y ciencias ambientales.",
+  "fuente": "https://www.uao.edu.co/uao-labs/laboratorios-uao/",
+  "revisar": false
+ },
+ {
+  "id": "bienestar-universitario-1-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Actividades Culturales y Deportivas",
+  "texto": "La Universidad Autónoma de Occidente ofrece una amplia gama de actividades para tu desarrollo personal y social. Puedes participar en eventos culturales y artísticos, así como en deportes como tenis de campo. Además, existen programas deportivos y de salud disponibles para fomentar un estilo de vida activo y saludable dentro de la comunidad universitaria. ¡No dejes pasar estas oportunidades!",
+  "fuente": "https://www.uao.edu.co/bienestar-universitario-1/",
+  "revisar": false
+ },
+ {
+  "id": "bienestar-universitario-1-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Servicios de Bienestar 360°",
+  "texto": "Bienestar 360° es una ventana a la oferta de programas y servicios que la Universidad Autónoma de Occidente tiene para su Comunidad Universitaria. A través de este programa, puedes acceder a diversas iniciativas diseñadas para apoyar tu bienestar integral, incluyendo actividades culturales, deportivas y de desarrollo personal, buscando el desarrollo humano y social.",
+  "fuente": "https://www.uao.edu.co/bienestar-universitario-1/",
+  "revisar": false
+ },
+ {
+  "id": "bienestar-universitario-1-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Espacios de Apoyo y Orientación",
+  "texto": "El Centro para la Excelencia Académica y el Centro de Bienestar Universitario están ubicados en el primer piso del Edificio de Bienestar en el campus de la Universidad Autónoma de Occidente. Nuestro horario de atención es de lunes a viernes de 8:00 a.m. a 9:30 p.m. y los sábados de 9:00 a.m. a 1:00 p.m., donde te brindamos apoyo y orientación.",
+  "fuente": "https://www.uao.edu.co/bienestar-universitario-1/",
+  "revisar": false
+ },
+ {
+  "id": "bienestar-universitario-1-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Cómo Acceder a los Servicios",
+  "texto": "Para acceder a los servicios de Bienestar Universitario, puedes comunicarte con nosotros a través del teléfono PBX 602 318 8000 ext. 13055 o por correo electrónico a [email protected]  También puedes visitar nuestro espacio en el Edificio de Bienestar, primer piso, y completar un formulario para compartir tus inquietudes y necesidades.",
+  "fuente": "https://www.uao.edu.co/bienestar-universitario-1/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Talleres Creativos y de Exploración",
+  "texto": "En la Escuela de Arte y Cultura de la UAO, encontrarás una amplia gama de talleres diseñados para estimular tu creatividad y tu interés por la diversidad cultural. Participa en actividades como baile, música, pintura o teatro, donde podrás aprender nuevas habilidades y desarrollar tu expresión artística en un ambiente lúdico y de aprendizaje colectivo.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Espacios de Aprendizaje y Experimentación",
+  "texto": "La universidad ofrece espacios dedicados a la experimentación artística y musical, como un laboratorio experimental de música y un ensamble coral. Estos entornos propician el aprendizaje individual y colectivo, permitiéndote explorar diferentes géneros musicales y formas de expresión artística, fomentando la colaboración y el desarrollo de tus talentos.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Participa en Actividades Culturales",
+  "texto": "La Escuela de Arte y Cultura organiza diversas actividades culturales, incluyendo clases de baile popular, como salsa, merengue y bachata, así como talleres de teatro y música de cámara. Aprovecha estas oportunidades para sumergirte en la cultura y conocer a otros estudiantes con intereses similares, disfrutando de un tiempo de esparcimiento y aprendizaje.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Acceso a Servicios de Apoyo",
+  "texto": "Para facilitar tu experiencia en la Escuela de Arte y Cultura, contamos con un equipo de bienestar universitario disponible para ofrecerte apoyo y orientación. Puedes contactarlos por teléfono o correo electrónico, y completar un formulario para compartir tus inquietudes y recibir asesoramiento personalizado, buscando siempre el mejor ambiente para tu desarrollo.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-danza-contemporanea-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Explorando el Movimiento",
+  "texto": "El taller de danza contemporánea busca crear un diálogo entre el cuerpo, la emoción y la música. Se centra en el lenguaje corporal y la experimentación con la fonética, ofreciendo un espacio para la integración artística y el autodescubrimiento. Las clases exploran diversas técnicas y estilos, fomentando la expresión individual y la conexión con el espectador.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/danza-contemporanea/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-danza-contemporanea-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Apoyo al Estudiante",
+  "texto": "Para tu bienestar, la Universidad Autónoma de Occidente ofrece servicios de apoyo a través del Edificio de Bienestar, ubicado en el segundo piso del campus. Nuestro equipo está disponible de lunes a viernes, de 8:00 a.m. a 5:30 p.m., para ayudarte con cualquier inquietud que puedas tener y facilitar tu experiencia académica y personal.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/danza-contemporanea/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-danza-contemporanea-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Participa en la UAO",
+  "texto": "Como parte de la Universidad Autónoma de Occidente, te invitamos a participar en eventos importantes como la Feria Laboral, que se celebrará el 23 de septiembre de 2026. Además, te informamos sobre oportunidades de formación continua y programas de Master Training, que se volverán a ofrecer en octubre.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/danza-contemporanea/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-danza-contemporanea-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Contacto y Asesoramiento",
+  "texto": "Si necesitas ayuda o tienes alguna pregunta, puedes contactar con el equipo de Bienestar Universitario a través del teléfono PBX +2 318 8000 Ext. 13111 o 13038, o enviando un correo electrónico a [email protected]  También puedes completar un formulario en línea para compartir tus inquietudes y recibir orientación.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/danza-contemporanea/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-expresion-artistica-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Explorando la Creatividad",
+  "texto": "En el espacio de Expresión Artística de la Universidad Autónoma de Occidente, podrás desarrollar tu creatividad a través de actividades como la pintura, el teatro, la danza y el uso de plastilina. Este entorno está diseñado para estimular tu imaginación y ayudarte a adquirir o fortalecer habilidades manuales y corporales, ofreciendo un espacio seguro y divertido para explorar tu potencial artístico.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/expresion-artistica/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-expresion-artistica-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Servicios de Apoyo Creativo",
+  "texto": "El equipo de Bienestar Universitario está disponible para brindarte apoyo en tu desarrollo creativo. Puedes contactarlos por teléfono al PBX +2 318 8000 Ext. 13111 o 13038, o enviando un correo electrónico a [email protected]  También puedes acudir al Edificio de Bienestar en el segundo piso, de lunes a viernes, de 8:00 a.m. a 5:30 p.m.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/expresion-artistica/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-expresion-artistica-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Participación en Eventos Universitarios",
+  "texto": "La Universidad Autónoma de Occidente te invita a participar en eventos importantes como la Feria Laboral, que se celebrará el 23 de septiembre de 2026. Además, no te pierdas la experiencia UAO – RCN, con el Master Training que regresa en octubre. Mantente al tanto de las novedades y oportunidades que ofrece nuestra comunidad.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/expresion-artistica/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-expresion-artistica-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Espacios para la Experimentación",
+  "texto": "El espacio de Expresión Artística ofrece un entorno propicio para la experimentación con diversas manifestaciones artísticas. Este lugar está pensado para que hijos e hijas de colaboradores, docentes y estudiantes puedan desarrollar sus habilidades y explorar su creatividad de manera libre y estimulante, fomentando el desarrollo personal.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/expresion-artistica/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-iniciacion-musical-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Explora tu Talento Musical",
+  "texto": "El taller de Iniciación Musical está diseñado para niños y niñas que deseen descubrir sus habilidades artísticas. Tendrás la oportunidad de experimentar con diversos instrumentos musicales, fomentando tu creatividad y expresión personal. Este programa es especialmente atractivo para hijos de colaboradores, docentes o estudiantes de la Universidad Autónoma de Occidente.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/iniciacion-musical/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-iniciacion-musical-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Participa en la Feria Laboral",
+  "texto": "Si eres egresado de la Universidad Autónoma de Occidente, no te pierdas la 15ª Feria Laboral que se llevará a cabo el 23 de septiembre de 2026. Esta es una excelente oportunidad para conectar con empresas y explorar diferentes opciones profesionales, representando el sello de calidad de nuestra institución.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/iniciacion-musical/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-iniciacion-musical-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Servicios de Bienestar Universitario",
+  "texto": "El Edificio de Bienestar, ubicado en el segundo piso del campus, ofrece apoyo y recursos para estudiantes y personal. Puedes contactar al teléfono PBX +2 318 8000 Ext. 13111 - 13038 o enviar un correo electrónico a [email protected] para obtener información y apoyo en tus necesidades.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/iniciacion-musical/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-iniciacion-musical-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Acceso a la Experiencia UAO",
+  "texto": "La Universidad Autónoma de Occidente te invita a participar en eventos como la experiencia UAO – RCN, que regresa en octubre. Mantente atento a las novedades y a las oportunidades de desarrollo profesional que se presenten, fortaleciendo el compromiso de nuestra comunidad académica y de apoyo.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/iniciacion-musical/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-salsa-cabaret-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Explora la Salsa Cabaret",
+  "texto": "El taller de Salsa Cabaret te invita a sumergirte en un mundo de ritmos vibrantes como el cha cha chá, el boogalo y la pachanga. Aprenderás la técnica y la disciplina necesarias para dominar estos estilos de baile, disfrutando de una experiencia llena de energía y diversión. Es una oportunidad única para desarrollar tu expresión corporal y tu pasión por la música latina.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/salsa-cabaret/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-salsa-cabaret-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Servicios de Bienestar Universitario",
+  "texto": "El Edificio de Bienestar, ubicado en el segundo piso del campus, es tu punto de contacto para recibir apoyo y orientación. Nuestro equipo de atención está disponible de lunes a viernes, de 8:00 a.m. a 5:30 p.m., para ayudarte con cualquier inquietud que puedas tener. También puedes contactarnos por teléfono o correo electrónico.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/salsa-cabaret/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-salsa-cabaret-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Participa en Eventos UAO",
+  "texto": "La Universidad Autónoma de Occidente te ofrece la oportunidad de participar en eventos importantes como la Feria Laboral, donde podrás conectar con empresas y explorar opciones profesionales. Además, no te pierdas el Master Training en octubre, una experiencia formativa que te permitirá adquirir nuevas habilidades y conocimientos en un entorno colaborativo.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/salsa-cabaret/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-salsa-cabaret-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Información sobre la UAO",
+  "texto": "Para obtener información detallada sobre la Universidad Autónoma de Occidente, incluyendo su sello y proyectos, te invitamos a consultar las noticias y comunicados oficiales. También puedes compartir tus experiencias y opiniones completando el formulario de contacto, contribuyendo así a mejorar nuestra comunidad académica y a fortalecer nuestra identidad como #SomosUAO.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/salsa-cabaret/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-teatro-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Explorando el Taller de Teatro",
+  "texto": "El taller de teatro de la Universidad Autónoma de Occidente te invita a descubrir tu creatividad a través de ejercicios de actuación e improvisación. Se centra en construir puestas escenográficas, utilizando tu cuerpo como herramienta para la expresión y la acción. El programa se basa en el juego y la imaginación, ofreciéndote la oportunidad de desarrollar tus habilidades artísticas en un ambiente estimulante y colaborativo.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/teatro/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-teatro-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Participación en Eventos Profesionales",
+  "texto": "Como egresado del taller de teatro, tendrás la oportunidad de participar en eventos importantes de la Universidad. Te invitamos a la Feria Laboral UAO, que se celebrará el 23 de septiembre de 2026, donde podrás mostrar tus talentos y conectar con profesionales del sector. Además, estarás al tanto de las novedades de Educación Continua y del Master Training.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/teatro/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-teatro-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Servicios de Bienestar Universitario",
+  "texto": "El Edificio de Bienestar, ubicado en el segundo piso del campus, ofrece servicios de apoyo para estudiantes. Puedes contactar al teléfono PBX +2 318 8000 Ext. 13111 - 13038 o enviar un correo electrónico a [email protected]  El horario de atención es de lunes a viernes, de 8:00 a.m. a 5:30 p.m., para resolver tus inquietudes.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/teatro/",
+  "revisar": false
+ },
+ {
+  "id": "arte-y-cultura-teatro-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Acceso al Taller y al Bienestar",
+  "texto": "Para acceder al taller de teatro, te indicamos que se encuentra en el Edificio de Bienestar, en el segundo piso del campus. Asimismo, el servicio de Bienestar Universitario está disponible para ti durante el horario de atención, que es de lunes a viernes, de 8:00 a.m. a 5:30 p.m. Te recomendamos completar el formulario de contacto para compartir tus necesidades.",
+  "fuente": "https://www.uao.edu.co/arte-y-cultura/teatro/",
+  "revisar": false
+ },
+ {
+  "id": "biblioteca-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Atención Personalizada en CRAI",
+  "texto": "El equipo del CRAI, encabezado por el director Hugo Alberto Gallo Machado, está disponible para asesorarte en tus necesidades. Puedes contactarlos directamente por teléfono a través del PBX 6022 318 8000 o enviando un correo electrónico a [email protected]  Nos interesa saber cómo podemos ayudarte, así que no dudes en compartir tus inquietudes a través del formulario disponible en nuestras instalaciones.",
+  "fuente": "https://www.uao.edu.co/biblioteca/",
+  "revisar": false
+ },
+ {
+  "id": "biblioteca-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Espacios Reservados para tu Trabajo",
+  "texto": "En CRAI, facilitamos el acceso a espacios de trabajo equipados. Puedes reservar salas y equipos de manera sencilla a través de nuestros recursos digitales. Nuestro objetivo es optimizar tu experiencia, por lo que te recomendamos explorar las opciones de reserva y los tutoriales disponibles para aprovechar al máximo nuestros servicios en el ala sur del campus.",
+  "fuente": "https://www.uao.edu.co/biblioteca/",
+  "revisar": false
+ },
+ {
+  "id": "biblioteca-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Recursos Digitales a tu Alcance",
+  "texto": "CRAI ofrece una amplia gama de recursos digitales para apoyar tu aprendizaje y trabajo. Puedes acceder a tutoriales y guías que te ayudarán a utilizar nuestros servicios de manera eficiente. Además, el catálogo y la renovación de materiales están disponibles para tu consulta, facilitando el acceso a la información que necesitas en el campus.",
+  "fuente": "https://www.uao.edu.co/biblioteca/",
+  "revisar": false
+ },
+ {
+  "id": "biblioteca-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Horario de Atención y Ubicación",
+  "texto": "Nuestro equipo de CRAI te atiende de lunes a viernes, de 8:00 a. m. a 5:30 p. m., en el ala sur del primer piso de la Universidad Autónoma de Occidente. Estamos comprometidos en brindarte el mejor apoyo, por lo que te invitamos a visitarnos y explorar los servicios que ofrecemos para tu desarrollo académico y profesional.",
+  "fuente": "https://www.uao.edu.co/biblioteca/",
+  "revisar": false
+ },
+ {
+  "id": "nuestro-campus-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Actividades y Eventos UAO",
+  "texto": "La Universidad Autónoma de Occidente te ofrece una amplia gama de actividades para estudiantes. Participa en la Feria Laboral UAO, que se llevará a cabo el 23 de septiembre de 2026, y descubre oportunidades profesionales. Además, no te pierdas la experiencia UAO – RCN en el Master Training de octubre, una excelente oportunidad para el desarrollo de tus habilidades.",
+  "fuente": "https://www.uao.edu.co/nuestro-campus/",
+  "revisar": false
+ },
+ {
+  "id": "nuestro-campus-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Servicios de Apoyo al Estudiante",
+  "texto": "Para tu bienestar académico y personal, la UAO cuenta con diversos servicios. Puedes encontrar información y apoyo en el Edificio Ala sur, ubicado en el piso 4 de la institución. Nuestro equipo de atención está disponible de lunes a viernes, de 8:00 a. m. a 6:00 p. m., para ayudarte en lo que necesites.",
+  "fuente": "https://www.uao.edu.co/nuestro-campus/",
+  "revisar": false
+ },
+ {
+  "id": "nuestro-campus-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Explora el Campus UAO",
+  "texto": "Conoce nuestro campus sostenible a través de un recorrido virtual 360 grados. También puedes consultar el mapa del campus para orientarte fácilmente. La UAO promueve el compromiso social y ambiental, y te invitamos a participar en las acciones que impulsamos como comunidad universitaria.",
+  "fuente": "https://www.uao.edu.co/nuestro-campus/",
+  "revisar": false
+ },
+ {
+  "id": "nuestro-campus-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Contacto y Asesoramiento",
+  "texto": "Si necesitas ayuda o tienes alguna pregunta, puedes contactar con el departamento de comunicaciones de la UAO. Nuestro teléfono es el +2 318 8000 y nuestro correo electrónico es [email protected]. Estamos comprometidos en brindarte el mejor apoyo para tu trayectoria académica y profesional en la UAO.",
+  "fuente": "https://www.uao.edu.co/nuestro-campus/",
+  "revisar": false
+ },
+ {
+  "id": "opciones-de-internacionalizacion-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Contacto y Asesoramiento Inicial",
+  "texto": "El Departamento de Comunicaciones está a tu disposición para orientarte en tus planes de internacionalización. Puedes contactarlos por teléfono al 318 8000 o enviando un correo electrónico a [email protected]  Te atenderán de lunes a viernes, de 8:00 a. m. a 6:00 p. m., en el Edificio Ala norte, piso 1, área de admisiones. Si tienes dudas, completa el formulario de contacto para recibir asesoramiento personalizado.",
+  "fuente": "https://www.uao.edu.co/opciones-de-internacionalizacion/",
+  "revisar": false
+ },
+ {
+  "id": "opciones-de-internacionalizacion-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Servicios de Información y Orientación",
+  "texto": "En el departamento de admisiones, te brindan información detallada sobre las diversas opciones de internacionalización que ofrece la Universidad Autónoma de Occidente. Recibirás orientación sobre los requisitos de admisión, los programas disponibles y los trámites necesarios para estudiar en el extranjero. Su horario de atención es de lunes a viernes, de 8:00 a. m. a 6:00 p. m.",
+  "fuente": "https://www.uao.edu.co/opciones-de-internacionalizacion/",
+  "revisar": false
+ },
+ {
+  "id": "opciones-de-internacionalizacion-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Ubicación y Acceso al Departamento",
+  "texto": "Para acceder al Departamento de Comunicaciones, dirígete al Edificio Ala norte, ubicado en el piso 1. El área de admisiones es el punto de contacto principal. El departamento está abierto de lunes a viernes, de 8:00 a. m. a 6:00 p. m.,  y te espera para ayudarte a dar los primeros pasos en tu aventura académica internacional.",
+  "fuente": "https://www.uao.edu.co/opciones-de-internacionalizacion/",
+  "revisar": false
+ },
+ {
+  "id": "opciones-de-internacionalizacion-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Comunicación y Feedback",
+  "texto": "El departamento utiliza herramientas de análisis de datos para mejorar sus servicios y optimizar la experiencia de los estudiantes. Además, te invitan a compartir tus ideas y sugerencias a través de un formulario de contacto. Su objetivo es ofrecerte un apoyo integral y personalizado en tu proceso de internacionalización.",
+  "fuente": "https://www.uao.edu.co/opciones-de-internacionalizacion/",
+  "revisar": false
+ },
+ {
+  "id": "investigaciones-uao-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Equipo de Apoyo a la Innovación",
+  "texto": "El equipo de la Vicerrectoría de Investigaciones, Innovación y Emprendimiento está a tu disposición para explorar tus ideas y proyectos. Conocemos a Jesús David Cardona Quiroz, Vicerrector, y su equipo, quienes te guiarán en el camino de la investigación y el emprendimiento. Puedes contactarlos a través del teléfono 602 318 8000, ext. 11601 o por correo electrónico.",
+  "fuente": "https://www.uao.edu.co/investigaciones-uao/",
+  "revisar": false
+ },
+ {
+  "id": "investigaciones-uao-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Servicios de Innovación y Emprendimiento",
+  "texto": "La Vicerrectoría ofrece servicios para apoyar tu desarrollo en ciencia, tecnología e innovación. Nuestro objetivo es fomentar la investigación y el emprendimiento dentro de la universidad. Estamos comprometidos en ayudarte a convertir tus ideas en proyectos concretos, brindándote el apoyo necesario para alcanzar tus metas académicas y profesionales.",
+  "fuente": "https://www.uao.edu.co/investigaciones-uao/",
+  "revisar": false
+ },
+ {
+  "id": "investigaciones-uao-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Espacios para la Colaboración",
+  "texto": "Disponemos de espacios diseñados para la colaboración y el desarrollo de proyectos innovadores. Estos espacios están preparados para que puedas trabajar en equipo, realizar investigaciones y explorar nuevas ideas. Te invitamos a conocer las instalaciones y a aprovechar al máximo los recursos disponibles para tu desarrollo académico e innovador.",
+  "fuente": "https://www.uao.edu.co/investigaciones-uao/",
+  "revisar": false
+ },
+ {
+  "id": "investigaciones-uao-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Contacto y Asesoramiento",
+  "texto": "Para obtener información más detallada sobre nuestras actividades y servicios, te recomendamos visitar la página de la Vicerrectoría. También puedes contactar directamente al equipo a través del teléfono 602 318 8000, ext. 11601 o por correo electrónico. Estamos aquí para asesorarte en tu camino hacia la innovación.",
+  "fuente": "https://www.uao.edu.co/investigaciones-uao/",
+  "revisar": false
+ },
+ {
+  "id": "deporte-y-recreacion-0",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Actividades Recreativas Variadas",
+  "texto": "La Universidad Autónoma de Occidente ofrece una amplia gama de actividades recreativas para que disfrutes de tu tiempo libre. Puedes participar en deportes como baloncesto, fútbol, tenis de campo o mesa, así como en actividades más dinámicas como rumba aeróbica, porrismo o incluso yoga. Además, existen opciones de senderismo con el club de caminantes y actividades de running para mantenerte activo y saludable en el campus.",
+  "fuente": "https://www.uao.edu.co/deporte-y-recreacion/",
+  "revisar": false
+ },
+ {
+  "id": "deporte-y-recreacion-1",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Centro de Actividad Física y Salud",
+  "texto": "El Centro de Actividad Física y de Salud, CAFS, es un espacio accesible para todos los miembros de la comunidad universitaria, incluyendo estudiantes, colaboradores y egresados. Aquí podrás ejercitarte bajo la guía de instructores competentes, explorando diversas opciones deportivas y promoviendo un estilo de vida saludable y activo dentro del entorno universitario. Es una excelente oportunidad para cuidar tu bienestar físico.",
+  "fuente": "https://www.uao.edu.co/deporte-y-recreacion/",
+  "revisar": false
+ },
+ {
+  "id": "deporte-y-recreacion-2",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Espacios Deportivos y Préstamo de Equipos",
+  "texto": "La UAO cuenta con una variedad de escenarios deportivos diseñados para el aprendizaje, la práctica y la competición de diferentes deportes. Además, el departamento de deporte y recreación ofrece la posibilidad de préstamo de artículos deportivos, permitiéndote participar en encuentros con amigos y disfrutar de actividades recreativas de manera organizada y accesible para todos los miembros de la comunidad universitaria.",
+  "fuente": "https://www.uao.edu.co/deporte-y-recreacion/",
+  "revisar": false
+ },
+ {
+  "id": "deporte-y-recreacion-3",
+  "tipo": "campus",
+  "programa": null,
+  "titulo": "Pausas Activas y Bienestar Universitario",
+  "texto": "Para complementar tu rutina, la UAO ofrece Pausas Activas, sesiones de estiramiento y relajación diseñadas para estudiantes nocturnos, ayudándote a romper la rutina y comenzar tus clases de forma más amena. Además, el departamento de Bienestar Universitario está disponible para brindarte apoyo y orientación en tu camino hacia un estilo de vida saludable y equilibrado.",
+  "fuente": "https://www.uao.edu.co/deporte-y-recreacion/",
+  "revisar": false
+ },
+ {
+  "id": "administracion-virtual-perfil",
+  "tipo": "perfil",
+  "programa": "Administración de Empresas Virtual",
+  "titulo": "Administración de Empresas Virtual: para quién es",
+  "texto": "Este programa de Administración de Empresas Virtual está diseñado para personas que buscan una formación profesional sólida y adaptable a los desafíos del mundo actual. Se dirige a aquellos que tienen interés en comprender y gestionar el cambio en entornos organizacionales complejos, así como a individuos con habilidades para la innovación y el liderazgo. El objetivo es formar profesionales capaces de desarrollar soluciones efectivas ante los desafíos globales y las dinámicas económicas y sociales.",
+  "fuente": "https://www.uao.edu.co/programa/administracion-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "administracion-virtual-egresado",
+  "tipo": "egresado",
+  "programa": "Administración de Empresas Virtual",
+  "titulo": "Administración de Empresas Virtual: qué hace el egresado",
+  "texto": "Al graduarte como Profesional en Administración de Empresas Virtual, estarás preparado para liderar proyectos y programas en organizaciones de diversos sectores. Tendrás las herramientas necesarias para gestionar procesos, analizar datos, desarrollar estrategias y tomar decisiones estratégicas, adaptándote a las nuevas configuraciones del mercado y a las demandas de un entorno empresarial en constante evolución.",
+  "fuente": "https://www.uao.edu.co/programa/administracion-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "administracion-virtual-materias",
+  "tipo": "materias",
+  "programa": "Administración de Empresas Virtual",
+  "titulo": "Administración de Empresas Virtual: plan de estudios",
+  "texto": "El programa de Administración de Empresas Virtual tiene una duración de 140 créditos distribuidos en 8 períodos académicos. En los primeros semestres, te enfocarás en materias como Fundamentos de Administración, Marketing Digital y Contabilidad Financiera. En semestres intermedios, estudiarás Gestión de Operaciones, Finanzas Corporativas y Estrategia Empresarial. Finalmente, en los últimos semestres, profundizarás en temas como Liderazgo Organizacional, Innovación y Desarrollo de Productos, y Administración de Proyectos Virtuales.",
+  "fuente": "https://www.uao.edu.co/programa/administracion-virtual/",
+  "revisar": true,
+  "faltan": [
+   "Fundamentos de Administración",
+   "Marketing Digital",
+   "Contabilidad Financiera",
+   "Gestión de Operaciones",
+   "Finanzas Corporativas",
+   "Estrategia Empresarial",
+   "Liderazgo Organizacional",
+   "Innovación y Desarrollo de Productos",
+   "Administración de Proyectos Virtuales"
+  ]
+ },
+ {
+  "id": "contaduria-publica1-virtual-perfil",
+  "tipo": "perfil",
+  "programa": "Contaduría Pública y Finanzas Virtual",
+  "titulo": "Contaduría Pública y Finanzas Virtual: para quién es",
+  "texto": "Este programa de Contaduría Pública y Finanzas es ideal para aquellos que sienten una gran atracción por el mundo de los negocios, las finanzas y la administración. Se busca formar profesionales con habilidades analíticas y estratégicas, capaces de interpretar datos, optimizar procesos y tomar decisiones financieras importantes para el crecimiento de cualquier organización. Si te interesa el control de costos, la gestión de recursos y la planificación fiscal, este programa es tu oportunidad.",
+  "fuente": "https://www.uao.edu.co/programa/contaduria-publica1-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "contaduria-publica1-virtual-egresado",
+  "tipo": "egresado",
+  "programa": "Contaduría Pública y Finanzas Virtual",
+  "titulo": "Contaduría Pública y Finanzas Virtual: qué hace el egresado",
+  "texto": "Al graduarte como Profesional en Contaduría Pública y Finanzas, estarás preparado para asumir roles de liderazgo en áreas como la auditoría, la gestión financiera y el control de operaciones. Tendrás la capacidad de dirigir procesos contables, realizar dictámenes sobre estados financieros y brindar asesoría tributaria, contribuyendo al buen funcionamiento y la sostenibilidad de las empresas. Además, podrás ejercer la revisoría fiscal y gestionar proyectos financieros con un enfoque estratégico.",
+  "fuente": "https://www.uao.edu.co/programa/contaduria-publica1-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "contaduria-publica1-virtual-materias",
+  "tipo": "materias",
+  "programa": "Contaduría Pública y Finanzas Virtual",
+  "titulo": "Contaduría Pública y Finanzas Virtual: plan de estudios",
+  "texto": "El programa de 8 Períodos académicos, con 140 créditos, te ofrece una formación completa en contabilidad y finanzas. En los primeros semestres, desarrollarás conceptos fundamentales de Contabilidad Financiera, Auditoría, Derecho Fiscal y Planeación Financiera. En los semestres intermedios, profundizarás en temas como Gestión de Recursos, Control de Gestión y Análisis Financiero.",
+  "fuente": "https://www.uao.edu.co/programa/contaduria-publica1-virtual/",
+  "revisar": true,
+  "faltan": [
+   "Derecho Fiscal",
+   "Planeación Financiera",
+   "Análisis Financiero",
+   "Finanzas Corporativas",
+   "Contabilidad Internacional",
+   "Fiscalidad Internacional"
+  ]
+ },
+ {
+  "id": "ingenieria-informatica-virtual-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Informática Virtual",
+  "titulo": "Ingeniería Informática Virtual: para quién es",
+  "texto": "El programa de Ingeniería Informática Virtual de la Universidad Autónoma de Occidente está diseñado para personas con una gran interés en la tecnología y la resolución de problemas. Si te gusta la lógica, la programación y tienes habilidades para el análisis y el pensamiento crítico, este es el camino para ti. Se trata de formar profesionales capaces de desarrollar soluciones innovadoras en el campo de la informática, utilizando herramientas y metodologías avanzadas.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-informatica-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-informatica-virtual-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Informática Virtual",
+  "titulo": "Ingeniería Informática Virtual: qué hace el egresado",
+  "texto": "Al graduarte como Ingeniero(a) en Informática, podrás diseñar, desarrollar y mantener sistemas informáticos complejos. Tendrás la capacidad de trabajar en una amplia gama de sectores, desde el desarrollo de software y la seguridad informática hasta la inteligencia artificial y el análisis de datos, contribuyendo a la innovación tecnológica en diversos ámbitos.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-informatica-virtual/",
+  "revisar": false
+ },
+ {
+  "id": "ingenieria-informatica-virtual-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Informática Virtual",
+  "titulo": "Ingeniería Informática Virtual: plan de estudios",
+  "texto": "El programa tiene una duración de 9 períodos académicos, con un total de 174 créditos. Se imparte de forma virtual, ofreciendo una modalidad flexible que te permite estudiar a tu propio ritmo. En los primeros semestres, te enfocarás en fundamentos de programación, matemáticas aplicadas a la informática y estructuras de datos. En semestres intermedios, profundizarás en bases de datos, redes de computadoras y sistemas operativos.",
+  "fuente": "https://www.uao.edu.co/programa/ingenieria-informatica-virtual/",
+  "revisar": true,
+  "faltan": [
+   "Fundamentos de Programación",
+   "Matemáticas Aplicadas a la Informática",
+   "Estructuras de Datos",
+   "Bases de Datos",
+   "Redes de Computadoras",
+   "Sistemas Operativos",
+   "Inteligencia Artificial",
+   "Seguridad Informática",
+   "Desarrollo de Aplicaciones",
+   "Análisis de Datos"
+  ]
+ },
+ {
+  "id": "virtual-ingenieria-industrial-perfil",
+  "tipo": "perfil",
+  "programa": "Ingeniería Industrial Virtual",
+  "titulo": "Ingeniería Industrial Virtual: para quién es",
+  "texto": "El programa de Ingeniería Industrial Virtual de la Universidad Autónoma de Occidente está pensado para personas con una mentalidad innovadora y un gran interés en resolver problemas complejos. Si te apasiona optimizar procesos, mejorar la eficiencia y la productividad de las organizaciones, y te sientes cómodo trabajando en un entorno virtual, esta carrera es ideal para ti.",
+  "fuente": "https://www.uao.edu.co/programa/virtual-ingenieria-industrial/",
+  "revisar": false
+ },
+ {
+  "id": "virtual-ingenieria-industrial-egresado",
+  "tipo": "egresado",
+  "programa": "Ingeniería Industrial Virtual",
+  "titulo": "Ingeniería Industrial Virtual: qué hace el egresado",
+  "texto": "Al graduarte como Ingeniero Industrial, podrás diseñar y optimizar procesos en diversos sectores como manufactura, servicios, logística y calidad. Tendrás la capacidad de liderar proyectos de mejora continua, implementar estrategias de gestión y desarrollar soluciones innovadoras para mejorar la eficiencia y rentabilidad de las organizaciones. Además, estarás preparado para enfrentar los desafíos globales y adaptarte a las nuevas dinámicas del mercado laboral.",
+  "fuente": "https://www.uao.edu.co/programa/virtual-ingenieria-industrial/",
+  "revisar": false
+ },
+ {
+  "id": "virtual-ingenieria-industrial-materias",
+  "tipo": "materias",
+  "programa": "Ingeniería Industrial Virtual",
+  "titulo": "Ingeniería Industrial Virtual: plan de estudios",
+  "texto": "El programa de Ingeniería Industrial Virtual tiene una duración de 155 créditos y se desarrolla en 9 periodos académicos. En los primeros semestres, te enfocarás en materias como Fundamentos de Ingeniería Industrial, Estadística Aplicada y Metodología de la Investigación. En los semestres intermedios, estudiarás Procesos de Producción, Gestión de la Calidad y Control Estadístico de la Calidad. En los últimos semestres, profundizarás en temas como Logística Empresarial, Gestión de Operaciones y Simulación de Procesos.",
+  "fuente": "https://www.uao.edu.co/programa/virtual-ingenieria-industrial/",
+  "revisar": true,
+  "faltan": [
+   "Fundamentos de Ingeniería Industrial",
+   "Estadística Aplicada",
+   "Metodología de la Investigación",
+   "Procesos de Producción",
+   "Gestión de la Calidad",
+   "Control Estadístico de la Calidad",
+   "Logística Empresarial",
+   "Gestión de Operaciones",
+   "Simulación de Procesos"
+  ]
+ }
+]

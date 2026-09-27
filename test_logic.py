@@ -285,6 +285,20 @@ def test_page_text_fixture():
     assert extract.page_title(html) == "Ingeniería Mecatrónica"
 
 
+def test_page_title_without_h1():
+    # Virtual-program pages have no <h1>: the name must come from <title> (SEO text removed),
+    # otherwise the program vanishes from the official list and the agent says it doesn't exist.
+    cases = {
+        "¿Administración de Empresas Virtual – UAO | Gestión y Liderazgo": "Administración de Empresas Virtual",
+        "Contaduría Pública y Finanzas Virtual UAO | Gestión y Planeación": "Contaduría Pública y Finanzas Virtual",
+        "Ingeniería Informática Virtual en la UAO – Carrera en Tecnología.": "Ingeniería Informática Virtual",
+        "Ingeniería Industrial Virtual UAO | Gestión, Producción y Logística": "Ingeniería Industrial Virtual",
+    }
+    for title, name in cases.items():
+        assert extract.page_title(f"<html><head><title>{title}</title></head><body><h2>Archivos</h2></body></html>") == name
+    assert extract.page_title("<html><body><h1>Cine</h1></body></html>") == "Cine"   # <h1> still wins
+
+
 def test_page_text_generic():
     # Review Focus #1: an unknown template must still give its text, minus junk sections.
     html = ("<html><body><h1>Programa X</h1><h2>¿Qué debes saber del programa?</h2><p>Forma líderes.</p>"
