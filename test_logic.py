@@ -20,7 +20,7 @@ import main
 import sentences
 import stt
 import vad
-from knowledge import scrape
+from knowledge import extract, scrape
 
 
 def test_config_profiles_have_same_keys():
@@ -257,6 +257,37 @@ def test_latest_plan_pdf():
     html = FIXTURE.read_text(encoding="utf-8")
     assert scrape.latest_plan_pdf(html).endswith("/2025/01/PLAN-DE-ESTUDIO-ING-METRONICA-2025.pdf")
     assert scrape.latest_plan_pdf("<p>sin pdf</p>") is None
+
+
+def test_strip_prices():
+    text = ("Duración del programa: 9 periodos académicos - 156 créditos académicos "
+            "Valor periodo académico: (16-18 créditos)*: $10.716.000 ** COP Metodología: Presencial "
+            "Horario: Día*. ** Valor sujeto a cambios sin previo aviso. Los valores de matrícula no "
+            "incluyen la Estampilla Procultura. Título: Ingeniero.")
+    out = extract.strip_prices(text)
+    assert "$" not in out and "10.716" not in out and "Estampilla" not in out
+    assert "Metodología: Presencial" in out and "Título: Ingeniero." in out
+    assert "$" not in extract.strip_prices("El semestre vale $ 9.500.000 aprox.")   # space after $
+
+
+def test_page_text_fixture():
+    html = FIXTURE.read_text(encoding="utf-8")
+    t = extract.page_text(html)
+    assert "Si te gusta encontrar la solución" in t      # perfil del aspirante
+    assert "Fab-Lab" in t                                 # labs block (untitled section)
+    assert "Énfasis de Automatización" in t              # perfil del egresado
+    assert "Xpoilers" not in t                            # news section dropped
+    assert "cookies" not in t.lower()                     # faculty/contact section dropped
+    assert "$" not in t and "10.716" not in t            # prices stripped
+    assert extract.page_title(html) == "Ingeniería Mecatrónica"
+
+
+def test_page_text_generic():
+    # Review Focus #1: an unknown template must still give its text, minus junk sections.
+    html = ("<html><body><h1>Programa X</h1><h2>¿Qué debes saber del programa?</h2><p>Forma líderes.</p>"
+            "<h2>Noticias</h2><p>Evento del lunes</p></body></html>")
+    t = extract.page_text(html)
+    assert "Forma líderes." in t and "Evento del lunes" not in t
 
 
 if __name__ == "__main__":
