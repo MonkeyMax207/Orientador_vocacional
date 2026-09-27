@@ -3,9 +3,13 @@
 Run: uv run python test_logic.py
 Each test_* function raises AssertionError if the logic is broken.
 """
+import queue
+import threading
+
 import numpy as np
 
 import animations
+import brain
 import config
 import download_models
 import sentences
@@ -87,6 +91,19 @@ def test_stt_clean():
     assert stt.clean("Eh... mmm") == ""
     assert stt.clean("...") == ""
     assert stt.clean("Sí") == "Sí"                     # short but real answers survive
+
+
+def test_llm_worker_always_ends():
+    # Review Focus #3: if Ollama dies mid-reply, the consumer must still get the None end marker.
+    class Broken:
+        def stream_reply(self, text, stop):
+            yield "Hola"
+            raise ConnectionError("Ollama se cayó")
+
+    q = queue.Queue()
+    brain.llm_worker(Broken(), "hola", q, threading.Event())
+    assert q.get_nowait() == "Hola"
+    assert q.get_nowait() is None
 
 
 if __name__ == "__main__":

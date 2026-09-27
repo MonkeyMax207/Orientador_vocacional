@@ -12,7 +12,9 @@ vad_threshold = 0.5          # Silero speech probability above which a 32 ms chu
 silence_ms = 600             # this much silence ends the user's turn (lower = snappier, but cuts pauses)
 min_speech_ms = 250          # turns with less speech than this are noise (a click, a cough)
 slow_llm_s = 3.0             # no sentence ready this long after the user stopped → play a 2nd filler
-ollama_host = "http://localhost:11434"
+# 127.0.0.1, not "localhost": on Windows "localhost" tries IPv6 (::1) first, Ollama only
+# listens on IPv4, and every request would wait ~2 s for the IPv6 attempt to time out.
+ollama_host = "http://127.0.0.1:11434"
 voice = "es_MX-ald-medium"   # Piper voice file: models/piper/<voice>.onnx
 
 [pc]
