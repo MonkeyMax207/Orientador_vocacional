@@ -9,6 +9,7 @@ import animations
 import config
 import download_models
 import sentences
+import stt
 import vad
 
 
@@ -76,6 +77,16 @@ def test_turn_detector():
     res = feed([s, s, q, q, s, s, q, q, q])
     assert all(r is None for r in res[:-1]) and res[-1] is not None
     assert len(res[-1]) == 9 * 512                                 # the whole thing is ONE turn
+
+
+def test_stt_clean():
+    # Review Focus #1: noise and Whisper's known hallucinations must become "".
+    assert stt.clean("  Me gusta la biología. ") == "Me gusta la biología."
+    assert stt.clean("Subtítulos realizados por la comunidad de Amara.org") == ""
+    assert stt.clean("¡Gracias por ver el video!") == ""
+    assert stt.clean("Eh... mmm") == ""
+    assert stt.clean("...") == ""
+    assert stt.clean("Sí") == "Sí"                     # short but real answers survive
 
 
 if __name__ == "__main__":
