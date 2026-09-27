@@ -20,7 +20,7 @@ import main
 import sentences
 import stt
 import vad
-from knowledge import extract, scrape
+from knowledge import extract, make_cards, scrape
 
 
 def test_config_profiles_have_same_keys():
@@ -298,6 +298,30 @@ def test_page_text_long_heading_is_content():
             "diseño Dibujo II</span></h2>"
             "</body></html>")
     assert "Dibujo II" in extract.page_text(html)
+
+
+def test_missing_names():
+    source = "Primer semestre: Cálculo 1, Álgebra lineal. Laboratorio Fab-Lab."
+    # Accents and case don't matter; an invented name is reported.
+    assert make_cards.missing_names(["calculo 1", "ÁLGEBRA LINEAL", "Robótica Cuántica"], source) == ["Robótica Cuántica"]
+    assert make_cards.missing_names(["", "Fab-Lab"], source) == []
+    # PDF tables split names across lines: whitespace differences must not count as missing.
+    assert make_cards.missing_names(["Algoritmia y programación"], "Algoritmia y\nprogramación") == []
+
+
+def test_labs_only_when_source_mentions_them():
+    # The LLM once turned the course "Neurociencias" into a lab for a page that names no labs.
+    assert make_cards.mentions_labs("Usarás el Fab-Lab y el Laboratorio de Automática")
+    assert not make_cards.mentions_labs("Materias: Neurociencias, Procesos psicológicos, Colaboración")
+    assert not make_cards.mentions_labs("Prepárate para el mundo laboral y sus labores")   # "labor…" ≠ lab
+    assert make_cards.mentions_labs("Contamos con labs de cómputo")
+
+
+def test_trim_words():
+    text = "Uno dos tres cuatro. Cinco seis siete. Ocho nueve diez once doce."
+    assert make_cards.trim_words(text, 7) == "Uno dos tres cuatro. Cinco seis siete."   # whole sentences
+    assert make_cards.trim_words(text, 3) == "Uno dos tres cuatro."                     # keeps at least one
+    assert make_cards.trim_words(text, 99) == text
 
 
 if __name__ == "__main__":
