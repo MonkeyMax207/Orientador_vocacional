@@ -21,7 +21,7 @@ from knowledge.scrape import BASE, CAMPUS, RAW
 
 CARDS = Path(__file__).parent / "cards.json"
 OLLAMA = "http://127.0.0.1:11434"
-BUILD_MODEL = "gemma3:4b"   # the build runs once on the PC's GPU; gemma3 writes good Spanish JSON
+BUILD_MODEL = "gemma3:4b"   # best Spanish cards; llama3.2:3b was faster but copied text verbatim
 
 TITLES = {"perfil": "para quién es", "egresado": "qué hace el egresado",
           "materias": "plan de estudios", "laboratorios": "laboratorios"}
@@ -35,7 +35,7 @@ perfil: para quién es el programa (intereses y habilidades del aspirante) y de 
 egresado: qué puede hacer quien se gradúa.
 materias: duración, créditos, modalidad y algunas materias representativas de los primeros, intermedios y últimos semestres.
 laboratorios: laboratorios y espacios de práctica que mencionan los textos.
-En nombres_materias y nombres_laboratorios copia exactamente los nombres de materias y laboratorios que usaste.
+En nombres_materias y nombres_laboratorios copia exactamente los nombres de materias y laboratorios que usaste (máximo diez en cada lista).
 
 TEXTO DE LA PÁGINA:
 {page}
@@ -136,13 +136,13 @@ def free_gpu() -> None:
 def ask(prompt: str, schema: dict) -> dict:
     # /api/generate with "format": <JSON schema> makes Ollama constrain the output to that schema.
     body = {"model": BUILD_MODEL, "prompt": prompt, "format": schema, "stream": False,
-            "options": {"temperature": 0, "num_ctx": 8192}}
+            "options": {"temperature": 0, "num_ctx": 6144}}   # smaller context = more of the model fits in the GPU
     return json.loads(with_retries(lambda: _post("/api/generate", body))["response"])
 
 
 def program_cards(slug: str, html: str, plan: str) -> list[dict]:
     name, page = page_title(html), page_text(html)
-    out = ask(PROGRAM_PROMPT.format(name=name, page=page[:12000], plan=plan[:8000]), PROGRAM_SCHEMA)
+    out = ask(PROGRAM_PROMPT.format(name=name, page=page[:8000], plan=plan[:5000]), PROGRAM_SCHEMA)
     source = page + "\n" + plan
     cards = []
     for tipo, names_key in (("perfil", None), ("egresado", None),
@@ -165,7 +165,7 @@ def program_cards(slug: str, html: str, plan: str) -> list[dict]:
 
 def campus_cards(path: str, html: str) -> list[dict]:
     title = page_title(html) or path
-    out = ask(CAMPUS_PROMPT.format(title=title, page=page_text(html)[:12000]), CAMPUS_SCHEMA)
+    out = ask(CAMPUS_PROMPT.format(title=title, page=page_text(html)[:8000]), CAMPUS_SCHEMA)
     base_id = path.replace("/", "-")
     return [{"id": f"{base_id}-{i}", "tipo": "campus", "programa": None, "titulo": f["titulo"].strip(),
              "texto": trim_words(f["texto"]), "fuente": f"{BASE}/{path}/", "revisar": False}
