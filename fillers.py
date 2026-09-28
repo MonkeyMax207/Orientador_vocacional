@@ -11,22 +11,11 @@ from audio_io import load_wav, save_wav
 
 FILLER_DIR = Path(__file__).parent / "models" / "fillers"
 
-# Normal fillers: SHORT (under ~1 s), the "mmm" a person makes while thinking. They only play
-# when the answer is late (filler_after_s in config.toml), so they must not delay it further.
-# Only real words: the TTS turns text into phonemes with espeak, which reads "Mmm" as the
-# letter names ("eme eme eme"). Interjections that are words ("Bueno", "Pues") sound natural.
-FILLERS = [
-    "Bueno...",
-    "A ver...",
-    "Pues, a ver...",
-    "Déjame ver...",
-    "Eh, bueno...",
-]
-# Slow fillers: played if the answer still isn't ready after slow_llm_s.
-SLOW_FILLERS = [
-    "Dame un segundito.",
-    "Ya casi, déjame pensar.",
-]
+# "Jum..." plays right when the user stops talking (filler_after_s = 0 in config.toml), together with
+# the "pensar" animation. Only real words/interjections: espeak spells "Mmm" as "eme eme eme".
+FILLERS = ["Jum..."]              # always the same short "thinking" sound (user's choice)
+# Slow filler: only if the answer is still not ready after slow_llm_s.
+SLOW_FILLERS = ["Jum, jum..."]
 
 
 class Fillers:
@@ -35,7 +24,8 @@ class Fillers:
         self.normal = [load_wav(p)[0] for p in sorted(d.glob("filler_*.wav"))]
         self.slow = [load_wav(p)[0] for p in sorted(d.glob("slow_*.wav"))]
         if not self.normal or not self.slow:
-            raise SystemExit(f"Faltan los fillers de '{voice}'. Ejecuta: uv run python fillers.py")
+            raise SystemExit(
+                f"Faltan los fillers de '{voice}'. Ejecuta: uv run python fillers.py")
         self._last = None
 
     def pick(self, slow: bool = False):

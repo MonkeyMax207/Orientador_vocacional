@@ -11,7 +11,7 @@ output_device = "USB PnP MME"
 vad_threshold = 0.5          # Silero speech probability above which a 32 ms chunk counts as speech
 silence_ms = 600             # this much silence ends the user's turn (lower = snappier, but cuts pauses)
 min_speech_ms = 250          # turns with less speech than this are noise (a click, a cough)
-filler_after_s = 1.0         # a short filler plays only if no answer is ready this long after the user stops
+filler_after_s = 0.0         # "Jum..." + thinking animation right when the user stops talking
 slow_llm_s = 4.0             # still nothing this long after the user stopped → one more filler
 # 127.0.0.1, not "localhost": on Windows "localhost" tries IPv6 (::1) first, Ollama only
 # listens on IPv4, and every request would wait ~2 s for the IPv6 attempt to time out.
