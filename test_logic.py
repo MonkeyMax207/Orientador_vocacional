@@ -539,6 +539,49 @@ def test_brain_injects_cards_only_in_current_turn():
     assert b.history[0] == {"role": "user", "content": "¿Qué labs hay?"}
 
 
+
+def test_chunk_words():
+    from knowledge import make_chunks
+    words = " ".join(f"w{i}" for i in range(300))
+    chunks = make_chunks.chunk_words(words, size=150, stride=120)
+    assert [len(c.split()) for c in chunks] == [150, 150, 60]   # windows overlap by 30 words
+    assert chunks[1].split()[0] == "w120"
+    assert make_chunks.chunk_words("", 150, 120) == []
+
+
+def test_brain_searches_only_when_the_model_asks():
+    # The model decides: a tool call triggers ONE search, then the answer streams normally.
+    searched = []
+    b = brain.Brain("http://x", "m", 4, 0, search=lambda q: searched.append(q) or "Fab-Lab y Automática.")
+    replies = iter([
+        [json.dumps({"message": {"content": "", "tool_calls": [
+            {"function": {"name": "buscar_uao", "arguments": {"consulta": "laboratorios mecatrónica"}}}]}}).encode()],
+        [json.dumps({"message": {"content": "Tiene el Fab-Lab."}, "done": True}).encode()],
+    ])
+    sent = []
+    b._post = lambda path, body: sent.append(body) or _FakeResp(next(replies))
+    assert "".join(b.stream_reply("¿Qué labs tiene mecatrónica?")) == "Tiene el Fab-Lab."
+    assert searched == ["laboratorios mecatrónica"]
+    assert "tools" in sent[0] and "tools" not in sent[1]                 # no search loops
+    assert sent[1]["messages"][-1] == {"role": "tool", "content": "Fab-Lab y Automática."}
+    assert b.history == [{"role": "user", "content": "¿Qué labs tiene mecatrónica?"},
+                         {"role": "assistant", "content": "Tiene el Fab-Lab."}]   # no tool noise
+    # A normal chat turn: the model answers directly, no search.
+    replies = iter([[json.dumps({"message": {"content": "¡Qué bien!"}, "done": True}).encode()]])
+    assert "".join(b.stream_reply("Me gusta el fútbol")) == "¡Qué bien!" and len(searched) == 1
+
+
+def test_brain_offers_search_only_past_the_gate():
+    # Small models call a tool whenever it is offered, so it is only offered when the student's
+    # words resemble some UAO text (gate); plain chat never gets the tool.
+    b = brain.Brain("http://x", "m", 4, 0, search=lambda q: "x", gate=lambda text: "laboratorio" in text)
+    sent = []
+    b._post = lambda path, body: sent.append(body) or _FakeResp(
+        [json.dumps({"message": {"content": "Ok."}, "done": True}).encode()])
+    list(b.stream_reply("Hola, ¿cómo estás?"))
+    list(b.stream_reply("¿Qué laboratorio hay?"))
+    assert "tools" not in sent[0] and "tools" in sent[1]
+
 if __name__ == "__main__":
     # Collect every function whose name starts with test_ and run it.
     tests = [f for name, f in dict(globals()).items() if name.startswith("test_")]

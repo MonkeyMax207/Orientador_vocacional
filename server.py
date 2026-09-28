@@ -22,7 +22,7 @@ import animations
 from brain import Brain
 from config import load_config
 from fillers import Fillers
-from rag import CARDS, Knowledge, OllamaEmbedder, retrieve
+from rag import make_finder
 from sentences import SentenceSplitter, clean_for_tts
 from stt import STT, clean
 from tts import TTS
@@ -33,10 +33,9 @@ class Pipeline:
 
     def __init__(self, cfg):
         self.cfg = cfg
-        self.knowledge = None
-        if CARDS.exists():
-            self.knowledge = Knowledge(OllamaEmbedder(cfg.ollama_host, cfg.embed_model), cfg.embed_model)
-        names = self.knowledge.program_names() if self.knowledge else ()
+        # UAO text chunks go next to the student's message only for questions about the UAO.
+        knowledge, self.find = make_finder(cfg)
+        names = knowledge.program_names() if knowledge else ()
         self.brain = Brain(cfg.ollama_host, cfg.llm_model, cfg.threads, cfg.llm_num_gpu, program_names=names)
         self.brain.check()
         self.brain.warmup()
@@ -44,7 +43,7 @@ class Pipeline:
         self.tts = TTS(cfg.tts_engine, cfg.voice, cfg.tts_device)
         self.tts.synthesize("Hola.")   # warm-up
         self.filler = Fillers(cfg.voice).pick()
-        self.user_turns, self.last_reply = [], ""
+        self.previous = ""   # the student's previous turn (topic context for the search)
 
     def answer(self, audio_bytes: bytes):
         """Generator: yields ("heard", text) once, then ("say", text, anims, int16 clip) per sentence."""
@@ -53,19 +52,16 @@ class Pipeline:
         if not text:
             return   # noise: nothing to say
         yield ("heard", text)
-        self.user_turns.append(text)
-        cards = []
-        if self.knowledge:
-            mode, cards = retrieve(self.knowledge, text, self.user_turns, self.last_reply, self.cfg)
-            print(f"[rag] {mode}: {', '.join(c['id'] for c in cards) or '-'}", flush=True)
-        splitter, spoken = SentenceSplitter(), []
+        splitter = SentenceSplitter()
+        cards = self.find(text, self.previous)
+        self.previous = text
+        if cards:
+            print(f"[rag] {', '.join(c['id'] for c in cards)}", flush=True)
         for token in [*self.brain.stream_reply(text, cards=cards), None]:
             for sentence in splitter.flush() if token is None else splitter.feed(token):
                 sentence = clean_for_tts(sentence)
                 if sentence:
-                    spoken.append(sentence)
                     yield ("say", sentence, animations.match(sentence), self.tts.synthesize(sentence))
-        self.last_reply = " ".join(spoken)
 
 
 async def serve(pipeline: Pipeline, port: int):

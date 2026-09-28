@@ -33,19 +33,33 @@ Temas para conocerla, uno a la vez y cuando fluyan solos: qué disfruta, qué se
 RAG_RULES = """
 
 Reglas sobre la universidad:
-Solo menciona programas, materias, laboratorios y servicios que aparezcan en la "Información \
-verificada de la UAO" o en la lista oficial de programas de abajo.
+Cuando necesites datos de la universidad, usa la herramienta buscar_uao. Solo menciona programas, \
+materias, laboratorios y servicios que aparezcan en sus resultados o en la lista oficial de abajo.
 Si no tienes la información, dilo con honestidad y sugiere hablar con un asesor de la UAO.
 Nunca des precios, valores de matrícula ni montos de becas.
 No tienes teléfono ni correo propios. No inventes datos de contacto; si te los piden, sugiere preguntar en la universidad.
 Programas de pregrado de la UAO: {names}."""
 
 
+# Tool (function) the model may call when IT decides it needs UAO facts. Ollama sends this JSON
+# schema to the model; instead of text, the model can answer {"tool_calls": [...]} with a query.
+SEARCH_TOOL = {"type": "function", "function": {
+    "name": "buscar_uao",
+    "description": "Busca información oficial de la Universidad Autónoma de Occidente: programas, "
+                   "materias, laboratorios, deportes, cultura, biblioteca, bienestar. Úsala solo cuando "
+                   "necesites datos concretos de la universidad o vayas a recomendar carreras; para "
+                   "conversar no la necesitas.",
+    "parameters": {"type": "object", "required": ["consulta"],
+                   "properties": {"consulta": {"type": "string", "description": "Qué buscar, en español"}}}}}
+
+
 class Brain:
     def __init__(self, host: str, model: str, threads: int, num_gpu: int, max_turns: int = 10,
-                 program_names=()):
+                 program_names=(), search=None, gate=None):
         self.url = host.rstrip("/")
         self.model = model
+        self.search = search         # callable(query) -> text; None = no knowledge tool
+        self.gate = gate             # callable(user_text) -> bool: offer the tool this turn?
         self.system = SYSTEM_PROMPT + (RAG_RULES.format(names=", ".join(program_names)) if program_names else "")
         self.max_turns = max_turns   # remembered exchanges; bounds prompt size (and Pi latency)
         self.history = []            # [{"role": "user"|"assistant", "content": str}, ...]
@@ -106,22 +120,46 @@ class Brain:
             "messages": [{"role": "system", "content": self.system}] + self.history[:-1]
                         + [{"role": "user", "content": content}],
         }
+        # Small models call a tool whenever it is offered: only offer it when the student's words
+        # look like a question about the UAO (gate), so plain chat stays plain chat.
+        if self.search and (self.gate is None or self.gate(user_text)):
+            body["tools"] = [SEARCH_TOOL]
         reply = ""
         try:
-            with self._post("/api/chat", body) as resp:
-                for line in resp:                       # one JSON object per line (NDJSON)
-                    if stop is not None and stop.is_set():
-                        break                           # leaving the `with` closes the connection → Ollama stops
-                    chunk = json.loads(line)
-                    token = chunk.get("message", {}).get("content", "")
-                    if token:
-                        reply += token
-                        yield token                     # hand the piece to the caller right away
-                    if chunk.get("done"):
-                        break
+            calls = []
+            for token in self._stream(body, stop, calls):
+                reply += token
+                yield token
+            if calls and not reply:
+                # The model asked to search: run it, hand back the results as a "tool" message and
+                # stream the real answer. Tools are not offered again (no search loops).
+                query = calls[0]["function"]["arguments"].get("consulta", user_text)
+                print(f"[rag] buscar_uao: {query}", flush=True)
+                body = {k: v for k, v in body.items() if k != "tools"}
+                body["messages"] = body["messages"] + [
+                    {"role": "assistant", "content": "", "tool_calls": calls},
+                    {"role": "tool", "content": self.search(query)}]
+                for token in self._stream(body, stop, []):
+                    reply += token
+                    yield token
         finally:
-            # Remember what was said, even if interrupted, so the next turn has context.
+            # Remember what was said (plain text only, no tool messages: keeps the prompt cache
+            # small), even if interrupted, so the next turn has context.
             self.history.append({"role": "assistant", "content": reply})
+
+    def _stream(self, body: dict, stop, calls: list):
+        """Yields text tokens from one /api/chat request; tool calls are appended to `calls`."""
+        with self._post("/api/chat", body) as resp:
+            for line in resp:                       # one JSON object per line (NDJSON)
+                if stop is not None and stop.is_set():
+                    break                           # leaving the `with` closes the connection → Ollama stops
+                chunk = json.loads(line)
+                message = chunk.get("message", {})
+                calls += message.get("tool_calls", [])
+                if message.get("content"):
+                    yield message["content"]        # hand the piece to the caller right away
+                if chunk.get("done"):
+                    break
 
 
 def llm_worker(brain, text: str, out_q, stop, cards=()) -> None:

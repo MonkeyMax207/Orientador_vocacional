@@ -16,6 +16,8 @@ import numpy as np
 ROOT = Path(__file__).parent
 CARDS = ROOT / "knowledge" / "cards.json"
 VECTORS = ROOT / "models" / "knowledge_vectors.npz"   # cache, rebuilt when cards.json changes
+CHUNKS = ROOT / "knowledge" / "chunks.json"            # full-text chunks (knowledge/make_chunks.py)
+CHUNK_VECTORS = ROOT / "models" / "chunk_vectors.npz"
 
 # Price questions get this instead of a search: the robot hands over to humans.
 PRICE_CARD = {"id": "precios", "titulo": "Precios y becas",
@@ -135,3 +137,41 @@ def retrieve(kb, text: str, user_turns: list[str], last_reply: str, cfg) -> tupl
     if not cards and last_reply:
         cards = kb.search(f"{last_reply} {text}", cfg.rag_max_cards, cfg.rag_threshold, DETAIL_KINDS)
     return mode, cards
+
+
+def make_search(cfg):
+    """Returns (knowledge, search, gate) over the full-text chunks, or (None, None, None) if none.
+    search(query) -> text the LLM receives as the result of its buscar_uao tool call.
+    gate(text) -> True if the student's words resemble some UAO text (offer the tool)."""
+    if not CHUNKS.exists():
+        return None, None, None
+    kb = Knowledge(OllamaEmbedder(cfg.ollama_host, cfg.embed_model), cfg.embed_model, CHUNKS, CHUNK_VECTORS)
+
+    def search(query: str) -> str:
+        hits = kb.search(query, cfg.rag_max_cards, cfg.rag_threshold)
+        return "\n\n".join(f"[{h['titulo']}] {h['texto']}" for h in hits) or "No encontré información sobre eso."
+
+    def gate(text: str) -> bool:
+        return kb.ranked(text)[0][0] >= cfg.rag_gate   # chat scores ~0.15–0.28, UAO questions ~0.36+
+    return kb, search, gate
+
+
+def make_finder(cfg):
+    """Returns (knowledge, find). find(text) -> the chunks to put next to the student's message:
+    none for plain chat (below rag_gate), the top rag_max_cards for questions about the UAO.
+    (Measured: llama3.2:3b uses facts placed in the message, but ignored the same facts when they
+    came back from a tool call; the gate keeps chat free of forced information.)"""
+    if not CHUNKS.exists():
+        return None, lambda text: []
+    kb = Knowledge(OllamaEmbedder(cfg.ollama_host, cfg.embed_model), cfg.embed_model, CHUNKS, CHUNK_VECTORS)
+
+    def find(text: str, previous: str = "") -> list[dict]:
+        queries = [text] + ([f"{previous} {text}"] if previous else [])
+        rankings = [kb._ranked_by(v) for v in kb.embed(queries, query=True)]   # one embed request
+        if rankings[0][0][0] < cfg.rag_gate:
+            return []   # the gate looks at the student's CURRENT words only: chat stays chat
+        # The previous question may carry the topic ("¿y qué materias…?" after asking about
+        # mecatrónica): keep whichever phrasing matches more strongly.
+        best = max(rankings, key=lambda ranked: ranked[0][0])
+        return kb._pick(best, cfg.rag_max_cards, cfg.rag_threshold, None)
+    return kb, find

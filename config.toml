@@ -21,6 +21,7 @@ server_port = 8765
 server_url = "ws://192.168.1.100:8765"
 # Knowledge (RAG) — see docs/superpowers/specs/2026-09-26-uao-knowledge-rag-design.md
 embed_model = "embeddinggemma"   # Ollama embedding model (CPU); 21/25 in knowledge/eval.py, cleanest off-topic rejection
+rag_gate = 0.33                  # offer the buscar_uao tool only above this similarity (chat ~0.15–0.28)
 rag_threshold = 0.30             # embeddinggemma: off-topic scores 0.09–0.26, relevant 0.27–0.66 (knowledge/eval.py)
 recommend_after_turns = 8        # on this turn the agent suggests programs even if not asked (a friend listens first)
 
@@ -31,7 +32,7 @@ whisper_device = "cuda"
 whisper_compute = "float16"  # GPU-native half precision
 llm_model = "llama3.2:3b"   # best of the replay test: answers questions, reads through STT errors
 llm_num_gpu = 99             # LLM layers offloaded to the GPU; 99 means "all of them"
-rag_max_cards = 2            # cards per detail turn (free on the GPU)
+rag_max_cards = 3            # text chunks per search (~450 words, ~0.3 s on the GPU)
 barge_in = false             # set true only when testing with headphones (the speaker would trigger it)
 tts_engine = "kokoro"        # natural voice (Piper is faster but sounds more robotic)
 tts_device = "cuda"          # Kokoro on the GPU: ~0.5 s per sentence instead of ~3 s on the CPU
