@@ -18,7 +18,7 @@ Todos los comandos se corren en **PowerShell, desde la carpeta del proyecto** (`
 ```powershell
 uv run python main.py pc      # perfil PC: GPU, llama3.2:3b, voz Kokoro (Santa)
 uv run python main.py pi      # perfil Pi simulado: CPU 4 hilos, qwen2.5:1.5b, voz Piper (España)
-```
+```la 
 
 Salir: `Ctrl+C`.
 
@@ -156,3 +156,26 @@ El trabajo del RAG está en la rama `feature/uao-rag` (todavía sin fusionar a `
 - **Huecos de contenido** que la búsqueda no cubre bien: biblioteca (la página se llama "CRAI"), apoyo
   psicológico, investigación. Se arreglan agregando o editando fichas en `cards.json`.
 - Sub-proyecto 3 (instalar en la Raspberry Pi) y 4 (servos del animatrónico).
+
+---
+
+## 9. PC como cerebro, Pi como voz (WebSocket)
+
+El PC corre Whisper, RAG, LLM y Kokoro (`server.py`); la Pi solo escucha, dice "Jum…" y reproduce (`client.py`).
+
+**En el PC (una vez):** abrir el puerto 8765 en el firewall (PowerShell **como administrador**) y ver la IP:
+```powershell
+New-NetFirewallRule -DisplayName "Orientador WS" -Direction Inbound -Protocol TCP -LocalPort 8765 -Action Allow
+ipconfig        # busca "Dirección IPv4" de tu Wi-Fi/Ethernet, p. ej. 192.168.1.35
+```
+**En la Pi (una vez):** en `config.toml` pon esa IP en `server_url = "ws://192.168.1.35:8765"`, y deja el módulo
+USB como dispositivo de audio predeterminado (icono de sonido del escritorio de la Pi).
+
+**Cada vez:**
+```powershell
+uv run python server.py          # en el PC: espera "Servidor listo…"
+```
+```bash
+uv run python client.py          # en la Pi: "Conectado a ws://…". Habla.
+```
+Ambos deben estar en la misma red. Si la Pi no conecta: revisa la IP, el firewall y que el servidor esté corriendo.

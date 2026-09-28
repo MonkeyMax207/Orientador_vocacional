@@ -16,6 +16,9 @@ slow_llm_s = 4.0             # still nothing this long after the user stopped �
 # 127.0.0.1, not "localhost": on Windows "localhost" tries IPv6 (::1) first, Ollama only
 # listens on IPv4, and every request would wait ~2 s for the IPv6 attempt to time out.
 ollama_host = "http://127.0.0.1:11434"
+# PC ↔ Pi link (server.py runs on the PC, client.py on the Pi). Put the PC's LAN IP (ipconfig) here.
+server_port = 8765
+server_url = "ws://192.168.1.100:8765"
 # Knowledge (RAG) — see docs/superpowers/specs/2026-09-26-uao-knowledge-rag-design.md
 embed_model = "embeddinggemma"   # Ollama embedding model (CPU); 21/25 in knowledge/eval.py, cleanest off-topic rejection
 rag_threshold = 0.30             # embeddinggemma: off-topic scores 0.09–0.26, relevant 0.27–0.66 (knowledge/eval.py)
@@ -44,6 +47,10 @@ llm_model = "qwen2.5:1.5b"
 llm_num_gpu = 0              # 0 = LLM runs on the CPU only, like on the Pi
 rag_max_cards = 1            # each card ~60 words ≈ +1.5 s of prompt reading on the Pi CPU
 barge_in = false             # the Waveshare module has no hardware echo cancellation
+# On the Pi (Linux) use the system default device: set the USB module as default in the Pi's
+# sound settings; "default" goes through PipeWire, which converts sample rates for us.
+input_device = "default"
+output_device = "default"
 tts_engine = "piper"         # Kokoro is slower than real time on a Pi 5 CPU; Piper is ~4x faster than real time
 tts_device = "cpu"           # the Pi has no CUDA GPU
 voice = "es_ES-davefx-medium" # Piper voice file: models/piper/<voice>.onnx (Spain accent, male)
