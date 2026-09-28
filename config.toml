@@ -56,3 +56,22 @@ tts_engine = "piper"         # Kokoro is slower than real time on a Pi 5 CPU; Pi
 tts_device = "cpu"           # the Pi has no CUDA GPU
 voice = "es_ES-davefx-medium" # Piper voice file: models/piper/<voice>.onnx (Spain accent, male)
 voice_rate = 1.0             # try 0.9 for a wiser, older turtle; costs nothing
+
+[dgx]
+# DGX Spark (home) as the brain: run `uv run python server.py dgx`; the Pi connects over Tailscale.
+# ARM CPU (Grace): faster-whisper and onnxruntime have no GPU build for ARM, so STT/TTS run on its
+# 20 fast cores; the LLM (Ollama) uses the GPU and its 128 GB of unified memory.
+threads = 16
+whisper_model = "small"
+whisper_device = "cpu"
+whisper_compute = "int8"
+llm_model = "qwen2.5:32b"    # strong Spanish; ~20 GB. Alternative to benchmark: gemma3:27b
+llm_num_gpu = 99
+rag_max_cards = 3
+barge_in = false
+tts_engine = "kokoro"
+tts_device = "cpu"
+voice = "em_santa"
+voice_rate = 1.0
+input_device = "default"     # unused by server.py (audio lives on the Pi)
+output_device = "default"

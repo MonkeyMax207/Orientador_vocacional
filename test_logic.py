@@ -30,6 +30,8 @@ def test_config_profiles_have_same_keys():
     # AttributeError. Loading both and comparing their keys catches that on the PC.
     pc, pi = config.load_config("pc"), config.load_config("pi")
     assert set(vars(pc)) == set(vars(pi)), set(vars(pc)) ^ set(vars(pi))
+    dgx = config.load_config("dgx")
+    assert set(vars(dgx)) == set(vars(pc)), set(vars(dgx)) ^ set(vars(pc))
     assert pc.profile == "pc" and pi.profile == "pi"
 
 

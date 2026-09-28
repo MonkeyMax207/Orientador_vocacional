@@ -179,3 +179,33 @@ uv run python server.py          # en el PC: espera "Servidor listo…"
 uv run python client.py          # en la Pi: "Conectado a ws://…". Habla.
 ```
 Ambos deben estar en la misma red. Si la Pi no conecta: revisa la IP, el firewall y que el servidor esté corriendo.
+
+---
+
+## 10. DGX Spark (casa) como cerebro, Pi (universidad) como voz
+
+**Red (una vez, en la DGX y en la Pi):** Tailscale crea una red privada entre ambas sin abrir puertos
+(el servidor no tiene contraseña: nunca lo expongas directo a internet).
+```bash
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up           # inicia sesión con la MISMA cuenta en las dos
+tailscale ip -4             # en la DGX: 100.x.y.z  →  en la Pi: server_url = "ws://100.x.y.z:8765"
+```
+
+**Instalación en la DGX (una vez):**
+```bash
+git clone -b feature/uao-rag https://github.com/MonkeyMax207/Orientador_vocacional.git && cd Orientador_vocacional
+uv sync && uv run python download_models.py
+ollama pull qwen2.5:32b && ollama pull embeddinggemma
+uv run python fillers.py dgx
+```
+**Cada vez:** `uv run python server.py dgx` en la DGX, `uv run python client.py` en la Pi.
+La Pi necesita internet en la universidad (ya no es 100 % offline).
+
+**Próximos pasos para velocidad y calidad en la DGX (por evaluar, medir antes de cambiar):**
+- **STT en GPU con NeMo:** `nvidia/parakeet-tdt-0.6b-v3` (multilingüe, incluye español) o `canary-1b`,
+  reemplazando Whisper en CPU (faster-whisper no tiene GPU en ARM).
+- **TTS con NeMo / Riva:** Magpie TTS multilingüe (español) vía Riva/NIM, o FastPitch+HiFi-GAN en español;
+  comparar voz y latencia contra Kokoro.
+- **LLM más rápido:** servir el modelo con TensorRT-LLM o vLLM (FP8/FP4 en la GB10) en lugar de Ollama;
+  `server.py` solo necesita cambiar `ollama_host` si el servidor expone una API compatible.
