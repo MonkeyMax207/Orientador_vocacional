@@ -18,7 +18,8 @@ from vad import VAD, TurnDetector
 async def main(cfg):
     async with websockets.connect(cfg.server_url, max_size=None) as ws:
         hello = json.loads(await ws.recv())
-        filler = np.frombuffer(await ws.recv(), dtype=np.int16)   # the "Jum..." clip, in the PC's voice
+        await ws.recv()   # the "Jum..." filler clip: received to stay in sync with the protocol, but
+                          # not played (disabled until natural-sounding fillers are recorded — see §4)
         # voice_rate < 1 plays the same samples slower: deeper "turtle" voice at zero CPU cost.
         player = Player(cfg.output_device, int(hello["sample_rate"] * cfg.voice_rate))
         mic, vad = Mic(cfg.input_device), VAD(cfg.vad_threshold)
@@ -34,7 +35,6 @@ async def main(cfg):
 
         while True:
             audio = await asyncio.to_thread(listen)   # keep the WebSocket alive while listening
-            player.put(filler, ["pensar"])            # instant feedback, no network involved
             await ws.send(to_int16(audio).tobytes())
             while True:
                 msg = json.loads(await ws.recv())

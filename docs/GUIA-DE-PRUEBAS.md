@@ -161,7 +161,9 @@ El trabajo del RAG está en la rama `feature/uao-rag` (todavía sin fusionar a `
 
 ## 9. PC como cerebro, Pi como voz (WebSocket)
 
-El PC corre Whisper, RAG, LLM y Kokoro (`server.py`); la Pi solo escucha, dice "Jum…" y reproduce (`client.py`).
+El PC corre Whisper, RAG, LLM y Kokoro (`server.py`); la Pi solo escucha y reproduce (`client.py`).
+(El "Jum..." instantáneo al detectar el turno está desactivado desde 2026-09-29 — sonaba mal; se
+retoma cuando haya grabaciones propias, ver §10.1.)
 
 **En el PC (una vez):** abrir el puerto 8765 en el firewall (PowerShell **como administrador**) y ver la IP:
 ```powershell
@@ -202,16 +204,29 @@ uv run python fillers.py dgx
 **Cada vez:** `uv run python server.py dgx` en la DGX, `uv run python client.py` en la Pi.
 La Pi necesita internet en la universidad (ya no es 100 % offline).
 
-### 10.1 Prueba inicial: DGX como cerebro, PC como voz (misma red de casa)
+### 10.1 Conectarse desde el PC (o la Pi) por Tailscale
 
-Antes de meter la Pi: el PC habla con la DGX por la misma red local, sin Tailscale.
+`server_url` en `config.toml` ya apunta a la IP de Tailscale de la DGX (`ws://100.93.200.74:8765`,
+`tailscale ip -4` en la DGX si cambia), no a la IP de la red local: así funciona igual si el PC/Pi
+está en la misma casa o en otra red, sin editar nada al cambiar de sitio.
 
+**Una vez, en cada máquina que se vaya a conectar (PC, Pi):**
+```bash
+curl -fsSL https://tailscale.com/install.sh | sh   # o el instalador de Windows/macOS
+tailscale up                                        # inicia sesión con la MISMA cuenta que la DGX
+```
+
+**Cada vez:**
 **En la DGX:** `uv run python server.py dgx` (espera "Servidor listo…").
-**En el PC** (PowerShell, repo ya clonado con `uv sync` hecho): en `config.toml`, `server_url = "ws://<IP-LAN-de-la-DGX>:8765"`
-(`ip -4 addr` en la DGX para verla; hoy es `192.168.1.16`) — luego `uv run python client.py pc`.
+**En el PC** (repo ya clonado, `uv sync` hecho): `uv run python client.py pc`.
+**En la Pi:** `uv run python client.py`.
 
-Si el PC no conecta: confirma que están en la misma red Wi-Fi/Ethernet, y que nada bloquea el puerto 8765
-en la DGX (`sudo ufw allow 8765/tcp` si `ufw` está activo).
+Si no conecta: confirma `tailscale status` en ambas máquinas (deben verse entre sí, no "offline"), y que
+nada bloquea el puerto 8765 en la DGX (`sudo ufw allow 8765/tcp` si `ufw` está activo — Tailscale no
+necesita el puerto abierto a internet, pero un firewall local igual puede filtrar tráfico de `tailscale0`).
+
+(Alternativa si ambas máquinas están en la misma red de casa y prefieres no depender de Tailscale:
+usa la IP LAN de la DGX en `server_url`, `ip -4 addr` en la DGX para verla.)
 
 ### 10.2 LLM en la DGX vía NIM (`nemotron-nano-9b-v2-dgx-spark`) en vez de Ollama
 
