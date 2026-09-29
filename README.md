@@ -79,3 +79,25 @@ Measured with `knowledge/replay.py` (PC, 2026-09-27), time to first sentence:
 |---|---|---|---|
 | pc (llama3.2:3b GPU, 2 cards) | 0.2–0.4 s | 0.3–1.4 s | Every program named exists; labs/courses/sports from the right cards |
 | pi (qwen2.5:1.5b CPU, 1 card) | 0.6 s | 2.6–6 s (16–17 s late in the chat) | Right cards, but the 1.5B model drifts (fixates on unrelated programs, embellishes cards) |
+
+## DGX brain: LLM served by a NIM instead of Ollama
+
+First of three sub-projects migrating the DGX's voice pipeline to the NVIDIA ecosystem (STT/NeMo and
+TTS/Riva are next). Design: `docs/superpowers/specs/2026-09-29-nim-llm-backend-design.md`. Setup:
+`docs/GUIA-DE-PRUEBAS.md` §10.2.
+
+The `dgx` profile now serves chat through the `nvidia-nemotron-nano-9b-v2-dgx-spark` NIM — a model
+built specifically for this hardware — instead of Ollama's `qwen2.5:32b`, behind a `make_brain()`
+factory (`brain.py`) so `llm_backend = "ollama"` in `config.toml` reverts instantly with no code
+change. RAG embeddings stay on Ollama either way.
+
+Two behaviors only showed up once it was actually running against the container: Nemotron is a
+hybrid reasoning model, so without `/no_think` appended to the system prompt every reply was a
+visible chain of thought instead of a spoken answer; and its chat template rejects a system-only
+warmup request (Ollama accepts one) with a 400, so `NimBrain.warmup()` sends a dummy user turn too.
+
+Measured with `knowledge/replay.py dgx` (DGX, 2026-09-29), same 11-turn script as the table above:
+every named program was real, laboratorios/materias/deportes cited the right cards, the price
+question was handed to admissions, and "¿Tienen ingeniería aeroespacial?" was correctly answered as
+not offered. Time to first sentence: 0.5–2.6 s on 10 of 11 turns, one 18.2 s outlier (not yet
+explained — watch for a repeat before trusting the backend for live use).

@@ -221,13 +221,17 @@ Ya soportado en el código (`brain.py: make_brain`, `config.toml: [dgx].llm_back
    `docker login nvcr.io` (usuario `$oauthtoken`, contraseña = la key) alcanza para *bajar* la imagen,
    pero el contenedor necesita la key otra vez, como variable de entorno, para bajar los pesos del modelo
    la primera vez que arranca (falla si falta: "operation requires an API key, but none was found").
+   Guárdala en un archivo `.env` en la raíz del repo (nunca se sube a git, ver `.gitignore`):
+   ```
+   NGC_API_KEY=nvapi-...
+   ```
 2. **Arrancar el contenedor** (la imagen ya está descargada localmente, no vuelve a bajarla):
    ```bash
-   export NGC_API_KEY=nvapi-...
-   docker run --rm --gpus all -p 8001:8000 -e NGC_API_KEY --name orienta-nim \
+   docker run --rm --gpus all -p 8001:8000 --env-file .env --name orienta-nim \
      nvcr.io/nim/nvidia/nvidia-nemotron-nano-9b-v2-dgx-spark:1.0.0-variant
    ```
-   Espera el log de "listo" (baja pesos la primera vez, puede tardar unos minutos).
+   Espera el log de "listo" (baja pesos la primera vez, puede tardar unos minutos; con la key ya
+   cacheada, ~1 minuto).
 3. **Averiguar el id exacto del modelo:** `curl -s http://127.0.0.1:8001/v1/models | python3 -m json.tool`
    (2026-09-29: `nvidia/nemotron-nano-9b-v2`, ya puesto en `config.toml`).
 4. **Activar:** en `config.toml` bajo `[dgx]`, pon `llm_backend = "nim"` y `llm_model` = el id del paso 3.
@@ -247,6 +251,35 @@ Ya soportado en el código (`brain.py: make_brain`, `config.toml: [dgx].llm_back
   completo (`knowledge/chunks.json`) en la CPU de la DGX: ~1.4 s por ficha, ~6 min en total. Se
   guarda en caché (`models/chunk_vectors.npz`); los siguientes arranques son instantáneos. Por eso
   el timeout en `rag.py` subió de 300 a 900 s.
+
+**Cada vez (tras reiniciar la DGX), en dos terminales:**
+```bash
+docker run --rm --gpus all -p 8001:8000 --env-file .env --name orienta-nim \
+  nvcr.io/nim/nvidia/nvidia-nemotron-nano-9b-v2-dgx-spark:1.0.0-variant   # espera "Uvicorn running"
+uv run python server.py dgx                                              # espera "Servidor listo…"
+```
+Luego, desde el PC o la Pi (§10.1 o §10), `uv run python client.py pc` / `client.py`.
+
+### 10.3 Resultado medido (`knowledge.replay dgx`, 2026-09-29, `nemotron-nano-9b-v2` vía NIM)
+
+Conversación completa de 11 turnos (mismo guion que la tabla de `README.md`): todos los programas
+mencionados son reales, laboratorios/materias/deportes citaron las fichas correctas, la pregunta de
+precios se derivó a admisiones, y "¿Tienen ingeniería aeroespacial?" se respondió correctamente que no
+existe (el aviso `⚠ revisar nombres` del script es una negación honesta, no una alucinación).
+
+| Turno | 1ª frase |
+|---|---|
+| Saludo | 0.52 s |
+| Recomendación inicial | 0.64 s |
+| Detalle (deporte) | 0.83 s |
+| Detalle (sin fichas) | 1.24 s |
+| Detalle (labs varios) | 1.67 s |
+| Recomendación | 2.58 s |
+| Laboratorios mecatrónica | 1.80 s |
+| Materias primeros semestres | 18.23 s (pico aislado, sin explicar aún — revisar si se repite) |
+| Deporte | 2.55 s |
+| Precios (rechazo) | 2.34 s |
+| Ingeniería aeroespacial (negación correcta) | 2.07 s |
 
 **Próximos pasos para velocidad y calidad en la DGX (por evaluar, medir antes de cambiar):**
 - **STT en GPU con NeMo:** `nvidia/parakeet-tdt-0.6b-v3` (multilingüe, incluye español) o `canary-1b`,
