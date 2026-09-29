@@ -19,7 +19,7 @@ import numpy as np
 import websockets
 
 import animations
-from brain import Brain
+from brain import make_brain
 from config import load_config
 from fillers import Fillers
 from rag import make_finder
@@ -36,7 +36,7 @@ class Pipeline:
         # UAO text chunks go next to the student's message only for questions about the UAO.
         knowledge, self.find = make_finder(cfg)
         names = knowledge.program_names() if knowledge else ()
-        self.brain = Brain(cfg.ollama_host, cfg.llm_model, cfg.threads, cfg.llm_num_gpu, program_names=names)
+        self.brain = make_brain(cfg, program_names=names)
         self.brain.check()
         self.brain.warmup()
         self.stt = STT(cfg.whisper_model, cfg.whisper_device, cfg.whisper_compute, cfg.threads)

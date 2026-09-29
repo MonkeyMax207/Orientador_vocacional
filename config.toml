@@ -16,9 +16,13 @@ slow_llm_s = 4.0             # still nothing this long after the user stopped �
 # 127.0.0.1, not "localhost": on Windows "localhost" tries IPv6 (::1) first, Ollama only
 # listens on IPv4, and every request would wait ~2 s for the IPv6 attempt to time out.
 ollama_host = "http://127.0.0.1:11434"
-# PC ↔ Pi link (server.py runs on the PC, client.py on the Pi). Put the PC's LAN IP (ipconfig) here.
+llm_backend = "ollama"       # "ollama" or "nim"; only [dgx] overrides this today
+nim_host = ""                 # unused unless llm_backend = "nim" (set per-profile, e.g. [dgx])
+# Brain ↔ voice link (server.py runs on the brain machine, client.py on the voice machine).
+# Same LAN (today, testing from the PC): the DGX's LAN IP. Different networks (Pi at university):
+# the DGX's Tailscale IP (`tailscale ip -4` on the DGX) instead — see docs/GUIA-DE-PRUEBAS.md §10.
 server_port = 8765
-server_url = "ws://192.168.1.100:8765"
+server_url = "ws://192.168.1.16:8765"
 # Knowledge (RAG) — see docs/superpowers/specs/2026-09-26-uao-knowledge-rag-design.md
 embed_model = "embeddinggemma"   # Ollama embedding model (CPU); 21/25 in knowledge/eval.py, cleanest off-topic rejection
 rag_gate = 0.33                  # offer the buscar_uao tool only above this similarity (chat ~0.15–0.28)
@@ -65,7 +69,12 @@ threads = 16
 whisper_model = "small"
 whisper_device = "cpu"
 whisper_compute = "int8"
-llm_model = "qwen2.5:32b"    # strong Spanish; ~20 GB. Alternative to benchmark: gemma3:27b
+llm_backend = "nim"           # container: `docker run --gpus all -p 8001:8000 --env-file .env
+                              # --name orienta-nim nvcr.io/nim/nvidia/nvidia-nemotron-nano-9b-v2-dgx-spark:1.0.0-variant`
+                              # (needs NGC_API_KEY in .env — docker login alone isn't enough). Revert
+                              # to "ollama" (+ `ollama pull qwen2.5:32b`) if it doesn't measure up.
+nim_host = "http://127.0.0.1:8001"
+llm_model = "nvidia/nemotron-nano-9b-v2"   # confirmed via GET /v1/models on nim_host (2026-09-29)
 llm_num_gpu = 99
 rag_max_cards = 3
 barge_in = false

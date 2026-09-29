@@ -2,6 +2,9 @@
 .venv/
 __pycache__/
 
+# Secrets (NGC_API_KEY for the NIM container, docker run --env-file .env)
+.env
+
 # Downloaded model weights + generated filler clips: large binaries, rebuilt by scripts
 models/
 

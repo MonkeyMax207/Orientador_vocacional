@@ -202,10 +202,54 @@ uv run python fillers.py dgx
 **Cada vez:** `uv run python server.py dgx` en la DGX, `uv run python client.py` en la Pi.
 La Pi necesita internet en la universidad (ya no es 100 % offline).
 
+### 10.1 Prueba inicial: DGX como cerebro, PC como voz (misma red de casa)
+
+Antes de meter la Pi: el PC habla con la DGX por la misma red local, sin Tailscale.
+
+**En la DGX:** `uv run python server.py dgx` (espera "Servidor listo…").
+**En el PC** (PowerShell, repo ya clonado con `uv sync` hecho): en `config.toml`, `server_url = "ws://<IP-LAN-de-la-DGX>:8765"`
+(`ip -4 addr` en la DGX para verla; hoy es `192.168.1.16`) — luego `uv run python client.py pc`.
+
+Si el PC no conecta: confirma que están en la misma red Wi-Fi/Ethernet, y que nada bloquea el puerto 8765
+en la DGX (`sudo ufw allow 8765/tcp` si `ufw` está activo).
+
+### 10.2 LLM en la DGX vía NIM (`nemotron-nano-9b-v2-dgx-spark`) en vez de Ollama
+
+Ya soportado en el código (`brain.py: make_brain`, `config.toml: [dgx].llm_backend`). Para activarlo:
+
+1. **API key de NGC** (una vez): `https://org.ngc.nvidia.com/setup/api-keys` → "Generate API Key".
+   `docker login nvcr.io` (usuario `$oauthtoken`, contraseña = la key) alcanza para *bajar* la imagen,
+   pero el contenedor necesita la key otra vez, como variable de entorno, para bajar los pesos del modelo
+   la primera vez que arranca (falla si falta: "operation requires an API key, but none was found").
+2. **Arrancar el contenedor** (la imagen ya está descargada localmente, no vuelve a bajarla):
+   ```bash
+   export NGC_API_KEY=nvapi-...
+   docker run --rm --gpus all -p 8001:8000 -e NGC_API_KEY --name orienta-nim \
+     nvcr.io/nim/nvidia/nvidia-nemotron-nano-9b-v2-dgx-spark:1.0.0-variant
+   ```
+   Espera el log de "listo" (baja pesos la primera vez, puede tardar unos minutos).
+3. **Averiguar el id exacto del modelo:** `curl -s http://127.0.0.1:8001/v1/models | python3 -m json.tool`
+   (2026-09-29: `nvidia/nemotron-nano-9b-v2`, ya puesto en `config.toml`).
+4. **Activar:** en `config.toml` bajo `[dgx]`, pon `llm_backend = "nim"` y `llm_model` = el id del paso 3.
+   Ya hecho — el perfil `dgx` usa el NIM por defecto.
+5. **Medir:** `uv run python brain.py dgx` (chat de texto) y `uv run python -m knowledge.replay dgx`,
+   comparar contra la fila de Ollama en `README.md`. Si no mejora, `llm_backend = "ollama"` revierte al
+   instante (no hace falta tocar código).
+
+**Dos cosas que costó descubrir (2026-09-29, ya arregladas en el código):**
+- Nemotron es un modelo de razonamiento híbrido: sin nada especial, cada respuesta sale como un
+  monólogo interno (`<think>...`) en vez de una respuesta hablable. `NimBrain` agrega `/no_think`
+  al final del system prompt — es el interruptor documentado de NVIDIA para respuestas directas.
+- El *warmup* (una petición mínima al arrancar para cargar el modelo) falla con "400 Bad Request"
+  si el mensaje es solo de sistema, sin turno de usuario — a diferencia de Ollama. `NimBrain.warmup()`
+  ya manda un mensaje de usuario ("Hola") de relleno.
+- La primera vez que arranca `server.py dgx`, calcula los embeddings de las 253 fichas de texto
+  completo (`knowledge/chunks.json`) en la CPU de la DGX: ~1.4 s por ficha, ~6 min en total. Se
+  guarda en caché (`models/chunk_vectors.npz`); los siguientes arranques son instantáneos. Por eso
+  el timeout en `rag.py` subió de 300 a 900 s.
+
 **Próximos pasos para velocidad y calidad en la DGX (por evaluar, medir antes de cambiar):**
 - **STT en GPU con NeMo:** `nvidia/parakeet-tdt-0.6b-v3` (multilingüe, incluye español) o `canary-1b`,
-  reemplazando Whisper en CPU (faster-whisper no tiene GPU en ARM).
+  reemplazando Whisper en CPU (faster-whisper no tiene GPU en ARM). Sub-proyecto 2, spec pendiente.
 - **TTS con NeMo / Riva:** Magpie TTS multilingüe (español) vía Riva/NIM, o FastPitch+HiFi-GAN en español;
-  comparar voz y latencia contra Kokoro.
-- **LLM más rápido:** servir el modelo con TensorRT-LLM o vLLM (FP8/FP4 en la GB10) en lugar de Ollama;
-  `server.py` solo necesita cambiar `ollama_host` si el servidor expone una API compatible.
+  comparar voz y latencia contra Kokoro. Sub-proyecto 3, spec pendiente.

@@ -47,7 +47,10 @@ class OllamaEmbedder:
         req = urllib.request.Request(f"{self.url}/api/embed", json.dumps(body).encode("utf-8"),
                                      {"Content-Type": "application/json"})
         try:
-            with urllib.request.urlopen(req, timeout=300) as r:
+            # 900s: embedding every chunk is one batched request; on the DGX's CPU-only Ollama
+            # (embeddinggemma) under load (e.g. a NIM container loading concurrently) 253 chunks
+            # measured ~1.4s each, close to the old 300s ceiling (2026-09-29).
+            with urllib.request.urlopen(req, timeout=900) as r:
                 vectors = np.array(json.load(r)["embeddings"], dtype=np.float32)
         except urllib.error.HTTPError as e:
             raise SystemExit(f"Falla el modelo de embeddings '{self.model}' ({e}). Ejecuta: ollama pull {self.model}")

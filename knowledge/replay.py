@@ -8,7 +8,7 @@ import re
 import sys
 import time
 
-from brain import Brain
+from brain import make_brain
 from config import load_config
 from knowledge.make_cards import plain
 from rag import Knowledge, OllamaEmbedder, retrieve
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     cfg = load_config(sys.argv[1] if len(sys.argv) > 1 else "pc")
     kb = Knowledge(OllamaEmbedder(cfg.ollama_host, cfg.embed_model), cfg.embed_model)
     official = [plain(n) for n in kb.program_names()]
-    brain = Brain(cfg.ollama_host, cfg.llm_model, cfg.threads, cfg.llm_num_gpu, program_names=kb.program_names())
+    brain = make_brain(cfg, program_names=kb.program_names())
     brain.check()
     brain.warmup()
     user_turns, last = [], ""

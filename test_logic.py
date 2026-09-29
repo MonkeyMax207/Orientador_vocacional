@@ -542,6 +542,78 @@ def test_brain_injects_cards_only_in_current_turn():
 
 
 
+class _UrlopenCtx:
+    def __init__(self, body): self.body = body
+    def __enter__(self): return self.body
+    def __exit__(self, *exc): return False
+
+
+def _sse(lines):
+    # One SSE "data: ..." line per list element; mirrors _FakeResp but for NimBrain's format.
+    return _FakeResp([f"data: {json.dumps(x)}".encode() if x != "[DONE]" else b"data: [DONE]" for x in lines])
+
+
+def test_nimbrain_streams_content_and_skips_ollama_fields():
+    b = brain.NimBrain("http://x", "m")
+    sent = []
+    b._post = lambda path, body: sent.append((path, body)) or _sse(
+        [{"choices": [{"delta": {"content": "Hola"}}]},
+         {"choices": [{"delta": {"content": "."}}]},
+         "[DONE]"])
+    assert "".join(b.stream_reply("Hola")) == "Hola."
+    path, body = sent[0]
+    assert path == "/v1/chat/completions"
+    assert "options" not in body and "keep_alive" not in body
+
+
+def test_nimbrain_assembles_tool_call_split_across_chunks():
+    searched = []
+    b = brain.NimBrain("http://x", "m", search=lambda q: searched.append(q) or "Fab-Lab.")
+    replies = iter([
+        _sse([{"choices": [{"delta": {"tool_calls": [
+                  {"index": 0, "function": {"name": "buscar_uao", "arguments": ""}}]}}]},
+              {"choices": [{"delta": {"tool_calls": [
+                  {"index": 0, "function": {"arguments": "{\"consulta\""}}]}}]},
+              {"choices": [{"delta": {"tool_calls": [
+                  {"index": 0, "function": {"arguments": ": \"laboratorios\"}"}}]}}]},
+              {"choices": [{"delta": {}, "finish_reason": "tool_calls"}]},
+              "[DONE]"]),
+        _sse([{"choices": [{"delta": {"content": "Tiene el Fab-Lab."}}]}, "[DONE]"]),
+    ])
+    b._post = lambda path, body: next(replies)
+    assert "".join(b.stream_reply("¿Qué labs hay?")) == "Tiene el Fab-Lab."
+    assert searched == ["laboratorios"]
+
+
+def test_nimbrain_empty_stream_yields_empty_reply():
+    b = brain.NimBrain("http://x", "m")
+    b._post = lambda path, body: _sse([{"choices": [{"delta": {}, "finish_reason": "stop"}]}, "[DONE]"])
+    assert "".join(b.stream_reply("Hola")) == ""
+    assert b.history[-1] == {"role": "assistant", "content": ""}
+
+
+def test_nimbrain_check_reports_missing_model():
+    import unittest.mock as mock
+    import io
+    b = brain.NimBrain("http://x", "otro-modelo")
+    resp = io.BytesIO(json.dumps({"data": [{"id": "nvidia/nemotron-nano-9b-v2"}]}).encode())
+    with mock.patch("urllib.request.urlopen", return_value=_UrlopenCtx(resp)):
+        try:
+            b.check()
+            assert False, "expected SystemExit"
+        except SystemExit as e:
+            assert "otro-modelo" in str(e) and "nemotron-nano-9b-v2" in str(e)
+
+
+def test_make_brain_selects_backend_from_config():
+    ollama_cfg = SimpleNamespace(llm_backend="ollama", ollama_host="http://x", llm_model="m",
+                                  threads=4, llm_num_gpu=0)
+    nim_cfg = SimpleNamespace(llm_backend="nim", nim_host="http://y", llm_model="m")
+    assert type(brain.make_brain(ollama_cfg)) is brain.Brain
+    b = brain.make_brain(nim_cfg)
+    assert type(b) is brain.NimBrain and b.url == "http://y"
+
+
 def test_chunk_words():
     from knowledge import make_chunks
     words = " ".join(f"w{i}" for i in range(300))

@@ -54,6 +54,8 @@ SEARCH_TOOL = {"type": "function", "function": {
 
 
 class Brain:
+    CHAT_PATH = "/api/chat"
+
     def __init__(self, host: str, model: str, threads: int, num_gpu: int, max_turns: int = 10,
                  program_names=(), search=None, gate=None):
         self.url = host.rstrip("/")
@@ -94,12 +96,18 @@ class Brain:
         # reuses that work (prompt cache) on every turn, so only the NEW words cost time.
         body = {
             "model": self.model, "stream": False,
-            "keep_alive": -1,   # -1 = never unload the model (a kiosk must answer instantly)
             "messages": [{"role": "system", "content": self.system}],
-            "options": {**self.options, "num_predict": 1},   # generate just 1 token
+            **self._warmup_extra(),
         }
-        with self._post("/api/chat", body) as r:
+        with self._post(self.CHAT_PATH, body) as r:
             r.read()
+
+    def _request_extra(self) -> dict:
+        # -1 keep_alive = never unload the model (a kiosk must answer instantly).
+        return {"keep_alive": -1, "options": self.options}
+
+    def _warmup_extra(self) -> dict:
+        return {"keep_alive": -1, "options": {**self.options, "num_predict": 1}}   # generate just 1 token
 
     def stream_reply(self, user_text: str, stop=None, cards=()):
         content = user_text
@@ -116,9 +124,10 @@ class Brain:
         # Keep an odd number of messages so the history always starts with a user message.
         self.history = self.history[-(2 * self.max_turns - 1):]
         body = {
-            "model": self.model, "stream": True, "keep_alive": -1, "options": self.options,
+            "model": self.model, "stream": True,
             "messages": [{"role": "system", "content": self.system}] + self.history[:-1]
                         + [{"role": "user", "content": content}],
+            **self._request_extra(),
         }
         # Small models call a tool whenever it is offered: only offer it when the student's words
         # look like a question about the UAO (gate), so plain chat stays plain chat.
@@ -149,7 +158,7 @@ class Brain:
 
     def _stream(self, body: dict, stop, calls: list):
         """Yields text tokens from one /api/chat request; tool calls are appended to `calls`."""
-        with self._post("/api/chat", body) as resp:
+        with self._post(self.CHAT_PATH, body) as resp:
             for line in resp:                       # one JSON object per line (NDJSON)
                 if stop is not None and stop.is_set():
                     break                           # leaving the `with` closes the connection → Ollama stops
@@ -160,6 +169,72 @@ class Brain:
                     yield message["content"]        # hand the piece to the caller right away
                 if chunk.get("done"):
                     break
+
+
+class NimBrain(Brain):
+    """Same persona/RAG logic as Brain (inherited stream_reply); only the transport differs:
+    an OpenAI-compatible NIM instead of Ollama."""
+    CHAT_PATH = "/v1/chat/completions"
+
+    def __init__(self, host, model, max_turns=10, program_names=(), search=None, gate=None):
+        super().__init__(host, model, threads=0, num_gpu=0, max_turns=max_turns,
+                          program_names=program_names, search=search, gate=gate)
+        # Nemotron is a hybrid reasoning model: without this, every reply is a visible chain of
+        # thought instead of a spoken answer (measured 2026-09-29: content ends with "</think>...").
+        # "/no_think" in the system message is NVIDIA's documented switch to plain answers.
+        self.system += " /no_think"
+
+    def _request_extra(self) -> dict:
+        return {}   # the NIM's own engine config decides sampling; nothing to override per request
+
+    def warmup(self) -> None:
+        # Unlike Ollama, this NIM's chat template 400s on a system-only message list (measured
+        # 2026-09-29: "list object has no element -1") — it needs at least one user turn.
+        body = {
+            "model": self.model, "stream": False,
+            "messages": [{"role": "system", "content": self.system}, {"role": "user", "content": "Hola"}],
+            "max_tokens": 1,
+        }
+        with self._post(self.CHAT_PATH, body) as r:
+            r.read()
+
+    def check(self) -> None:
+        try:
+            with urllib.request.urlopen(self.url + "/v1/models", timeout=3) as r:
+                ids = [m["id"] for m in json.load(r)["data"]]
+        except urllib.error.URLError:
+            raise SystemExit(f"El NIM no responde en {self.url}. ¿Está corriendo el contenedor?")
+        if self.model not in ids:
+            raise SystemExit(f"El NIM no sirve el modelo '{self.model}'. Disponibles: {ids}")
+
+    def _stream(self, body: dict, stop, calls: list):
+        pending = {}   # tool-call index -> accumulating {"name": str, "arguments": str}
+        with self._post(self.CHAT_PATH, body) as resp:
+            for raw in resp:
+                if stop is not None and stop.is_set():
+                    break
+                line = (raw.decode("utf-8") if isinstance(raw, bytes) else raw).strip()
+                if not line.startswith("data:"):
+                    continue
+                data = line[len("data:"):].strip()
+                if data == "[DONE]":
+                    break
+                delta = json.loads(data)["choices"][0].get("delta", {})
+                for tc in delta.get("tool_calls") or []:
+                    slot = pending.setdefault(tc["index"], {"name": "", "arguments": ""})
+                    fn = tc.get("function", {})
+                    slot["name"] += fn.get("name") or ""
+                    slot["arguments"] += fn.get("arguments") or ""
+                if delta.get("content"):
+                    yield delta["content"]
+        for slot in pending.values():
+            calls.append({"function": {"name": slot["name"], "arguments": json.loads(slot["arguments"])}})
+
+
+def make_brain(cfg, program_names=()):
+    if getattr(cfg, "llm_backend", "ollama") == "nim":
+        return NimBrain(cfg.nim_host, cfg.llm_model, program_names=program_names)
+    return Brain(cfg.ollama_host, cfg.llm_model, cfg.threads, cfg.llm_num_gpu, program_names=program_names)
 
 
 def llm_worker(brain, text: str, out_q, stop, cards=()) -> None:

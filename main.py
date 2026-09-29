@@ -19,7 +19,7 @@ import numpy as np
 
 import animations
 from audio_io import SAMPLE_RATE, Mic, Player, save_wav, to_int16
-from brain import Brain, llm_worker
+from brain import llm_worker, make_brain
 from config import load_config
 from fillers import Fillers
 from rag import make_finder
@@ -45,7 +45,7 @@ class Agent:
         # UAO knowledge is optional (knowledge/chunks.json); the LLM decides when to search it.
         self.knowledge, self.find = make_finder(cfg)
         names = self.knowledge.program_names() if self.knowledge else ()
-        self.brain = Brain(cfg.ollama_host, cfg.llm_model, cfg.threads, cfg.llm_num_gpu, program_names=names)
+        self.brain = make_brain(cfg, program_names=names)
         self.brain.check()     # fail fast if Ollama is down or the model is missing
         self.brain.warmup()    # load the LLM + cache the system prompt
         self.stt = STT(cfg.whisper_model, cfg.whisper_device,
