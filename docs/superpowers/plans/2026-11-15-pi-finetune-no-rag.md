@@ -10,6 +10,31 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-15-pi-finetune-no-rag-design.md`
 
+## Estado al 2026-11-15 01:40 (corriendo desatendido)
+
+**Hecho:** Tasks 1–4 implementadas y comiteadas, 70 checks en verde. La compuerta de riesgo del
+entorno **pasó**: `torch 2.14.1+cu130` ve la GB10 con `sm_121` usando wheels de pip, en
+`~/.venvs/orienta-train` (sin contenedor). Entrenamiento probado de punta a punta con los datos
+del piloto (16 pasos, pérdida 2.96, modelo guardado).
+
+**Corriendo ahora:**
+1. Generación del dataset completo: 1.350 llamadas a `qwen2.5:14b`, ~5 h estimadas (lote 1 de 28
+   dio 232 ejemplos válidos, 20% de rechazo). Log: `scratchpad/dataset.log`. Escribe
+   incrementalmente en `finetune/data/crudo.jsonl` y **reanuda** si se interrumpe: basta volver a
+   lanzar el mismo comando.
+2. `scratchpad/orquestar.sh`: espera a que termine la generación, reescribe `train.jsonl`,
+   **revisa el dataset** (≥6.000 ejemplos, rechazo <40%, cero malformados) y solo entonces entrena
+   4 épocas excluyendo `neg:fuera`. Si la revisión falla, **no entrena** y lo deja anotado.
+
+**Lo que falta cuando despiertes:** Tasks 5–7 — export a GGUF con paridad de plantilla, el cambio
+de `rag_enabled` en el perfil `pi`, el quiz factual, y la medición de latencia **en la Pi encendida**
+(la CPU de la DGX no sirve como proxy de tiempos).
+
+**Dos desviaciones del spec, ambas documentadas en él:** el maestro es `qwen2.5:14b` vía Ollama y no
+el NIM (su API key de NGC perdió permisos), y la instancia de Ollama del sistema encola en serie, así
+que el maestro corre en una paralela en el puerto 11435 (`OLLAMA_MODELS=/usr/share/ollama/.ollama/models
+OLLAMA_NUM_PARALLEL=8`). Si la máquina se reinicia, hay que levantarla otra vez.
+
 ## Global Constraints
 
 - Las dependencias de entrenamiento **nunca** entran a `pyproject.toml`: la Pi instala desde ahí. Viven en `~/.venvs/orienta-train` con `finetune/requirements-train.txt`.
@@ -41,7 +66,7 @@
 **Interfaces:**
 - Produces: `teacher.ask_json(messages: list[dict], *, host: str, model: str, retries: int = 2, num_predict: int = 900) -> list | dict` — POST a `/api/chat` de Ollama, extrae el primer bloque JSON de la respuesta y lo parsea; reintenta ante JSON malformado. `teacher.ask_many(jobs: list[list[dict]], *, host, model, workers: int = 8) -> list` — ejecuta en `ThreadPoolExecutor`, devuelve resultados en el orden de entrada, con `None` donde falló.
 
-- [ ] **Step 1: Escribir los tests que fallan**
+- [x] **Step 1: Escribir los tests que fallan**
 
 ```python
 def test_teacher_extracts_json_from_prose():
@@ -64,16 +89,16 @@ def test_teacher_ask_many_keeps_order_and_marks_failures():
     assert teacher.ask_many(jobs, host="http://x", model="m", workers=2) == [[], None, []]
 ```
 
-- [ ] **Step 2: Correr y verificar que fallan**
+- [x] **Step 2: Correr y verificar que fallan**
 
 Run: `uv run python test_logic.py`
 Expected: FAIL — `module 'finetune.teacher' has no attribute '_extract_json'`
 
-- [ ] **Step 3: Implementar `finetune/teacher.py`**
+- [x] **Step 3: Implementar `finetune/teacher.py`**
 
 Solo stdlib (`urllib`, `json`, `re`, `concurrent.futures`). `_post(host, body) -> dict` hace el POST a `/api/chat` (es el punto que los tests sustituyen). `_extract_json` busca el primer `[` o `{` y recorta hasta su cierre balanceado — el maestro añade prosa alrededor.
 
-- [ ] **Step 4: Correr y verificar que pasan**
+- [x] **Step 4: Correr y verificar que pasan**
 
 Run: `uv run python test_logic.py`
 Expected: PASS, el contador total sube en 3.
@@ -103,7 +128,7 @@ git commit -m "feat: teacher client for dataset distillation, with measured mode
 - Consumes: la lista oficial de programas vía `rag.Knowledge.program_names()`; `NAME_RE` de `knowledge/replay.py`.
 - Produces: `validate.check(example: dict, *, source: str, official: list[str]) -> list[str]` — devuelve la lista de motivos de rechazo (vacía = válido). `validate.dedup(examples: list[dict]) -> list[dict]` — elimina near-duplicados por conjunto de tokens normalizados de la pregunta, cruzando todos los buckets.
 
-- [ ] **Step 1: Escribir los tests que fallan**
+- [x] **Step 1: Escribir los tests que fallan**
 
 ```python
 OFICIALES = ["Ingeniería Mecatrónica", "Ingeniería Mecánica", "Psicología"]
@@ -144,7 +169,7 @@ def test_dedup_crosses_buckets():
     assert len(validate.dedup(ejs)) == 2
 ```
 
-- [ ] **Step 2: Correr y verificar que fallan**
+- [x] **Step 2: Correr y verificar que fallan**
 
 Run: `uv run python test_logic.py`
 Expected: FAIL — `finetune.validate` no existe.
@@ -153,7 +178,7 @@ Expected: FAIL — `finetune.validate` no existe.
 
 Solo stdlib. Motivos exactos que devuelve: `"programa_inventado"`, `"precio"`, `"formato"`, `"contacto"`, `"sin_anclaje"`, `"longitud"`. Normalizar quitando acentos y pasando a minúsculas antes de comparar nombres. Para `"precio"`, combinar `PRICE_WORDS` de `rag.py` con una lista de números en palabras (`mil`, `millón`, `millones`…) además de `\d`. Para `"sin_anclaje"`, exigir un piso de solapamiento de tokens de contenido entre `r` y `source`.
 
-- [ ] **Step 4: Correr y verificar que pasan**
+- [x] **Step 4: Correr y verificar que pasan**
 
 Run: `uv run python test_logic.py`
 Expected: PASS, el contador sube en 7.
@@ -179,7 +204,7 @@ git commit -m "feat: deterministic validation gates for the distilled dataset"
 - Consumes: `teacher.ask_many`, `validate.check`, `validate.dedup`.
 - Produces: `schema.to_chat(example: dict) -> dict` — convierte un par `{p, r}` o un diálogo al formato de entrenamiento `{"messages": [{"role": ...}]}`. `make_dataset.main(profile_host, model, out_dir)` — escribe `train.jsonl`, `quiz.jsonl` y `rechazos.jsonl`.
 
-- [ ] **Step 1: Escribir los tests que fallan**
+- [x] **Step 1: Escribir los tests que fallan**
 
 ```python
 def test_schema_to_chat_single_turn_has_system_and_masks_nothing_extra():
@@ -201,7 +226,7 @@ def test_split_holds_out_phrasings_not_facts():
     assert not ({e["p"] for e in train} & {e["p"] for e in quiz})
 ```
 
-- [ ] **Step 2: Correr y verificar que fallan**
+- [x] **Step 2: Correr y verificar que fallan**
 
 Run: `uv run python test_logic.py`
 Expected: FAIL — `finetune.schema` no existe.
@@ -210,7 +235,7 @@ Expected: FAIL — `finetune.schema` no existe.
 
 El `system` de entrenamiento es la persona **corta** (sin `RAG_RULES`, sin la lista de programas: el modelo los va a saber). Buckets y cantidades exactas del spec §Dataset. Cada ejemplo lleva `fact_id` (el `id` de la ficha o chunk de origen) y `bucket`. Los rechazados se reintentan una vez y, si vuelven a fallar, se escriben en `rechazos.jsonl` con su motivo. Ruido de STT aplicado al ~20% de las entradas.
 
-- [ ] **Step 4: Correr y verificar que pasan**
+- [x] **Step 4: Correr y verificar que pasan**
 
 Run: `uv run python test_logic.py`
 Expected: PASS, el contador sube en 3.
@@ -327,7 +352,7 @@ git commit -m "feat: export the fine-tune to GGUF with verified template parity"
 **Interfaces:**
 - Produces: `make_finder(cfg)` devuelve `(None, finder)` cuando `cfg.rag_enabled` es falso, donde `finder` solo aplica el guardia de precios.
 
-- [ ] **Step 1: Escribir los tests que fallan**
+- [x] **Step 1: Escribir los tests que fallan**
 
 ```python
 def test_make_finder_disabled_loads_no_embedder_and_no_knowledge():
@@ -349,7 +374,7 @@ def test_profiles_still_share_keys_with_rag_enabled():
     assert set(vars(config.load_config("pi"))) == set(vars(config.load_config("pc")))
 ```
 
-- [ ] **Step 2: Correr y verificar que fallan**
+- [x] **Step 2: Correr y verificar que fallan**
 
 Run: `uv run python test_logic.py`
 Expected: FAIL — `rag_enabled` no existe.
@@ -358,7 +383,7 @@ Expected: FAIL — `rag_enabled` no existe.
 
 `config.toml`: `rag_enabled = true` en `[common]`, `false` en `[pi]`, y `llm_model` de `[pi]` al tag del modelo afinado. `rag.py`: corto-circuito al inicio de `make_finder` — sin embedder, sin `.npz`, sin llamadas; el finder solo chequea `PRICE_WORDS` y devuelve `[PRICE_CARD]` o `[]`. Con `knowledge=None`, `brain.py` ya deja el prompt solo con la persona (no se toca).
 
-- [ ] **Step 4: Correr y verificar que pasan**
+- [x] **Step 4: Correr y verificar que pasan**
 
 Run: `uv run python test_logic.py`
 Expected: PASS, el contador sube en 3.
@@ -382,7 +407,7 @@ git commit -m "feat: serve the pi profile without retrieval, keeping the price g
 - Consumes: `finetune/data/quiz.jsonl`, los tags de Ollama de la Task 5, `knowledge/replay.py`.
 - Produces: `quiz.score(answer: str, expected_terms: list[str], *, program: str, official: list[str]) -> dict` con las claves `aciertos`, `contaminacion_cruzada`, `inventado`, `formato_ok`.
 
-- [ ] **Step 1: Escribir los tests que fallan**
+- [x] **Step 1: Escribir los tests que fallan**
 
 ```python
 def test_quiz_scores_expected_terms():
@@ -402,7 +427,7 @@ def test_quiz_flags_invented_program_and_bad_format():
     assert r["inventado"] and not r["formato_ok"]
 ```
 
-- [ ] **Step 2: Correr y verificar que fallan**
+- [x] **Step 2: Correr y verificar que fallan**
 
 Run: `uv run python test_logic.py`
 Expected: FAIL — `finetune.quiz` no existe.
@@ -411,7 +436,7 @@ Expected: FAIL — `finetune.quiz` no existe.
 
 Puntuación determinista por coincidencia de términos, sin juez LLM. `--model <tag>` obligatorio y **debe ser un tag de Ollama**, no una ruta a un checkpoint: así es imposible medir el fp16 por accidente (Review Focus).
 
-- [ ] **Step 4: Correr y verificar que pasan**
+- [x] **Step 4: Correr y verificar que pasan**
 
 Run: `uv run python test_logic.py`
 Expected: PASS, el contador sube en 3.
