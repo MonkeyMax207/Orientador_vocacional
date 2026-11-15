@@ -4,6 +4,7 @@ Run: uv run python test_logic.py
 Each test_* function raises AssertionError if the logic is broken.
 """
 import json
+import os
 import queue
 import tempfile
 import threading
@@ -16,7 +17,7 @@ import numpy as np
 import animations
 import brain
 import config
-from finetune import make_dataset, masking, schema, teacher, validate
+from finetune import make_dataset, masking, schema, teacher, thermal, validate
 import download_models
 import main
 import rag
@@ -772,6 +773,63 @@ def test_dedup_crosses_buckets():
            {"p": "¿qué laboratorios tiene mecatronica?", "r": "b", "bucket": "chunks"},
            {"p": "¿Hay equipo de fútbol?", "r": "c", "bucket": "chunks"}]
     assert len(validate.dedup(ejs)) == 2
+
+
+class _FakeTermica:
+    """Guardia térmica con temperatura y señales simuladas."""
+
+    def __init__(self, temps):
+        self.serie, self.enviadas = list(temps), []
+        self.guard = thermal.ThermalGuard(read=self._read, pids=lambda: [111, 222],
+                                           send=self._send, log=lambda m: None)
+
+    def _read(self):
+        return [self.serie.pop(0)] if self.serie else [0.0]
+
+    def _send(self, pids, sig):
+        import signal as s
+        self.enviadas.append(({s.SIGSTOP: "STOP", s.SIGCONT: "CONT", s.SIGKILL: "KILL"}[sig],
+                               list(pids)))
+        return list(pids)
+
+
+def test_thermal_freezes_above_threshold_and_thaws_when_cool():
+    t = _FakeTermica([80, 95, 92, 84])
+    for _ in range(4):
+        t.guard.tick()
+    # 80: nada. 95: congela. 92: sigue congelado (no reanuda hasta <= 85). 84: reanuda.
+    assert [a for a, _ in t.enviadas] == ["STOP", "CONT"]
+
+
+def test_thermal_kills_as_last_resort():
+    t = _FakeTermica([101])
+    t.guard.tick()
+    assert t.enviadas == [("KILL", [111, 222])]
+
+
+def test_thermal_does_not_refreeze_what_is_already_frozen():
+    t = _FakeTermica([95, 96, 97])
+    for _ in range(3):
+        t.guard.tick()
+    assert [a for a, _ in t.enviadas] == ["STOP"]
+
+
+def test_thermal_wait_until_cool_holds_then_returns():
+    serie = iter([91, 90, 84])
+    esperas = []
+    assert thermal.wait_until_cool(read=lambda: [next(serie)], sleep=esperas.append,
+                                    log=lambda m: None) is True
+    assert esperas == [30, 30]
+
+
+def test_thermal_wait_until_cool_passes_through_when_already_cool():
+    assert thermal.wait_until_cool(read=lambda: [70.0], sleep=lambda s: None,
+                                    log=lambda m: None) is False
+
+
+def test_thermal_heavy_pids_never_includes_this_process():
+    # Leer /proc en vez de pgrep: un patrón en la línea de comandos coincide con ese comando.
+    assert os.getpid() not in thermal.heavy_pids(patterns=("python",))
 
 
 def _fake_render(messages, add_generation_prompt=False):
