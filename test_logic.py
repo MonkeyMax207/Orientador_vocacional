@@ -711,6 +711,27 @@ def test_validate_keeps_honest_decline_despite_no_overlap():
         ej, source="Fab-Lab para impresión y Laboratorio de Automática", official=OFICIALES)
 
 
+def test_validate_measures_dialogue_length_per_turn():
+    # El bug que mato los 400 dialogos de la primera corrida: ocho turnos de diecisiete
+    # palabras son ocho respuestas correctas, no una de ciento treinta y seis.
+    dialogo = {"turnos": [{"u": f"pregunta {i}", "a": "Eso suena muy interesante, cuéntame un poco "
+                                                      "más de lo que te gusta hacer."}
+                           for i in range(8)]}
+    assert "longitud" not in validate.check(dialogo, source="", official=OFICIALES)
+
+
+def test_validate_still_rejects_a_single_overlong_dialogue_turn():
+    dialogo = {"turnos": [{"u": "hola", "a": "palabra " * 80}]}
+    assert "longitud" in validate.check(dialogo, source="", official=OFICIALES)
+
+
+def test_validate_skips_anchoring_for_dialogues():
+    # "¡Qué bien!" no comparte vocabulario con ninguna ficha y es una respuesta correcta.
+    dialogo = {"turnos": [{"u": "Me gusta el fútbol", "a": "¡Qué bien! ¿Lo juegas seguido?"}]}
+    assert validate.check(dialogo, source="Fab-Lab y Laboratorio de Automática",
+                           official=OFICIALES) == []
+
+
 def test_validate_rejects_price_written_in_words():
     ej = {"p": "¿Cuánto cuesta?", "r": "El semestre vale tres millones de pesos."}
     assert "precio" in validate.check(ej, source="", official=OFICIALES)

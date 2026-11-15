@@ -111,13 +111,18 @@ def check(example: dict, *, source: str, official: list[str],
     if not answer.strip() or not question.strip():
         return ["forma_invalida"]
 
-    if MARKDOWN.search(answer) or EMOJI.search(answer) or DIGITS.search(answer):
+    # Por turno, no sobre la concatenacion: ocho turnos de 17 palabras son ocho respuestas
+    # correctas, no una de 136. Medirlo junto rechazaba el bucket de dialogos completo.
+    turnos = example.get("turnos")
+    respuestas = [t.get("a", "") for t in turnos] if turnos else [answer]
+
+    if any(MARKDOWN.search(r) or EMOJI.search(r) or DIGITS.search(r) for r in respuestas):
         reasons.append("formato")
-    if len(answer.split()) > MAX_WORDS:
+    if any(len(r.split()) > MAX_WORDS for r in respuestas):
         reasons.append("longitud")
-    if _quotes_an_amount(answer):
+    if any(_quotes_an_amount(r) for r in respuestas):
         reasons.append("precio")
-    if EMAIL_OR_URL.search(answer) or re.search(r"\b\d[\d\s-]{5,}", answer):
+    if any(EMAIL_OR_URL.search(r) or re.search(r"\b\d[\d\s-]{5,}", r) for r in respuestas):
         reasons.append("contacto")
 
     absent = _mentions_absent_program(answer, official)
@@ -127,8 +132,10 @@ def check(example: dict, *, source: str, official: list[str],
     elif absent:
         reasons.append("programa_inventado")
 
+    # Los dialogos se juzgan por persona y por nombres de programa, no por anclaje lexico: un
+    # "¡Qué bien, cuéntame más!" no comparte vocabulario con ninguna ficha y es correcto.
     declina = any(d in normalize(answer) for d in DECLINES)
-    if source and not declina:
+    if source and not declina and not turnos:
         tokens = _content_tokens(answer)
         shared = tokens & _content_tokens(source)
         if tokens and len(shared) / len(tokens) < 0.25:

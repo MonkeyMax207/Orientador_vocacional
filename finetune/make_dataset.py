@@ -61,8 +61,9 @@ def prompt_factual(source: dict, n: int, estricto: bool) -> list[dict]:
              'Devuelve solo JSON: [{"p":"pregunta","r":"respuesta"}, ...]'}]
 
 
-def prompt_dialogo(cards: list[dict], n_turnos: int) -> list[dict]:
+def prompt_dialogo(cards: list[dict], n_turnos: int, programas: list[str]) -> list[dict]:
     contexto = "\n".join(f"- {c['titulo']}: {c['texto']}" for c in cards)
+    nombres = ", ".join(programas)
     return [{"role": "system", "content":
              "Eres un generador de datos de entrenamiento. Respondes SIEMPRE con JSON valido."},
             {"role": "user", "content":
@@ -71,7 +72,10 @@ def prompt_dialogo(cards: list[dict], n_turnos: int) -> list[dict]:
              f"y Orienta, un amigo cercano que conoce la universidad. Orienta escucha primero, "
              f"reacciona a algo concreto de lo que el joven dijo, hace UNA sola pregunta por turno, "
              f"nunca repite una pregunta, y solo recomienda carreras cuando ya conoce a la persona o "
-             f"cuando se lo piden. No es un vendedor. {FORMA}\n\n"
+             f"cuando se lo piden. No es un vendedor. Cada respuesta de Orienta: una o dos frases, "
+             f"nunca mas. {FORMA}\n\n"
+             f"Si Orienta nombra una carrera, usa EXACTAMENTE uno de estos nombres, sin variarlo: "
+             f"{nombres}.\n\n"
              'Devuelve solo JSON: {"turnos":[{"u":"lo que dice el joven","a":"lo que responde Orienta"}, ...]}'}]
 
 
@@ -206,6 +210,7 @@ def main() -> None:
     ap.add_argument("--batch", type=int, default=32)
     ap.add_argument("--por-ficha", type=int, default=10)
     ap.add_argument("--por-chunk", type=int, default=8)
+    ap.add_argument("--pasadas", type=int, default=2, help="pasadas por fuente, con fraseo distinto")
     ap.add_argument("--dialogos", type=int, default=400)
     ap.add_argument("--negativas", type=int, default=30, help="llamadas por clase de negativa")
     ap.add_argument("--num-predict", type=int, default=1300,
@@ -222,18 +227,23 @@ def main() -> None:
     if args.limit:
         cards, chunks = cards[:args.limit], chunks[:args.limit]
 
+    # Varias pasadas por fuente con distinto fraseo: es la palanca principal para que un modelo
+    # pequeno memorice un hecho. Subir --pasadas y relanzar solo genera las pasadas nuevas.
     jobs: list[tuple[str, list[dict], str, bool]] = []
+    pases = [chr(ord("a") + i) for i in range(args.pasadas)]
     for c in cards:
-        jobs.append((f"ficha:{c['id']}#a", prompt_factual(c, args.por_ficha, False), c["texto"], False))
-        jobs.append((f"ficha:{c['id']}#b", prompt_factual(c, args.por_ficha, False), c["texto"], False))
+        for p in pases:
+            jobs.append((f"ficha:{c['id']}#{p}", prompt_factual(c, args.por_ficha, False),
+                          c["texto"], False))
     for ch in chunks:
-        jobs.append((f"chunk:{ch['id']}#a", prompt_factual(ch, args.por_chunk, True), ch["texto"], False))
-        jobs.append((f"chunk:{ch['id']}#b", prompt_factual(ch, args.por_chunk, True), ch["texto"], False))
+        for p in pases:
+            jobs.append((f"chunk:{ch['id']}#{p}", prompt_factual(ch, args.por_chunk, True),
+                          ch["texto"], False))
     n_dialogos = max(1, args.dialogos if not args.limit else 3)
     for i in range(n_dialogos):
         muestra = rng.sample(cards, k=min(3, len(cards)))
         fuente = " ".join(c["texto"] for c in muestra)
-        jobs.append((f"dialogo:{i}", prompt_dialogo(muestra, 8), fuente, False))
+        jobs.append((f"dialogo:{i}", prompt_dialogo(muestra, 8, programas), fuente, False))
     n_neg = args.negativas if not args.limit else 1
     for clase in ("precio", "ausente", "contacto", "fuera", "ruido"):
         for i in range(n_neg):
