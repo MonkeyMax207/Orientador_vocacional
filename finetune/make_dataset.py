@@ -117,10 +117,16 @@ def stt_noise(text: str, rng: random.Random) -> str:
 
 
 def _load_done(path: Path) -> tuple[list[dict], set[str]]:
+    """Rows from a previous run, re-checked for shape.
+
+    Resumed rows must not be trusted blindly: anything written before a gate existed would
+    sail straight into the dataset. The job ids still count as done, so a job whose rows are
+    discarded here is not generated again — the gates are what decide, not the history.
+    """
     if not path.exists():
         return [], set()
     rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
-    return rows, {r["job_id"] for r in rows}
+    return [r for r in rows if _usable(r)], {r["job_id"] for r in rows if "job_id" in r}
 
 
 def _usable(d) -> bool:
@@ -248,8 +254,11 @@ def main() -> None:
             e["p"] = stt_noise(e["p"], rng)
 
     train, quiz = split_by_phrasing(kept)
+    # El bucket viaja junto a los mensajes (el entrenador ignora las claves extra) para poder
+    # excluir un bucket flojo mas tarde sin volver a generar nada.
     (out_dir / "train.jsonl").write_text(
-        "\n".join(json.dumps(schema.to_chat(e), ensure_ascii=False) for e in train) + "\n")
+        "\n".join(json.dumps({**schema.to_chat(e), "bucket": e.get("job_id", "?").split("#")[0]},
+                              ensure_ascii=False) for e in train) + "\n")
     (out_dir / "quiz.jsonl").write_text(
         "\n".join(json.dumps(e, ensure_ascii=False) for e in quiz) + "\n")
     (out_dir / "muestra.jsonl").write_text(

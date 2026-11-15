@@ -16,7 +16,7 @@ import numpy as np
 import animations
 import brain
 import config
-from finetune import make_dataset, schema, teacher, validate
+from finetune import make_dataset, masking, schema, teacher, validate
 import download_models
 import main
 import rag
@@ -751,6 +751,41 @@ def test_dedup_crosses_buckets():
            {"p": "¿qué laboratorios tiene mecatronica?", "r": "b", "bucket": "chunks"},
            {"p": "¿Hay equipo de fútbol?", "r": "c", "bucket": "chunks"}]
     assert len(validate.dedup(ejs)) == 2
+
+
+def _fake_render(messages, add_generation_prompt=False):
+    # Imita una plantilla de chat real: append-only, con cabecera de turno.
+    out = "".join(f"<|{m['role']}|>{m['content']}<|end|>" for m in messages)
+    return out + "<|assistant|>" if add_generation_prompt else out
+
+
+def _fake_encode(text):
+    # Un "token" por caracter: suficiente para verificar los tramos.
+    return [ord(c) for c in text]
+
+
+def test_masking_labels_every_assistant_turn_not_only_the_last():
+    # El bug que tuvo este archivo: de un diálogo de ocho turnos se entrenaba uno.
+    messages = [{"role": "system", "content": "S"},
+                {"role": "user", "content": "U1"}, {"role": "assistant", "content": "A1"},
+                {"role": "user", "content": "U2"}, {"role": "assistant", "content": "A2"}]
+    ids, labels = masking.build(messages, _fake_render, _fake_encode)
+    entrenado = "".join(chr(l) for l in labels if l != masking.IGNORE)
+    assert "A1" in entrenado and "A2" in entrenado
+
+
+def test_masking_never_labels_user_or_system_text():
+    messages = [{"role": "system", "content": "SECRETO"},
+                {"role": "user", "content": "PREGUNTA"}, {"role": "assistant", "content": "R"}]
+    _, labels = masking.build(messages, _fake_render, _fake_encode)
+    entrenado = "".join(chr(l) for l in labels if l != masking.IGNORE)
+    assert "SECRETO" not in entrenado and "PREGUNTA" not in entrenado
+
+
+def test_masking_trained_fraction_is_meaningful():
+    messages = [{"role": "user", "content": "U"}, {"role": "assistant", "content": "RESPUESTA"}]
+    _, labels = masking.build(messages, _fake_render, _fake_encode)
+    assert 0.1 < masking.trained_fraction(labels) < 0.9
 
 
 def test_schema_to_chat_single_turn_uses_brains_system_prompt():
