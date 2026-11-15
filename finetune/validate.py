@@ -23,6 +23,31 @@ NUMBER_WORDS = ("un", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho",
 MONEY_WORDS = ("peso", "pesos", "dolar", "dolares", "euro", "euros", "smmlv", "salario minimo")
 BIG_AMOUNTS = ("millon", "millones", "smmlv")
 DENIAL = ("no ", "ninguno", "ninguna", "tampoco", "no tenemos", "no ofrece", "no existe", "no hay")
+# Honest "the source doesn't say" answers have almost no lexical overlap with the source by
+# construction, so the anchoring gate must not throw them away: they are the examples that
+# teach the student to admit ignorance instead of inventing.
+DECLINES = ("no se menciona", "no menciona", "no dice", "no especifica", "no aparece",
+            "no tengo ese dato", "no sabria", "no estoy seguro", "no lo precisa", "no detalla")
+# Careers a model would plausibly invent for a Colombian university, including near-misses of
+# real UAO names: "Diseño Gráfico" for "Diseño de la Comunicación Gráfica", "Ingeniería de
+# Sistemas" for "Ingeniería Informática". Single words that double as subjects (economía,
+# música, biología) are deliberately absent: they appear legitimately inside answers.
+ABSENT_CANDIDATES = ("Medicina", "Odontologia", "Enfermeria", "Veterinaria", "Fisioterapia",
+                     "Trabajo Social", "Biologia Marina", "Diseno Grafico", "Diseno Gráfico",
+                     "Comunicacion Audiovisual", "Administracion de Negocios",
+                     "Ingenieria Aeroespacial", "Ingenieria Nuclear", "Ingenieria Petrolera",
+                     "Ingenieria Civil", "Ingenieria Quimica", "Ingenieria de Sistemas",
+                     "Ingenieria Agronomica", "Ingenieria Naval", "Arquitectura Naval")
+
+
+def absent_from(official: list[str]) -> list[str]:
+    """Candidates that the official list does not contain — computed, never hand-maintained.
+
+    'Derecho' and 'Arquitectura' ARE UAO programs, so a hardcoded absent list drifts into
+    teaching the student to deny real ones.
+    """
+    oficiales = [normalize(o) for o in official]
+    return [c for c in ABSENT_CANDIDATES if not any(normalize(c) in o for o in oficiales)]
 STOPWORDS = frozenset("""el la los las un una unos unas de del al a en y o que como para por con sin
 sobre tiene tienen hay es son esta estan muy mas pero si no te se lo le su sus mi tu eso esa ese
 esto esta aqui alli tambien puedes puede pueden donde cuando cual cuales quien porque""".split())
@@ -41,13 +66,22 @@ def _content_tokens(text: str) -> set[str]:
 
 
 def _mentions_absent_program(text: str, official: list[str]) -> list[str]:
-    """Program names in `text` that do not match any official one."""
+    """Program names in `text` that the UAO does not offer.
+
+    Two detectors, because only 14 of the 30 official programs start with
+    Ingeniería/Licenciatura/Tecnología — the pattern inherited from replay.py is blind to
+    Arquitectura, Cine, Psicología, Diseño Industrial and the rest of the catalog.
+    """
+    plain = normalize(text)
     oficiales = [normalize(o) for o in official]
     absent = []
-    for match in PROGRAM.finditer(normalize(text)):
+    for match in PROGRAM.finditer(plain):                    # "Ingeniería X" style
         candidate = re.sub(r"\s+", " ", match.group(0)).strip()
         if not any(candidate in o for o in oficiales):
             absent.append(candidate)
+    for candidate in absent_from(official):                  # everything else, by name
+        if normalize(candidate) in plain:
+            absent.append(normalize(candidate))
     return absent
 
 
@@ -68,7 +102,14 @@ def check(example: dict, *, source: str, official: list[str],
     offer is the whole point — there the gate flips and demands an explicit denial.
     """
     answer = example.get("r") or " ".join(t.get("a", "") for t in example.get("turnos", []))
+    question = example.get("p") or " ".join(t.get("u", "") for t in example.get("turnos", []))
     reasons = []
+
+    # Shape first: the teacher sometimes answers with other key names ("pregunta"/"respuesta"),
+    # and an example with an empty answer would otherwise pass every other gate and train the
+    # student to say nothing.
+    if not answer.strip() or not question.strip():
+        return ["forma_invalida"]
 
     if MARKDOWN.search(answer) or EMOJI.search(answer) or DIGITS.search(answer):
         reasons.append("formato")
@@ -86,7 +127,8 @@ def check(example: dict, *, source: str, official: list[str],
     elif absent:
         reasons.append("programa_inventado")
 
-    if source:
+    declina = any(d in normalize(answer) for d in DECLINES)
+    if source and not declina:
         tokens = _content_tokens(answer)
         shared = tokens & _content_tokens(source)
         if tokens and len(shared) / len(tokens) < 0.25:

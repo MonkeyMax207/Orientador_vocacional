@@ -687,6 +687,30 @@ def test_validate_allows_absent_program_only_when_denied():
                                              allow_absent=True)
 
 
+def test_validate_rejects_invented_non_engineering_program():
+    # 16 de los 30 programas reales no empiezan por Ingeniería/Licenciatura/Tecnología, así que
+    # el regex heredado de replay.py era ciego a ellos. "Diseño Gráfico" no existe en la UAO:
+    # el programa real es "Diseño de la Comunicación Gráfica".
+    ej = {"p": "¿Qué más hay?", "r": "También tenemos Diseño Gráfico y Medicina."}
+    assert "programa_inventado" in validate.check(ej, source="", official=OFICIALES)
+
+
+def test_absent_list_never_contains_a_real_program():
+    # "Derecho" y "Arquitectura" SÍ los ofrece la UAO: negarlos sería un error factual.
+    reales = ["Derecho", "Arquitectura", "Psicología", "Diseño de la Comunicación Gráfica"]
+    ausentes = validate.absent_from(reales)
+    assert "Derecho" not in ausentes and "Arquitectura" not in ausentes
+    assert "Medicina" in ausentes
+
+
+def test_validate_keeps_honest_decline_despite_no_overlap():
+    # Una respuesta honesta de "el texto no lo dice" no comparte vocabulario con la fuente por
+    # construcción; descartarla nos quitaría justo los ejemplos que enseñan a admitir ignorancia.
+    ej = {"p": "¿Hay laboratorio?", "r": "No se menciona ninguno en particular."}
+    assert "sin_anclaje" not in validate.check(
+        ej, source="Fab-Lab para impresión y Laboratorio de Automática", official=OFICIALES)
+
+
 def test_validate_rejects_price_written_in_words():
     ej = {"p": "¿Cuánto cuesta?", "r": "El semestre vale tres millones de pesos."}
     assert "precio" in validate.check(ej, source="", official=OFICIALES)
@@ -758,6 +782,19 @@ def test_as_items_handles_list_and_dialogue_shapes():
     dialogo = {"turnos": [{"u": "a", "a": "b"}]}
     assert make_dataset._as_items(dialogo) == [dialogo]
     assert make_dataset._as_items("nada") == []
+
+
+def test_as_items_drops_other_key_names():
+    # El maestro a veces responde {"pregunta":..,"respuesta":..}: dejarlo pasar reventaba
+    # schema.to_chat al final de una corrida de horas.
+    assert make_dataset._as_items([{"pregunta": "a", "respuesta": "b"}]) == []
+
+
+def test_validate_rejects_empty_or_shapeless_example():
+    # Pasaba todas las demás compuertas y entrenaba al modelo a no decir nada.
+    assert validate.check({"p": "¿Y?", "r": "  "}, source="", official=OFICIALES) == ["forma_invalida"]
+    assert validate.check({"pregunta": "a", "respuesta": "b"}, source="",
+                           official=OFICIALES) == ["forma_invalida"]
 
 
 def test_teacher_extracts_json_from_prose():

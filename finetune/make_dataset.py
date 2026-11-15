@@ -30,9 +30,8 @@ FORMA = ("Reglas de forma, obligatorias: espanol hablado, sin markdown, sin negr
          "Nunca des precios, valores de matricula ni montos de becas. Nunca inventes telefonos "
          "ni correos. Solo menciona programas, materias o laboratorios que aparezcan en el texto.")
 
-CARRERAS_AUSENTES = ["Ingenieria Aeroespacial", "Medicina", "Derecho", "Arquitectura Naval",
-                     "Veterinaria", "Odontologia", "Ingenieria Nuclear", "Astronomia",
-                     "Ingenieria Petrolera", "Enfermeria"]
+# No hay lista fija: se calcula filtrando contra los programas oficiales, porque "Derecho" y
+# "Arquitectura" SI los ofrece la UAO y entrenar su negacion seria un error factual.
 
 FUERA_DE_TEMA = ["¿Quien gano el mundial?", "¿Me cuentas un chiste?", "¿Que hora es?",
                  "¿Cual es la capital de Francia?", "¿Me ayudas con una tarea de calculo?",
@@ -82,17 +81,19 @@ def prompt_negativas(clase: str, n: int, programas: list[str]) -> list[dict]:
                    "ni rangos: dice con amabilidad que eso lo explica mejor un asesor de admisiones "
                    "de la universidad."),
         "ausente": (f"El joven pregunta por una carrera que la universidad NO ofrece "
-                    f"(por ejemplo: {', '.join(random.sample(CARRERAS_AUSENTES, 4))}). Orienta lo dice "
-                    f"con honestidad, sin inventar, y ofrece contar lo que si hay. Programas que SI "
-                    f"existen: {', '.join(programas[:12])}."),
+                    f"(por ejemplo: {', '.join(random.sample(validate.absent_from(programas), 4))}). "
+                    f"Orienta lo dice con honestidad, sin inventar, y ofrece contar lo que si hay. "
+                    f"Usa SOLO estos nombres de programas que SI existen, escritos exactamente asi: "
+                    f"{', '.join(random.sample(programas, min(10, len(programas))))}."),
         "contacto": ("El joven pide un telefono, un correo o un link. Orienta no tiene datos de "
                      "contacto propios y no los inventa: sugiere preguntar en la universidad."),
         "fuera": (f"El joven pregunta algo ajeno a la universidad y a su futuro "
                   f"(por ejemplo: {', '.join(random.sample(FUERA_DE_TEMA, 3))}). Orienta responde "
                   f"breve y con calidez, y vuelve con naturalidad a la conversacion."),
         "ruido": ("La transcripcion de la voz del joven llego sin sentido o cortada (por ejemplo: "
-                  "'esto que el tiene gusta por', 'mmm no se eh'). Orienta no adivina: pide con "
-                  "naturalidad que se lo repita."),
+                  "'esto que el tiene gusta por', 'mmm no se eh'). Orienta no adivina: pide que se "
+                  "lo repita con CALIDEZ y cercania, como un amigo que no escucho bien en un lugar "
+                  "ruidoso, nunca con sequedad ni dando ordenes."),
     }
     return [{"role": "system", "content":
              "Eres un generador de datos de entrenamiento. Respondes SIEMPRE con JSON valido."},
@@ -122,18 +123,24 @@ def _load_done(path: Path) -> tuple[list[dict], set[str]]:
     return rows, {r["job_id"] for r in rows}
 
 
+def _usable(d) -> bool:
+    return isinstance(d, dict) and (("p" in d and "r" in d) or "turnos" in d)
+
+
 def _as_items(data) -> list[dict]:
-    """The teacher answers with a list of pairs, or with one object holding "turnos"."""
+    """The teacher answers with a list of pairs, or with one object holding "turnos".
+
+    Anything with other key names ("pregunta"/"respuesta") is dropped here rather than
+    reaching schema.to_chat, which would raise on the missing key.
+    """
     if isinstance(data, list):
-        return [d for d in data if isinstance(d, dict)]
-    if isinstance(data, dict):
-        return [data] if "turnos" in data else ([data] if "p" in data else [])
-    return []
+        return [d for d in data if _usable(d)]
+    return [data] if _usable(data) else []
 
 
 def generate(jobs: list[tuple[str, list[dict], str, bool]], *, model: str, host: str,
              official: list[str], out_path: Path, rejects_path: Path, workers: int,
-             batch: int) -> list[dict]:
+             batch: int, num_predict: int = 1300) -> list[dict]:
     """Runs jobs in batches, validating and appending results as they arrive.
 
     Each job is (job_id, messages, source_text, allow_absent). Resumes by job_id.
@@ -145,7 +152,8 @@ def generate(jobs: list[tuple[str, list[dict], str, bool]], *, model: str, host:
         for start in range(0, len(pending), batch):
             lote = pending[start:start + batch]
             respuestas = teacher.ask_many([m for _, m, _, _ in lote], host=host, model=model,
-                                           workers=workers, seed_base=start)
+                                           workers=workers, seed_base=start,
+                                           num_predict=num_predict)
             for (job_id, _, source, allow_absent), data in zip(lote, respuestas):
                 if data is None:
                     bad.write(json.dumps({"job_id": job_id, "motivos": ["sin_json"]}) + "\n")
@@ -194,6 +202,8 @@ def main() -> None:
     ap.add_argument("--por-chunk", type=int, default=8)
     ap.add_argument("--dialogos", type=int, default=400)
     ap.add_argument("--negativas", type=int, default=30, help="llamadas por clase de negativa")
+    ap.add_argument("--num-predict", type=int, default=1300,
+                    help="techo de tokens; los dialogos de 8 turnos no caben en 900")
     args = ap.parse_args()
 
     out_dir = ROOT / args.out
@@ -212,6 +222,7 @@ def main() -> None:
         jobs.append((f"ficha:{c['id']}#b", prompt_factual(c, args.por_ficha, False), c["texto"], False))
     for ch in chunks:
         jobs.append((f"chunk:{ch['id']}#a", prompt_factual(ch, args.por_chunk, True), ch["texto"], False))
+        jobs.append((f"chunk:{ch['id']}#b", prompt_factual(ch, args.por_chunk, True), ch["texto"], False))
     n_dialogos = max(1, args.dialogos if not args.limit else 3)
     for i in range(n_dialogos):
         muestra = rng.sample(cards, k=min(3, len(cards)))
@@ -228,7 +239,7 @@ def main() -> None:
 
     kept = generate(jobs, model=args.model, host=args.host, official=programas,
                     out_path=out_dir / "crudo.jsonl", rejects_path=out_dir / "rechazos.jsonl",
-                    workers=args.workers, batch=args.batch)
+                    workers=args.workers, batch=args.batch, num_predict=args.num_predict)
     kept = validate.dedup(kept)
     print(f"{len(kept)} tras deduplicar", flush=True)
 
