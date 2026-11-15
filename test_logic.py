@@ -16,6 +16,7 @@ import numpy as np
 import animations
 import brain
 import config
+from finetune import make_dataset, schema, teacher, validate
 import download_models
 import main
 import rag
@@ -655,6 +656,144 @@ def test_brain_offers_search_only_past_the_gate():
     list(b.stream_reply("Hola, ¿cómo estás?"))
     list(b.stream_reply("¿Qué laboratorio hay?"))
     assert "tools" not in sent[0] and "tools" in sent[1]
+
+OFICIALES = ["Ingeniería Mecatrónica", "Ingeniería Mecánica",
+             "Ingeniería Electrónica y Telecomunicaciones", "Psicología"]
+
+
+def test_validate_rejects_invented_program():
+    ej = {"p": "¿Tienen aeroespacial?", "r": "Sí, tenemos Ingeniería Aeroespacial."}
+    assert "programa_inventado" in validate.check(ej, source="", official=OFICIALES)
+
+
+def test_validate_accepts_official_program_despite_accents_and_case():
+    ej = {"p": "¿Qué hay?", "r": "Tenemos ingenieria mecatronica."}
+    assert "programa_inventado" not in validate.check(
+        ej, source="ingeniería mecatrónica", official=OFICIALES)
+
+
+def test_validate_accepts_multiword_official_program_from_one_word_match():
+    ej = {"p": "¿Qué hay?", "r": "Tenemos Ingeniería Electrónica y Telecomunicaciones."}
+    assert "programa_inventado" not in validate.check(
+        ej, source="Ingeniería Electrónica y Telecomunicaciones", official=OFICIALES)
+
+
+def test_validate_allows_absent_program_only_when_denied():
+    # El bucket de negativas TIENE que nombrar carreras que no existen, para negarlas.
+    negada = {"p": "¿Tienen aeroespacial?", "r": "No, no tenemos Ingeniería Aeroespacial."}
+    afirmada = {"p": "¿Tienen aeroespacial?", "r": "Claro, Ingeniería Aeroespacial es buenísima."}
+    assert validate.check(negada, source="", official=OFICIALES, allow_absent=True) == []
+    assert "sin_negacion" in validate.check(afirmada, source="", official=OFICIALES,
+                                             allow_absent=True)
+
+
+def test_validate_rejects_price_written_in_words():
+    ej = {"p": "¿Cuánto cuesta?", "r": "El semestre vale tres millones de pesos."}
+    assert "precio" in validate.check(ej, source="", official=OFICIALES)
+
+
+def test_validate_accepts_price_refusal_without_a_figure():
+    # Decir "precios" no es dar un precio: el rechazo honesto debe pasar la compuerta.
+    ej = {"p": "¿Cuánto cuesta el semestre?",
+          "r": "Eso no te lo puedo decir; lo explica mejor un asesor de admisiones."}
+    assert validate.check(ej, source="", official=OFICIALES) == []
+
+
+def test_validate_rejects_markdown_and_bullets():
+    ej = {"p": "¿Qué labs?", "r": "Tiene:\n- **Fab-Lab**\n- Automática"}
+    assert "formato" in validate.check(ej, source="Fab-Lab y Automática", official=OFICIALES)
+
+
+def test_validate_rejects_invented_contact():
+    ej = {"p": "¿A quién llamo?", "r": "Escribe a info@uao.edu.co."}
+    assert "contacto" in validate.check(ej, source="", official=OFICIALES)
+
+
+def test_validate_rejects_answer_unmoored_from_source():
+    ej = {"p": "¿Qué labs tiene?", "r": "Tiene un reactor nuclear y un túnel de viento."}
+    assert "sin_anclaje" in validate.check(
+        ej, source="Fab-Lab para impresión y Laboratorio de Automática", official=OFICIALES)
+
+
+def test_validate_accepts_answer_anchored_in_source():
+    ej = {"p": "¿Qué labs tiene?", "r": "Tiene el Fab-Lab y el laboratorio de Automática."}
+    assert validate.check(
+        ej, source="Fab-Lab para impresión y Laboratorio de Automática",
+        official=OFICIALES) == []
+
+
+def test_dedup_crosses_buckets():
+    ejs = [{"p": "¿Qué laboratorios tiene Mecatrónica?", "r": "a", "bucket": "fichas"},
+           {"p": "¿qué laboratorios tiene mecatronica?", "r": "b", "bucket": "chunks"},
+           {"p": "¿Hay equipo de fútbol?", "r": "c", "bucket": "chunks"}]
+    assert len(validate.dedup(ejs)) == 2
+
+
+def test_schema_to_chat_single_turn_uses_brains_system_prompt():
+    d = schema.to_chat({"p": "¿Qué labs?", "r": "El Fab-Lab."})
+    assert [m["role"] for m in d["messages"]] == ["system", "user", "assistant"]
+    # Entrenar con un prompt distinto al que sirve brain.py es la falla silenciosa clásica.
+    assert d["messages"][0]["content"] == brain.SYSTEM_PROMPT
+    assert d["messages"][-1]["content"] == "El Fab-Lab."
+
+
+def test_schema_to_chat_multiturn_preserves_order():
+    d = schema.to_chat({"turnos": [{"u": "Hola", "a": "¡Hola!"},
+                                    {"u": "¿Y labs?", "a": "El Fab-Lab."}]})
+    assert [m["role"] for m in d["messages"]] == ["system", "user", "assistant",
+                                                   "user", "assistant"]
+
+
+def test_split_holds_out_phrasings_not_facts():
+    ejs = [{"p": f"pregunta {fid} {i}", "r": "x", "fact_id": fid}
+           for fid in ("a", "b") for i in range(10)]
+    train, quiz = make_dataset.split_by_phrasing(ejs, quiz_frac=0.2)
+    assert {e["fact_id"] for e in train} == {"a", "b"}   # todos los hechos se entrenan
+    assert {e["fact_id"] for e in quiz} == {"a", "b"}
+    assert not ({e["p"] for e in train} & {e["p"] for e in quiz})
+
+
+def test_as_items_handles_list_and_dialogue_shapes():
+    assert make_dataset._as_items([{"p": "a", "r": "b"}, "basura"]) == [{"p": "a", "r": "b"}]
+    dialogo = {"turnos": [{"u": "a", "a": "b"}]}
+    assert make_dataset._as_items(dialogo) == [dialogo]
+    assert make_dataset._as_items("nada") == []
+
+
+def test_teacher_extracts_json_from_prose():
+    # El maestro envuelve el JSON en texto por mucho que el prompt lo prohíba.
+    raw = 'Claro, aquí tienes:\n[{"p":"¿Qué labs?","r":"El Fab-Lab."}]\nEspero que sirva.'
+    assert teacher._extract_json(raw) == [{"p": "¿Qué labs?", "r": "El Fab-Lab."}]
+
+
+def test_teacher_extracts_json_ignoring_brackets_inside_strings():
+    raw = '[{"p":"¿Qué dice el [anexo]?","r":"Dice }{ cosas."}]'
+    assert teacher._extract_json(raw) == [{"p": "¿Qué dice el [anexo]?", "r": "Dice }{ cosas."}]
+
+
+def test_teacher_retries_malformed_json_then_succeeds():
+    respuestas = iter(['{"roto": ', '[{"p":"a","r":"b"}]'])
+    real_post = teacher._post
+    teacher._post = lambda host, body: {"message": {"content": next(respuestas)}}
+    try:
+        assert teacher.ask_json([{"role": "user", "content": "x"}], host="http://x",
+                                 model="m", retries=2) == [{"p": "a", "r": "b"}]
+    finally:
+        teacher._post = real_post
+
+
+def test_teacher_ask_many_keeps_order_and_marks_failures():
+    real_post = teacher._post
+    teacher._post = lambda host, body: (
+        {"message": {"content": "[]"}} if "ok" in body["messages"][0]["content"]
+        else {"message": {"content": "basura"}})
+    try:
+        jobs = [[{"role": "user", "content": "ok1"}], [{"role": "user", "content": "malo"}],
+                [{"role": "user", "content": "ok2"}]]
+        assert teacher.ask_many(jobs, host="http://x", model="m", workers=2) == [[], None, []]
+    finally:
+        teacher._post = real_post
+
 
 if __name__ == "__main__":
     # Collect every function whose name starts with test_ and run it.
