@@ -101,12 +101,22 @@ El principio que manda: inyectar conocimiento en un modelo sub-1B no se logra co
 texto sino con **diversidad de fraseo por hecho**. Las 34.000 palabras de fuente (253 chunks) y
 8.500 (147 fichas) no se entrenan tal cual: se expanden.
 
-**Maestro:** `nemotron-nano-9b-v2` vía el NIM ya desplegado (API compatible con OpenAI en
-`http://127.0.0.1:8001`). Es destilación: el 9B escribe en buen español conversacional y el 0.6B
-hereda ese registro, que es la cura para lo acartonado que suele sonar un modelo tan pequeño en
-español. Se reutiliza el patrón existente de `knowledge/make_cards.py` (pedir JSON al LLM sobre un
-texto fuente, con reintentos; ya cubierto por `test_with_retries` y `test_ask_retries_cut_json`).
-Las peticiones se paralelizan (8–16 concurrentes; el NIM es vLLM por debajo).
+**Maestro:** un modelo de la familia `qwen2.5` servido por Ollama en local. Es destilación: el
+maestro escribe en buen español conversacional y el 0.6B hereda ese registro, que es la cura para lo
+acartonado que suele sonar un modelo tan pequeño en español. Se reutiliza el patrón existente de
+`knowledge/make_cards.py` (pedir JSON al LLM sobre un texto fuente, con reintentos; ya cubierto por
+`test_with_retries` y `test_ask_retries_cut_json`).
+
+**Corrección del 2026-11-15, descubierta al ejecutar:** el plan original era usar el NIM de
+`nemotron-nano-9b-v2`, pero su API key de NGC perdió permisos ("user not being a member of the
+organization that owns the repo") y los pesos que había bajado en septiembre se perdieron porque el
+contenedor corrió con `--rm` **sin montar volumen para el caché**. Se reemplaza por `qwen2.5` vía
+Ollama, que está descargado, es local y no requiere autenticación. La muestra de calidad del 32B fue
+buena (español hablado limpio, JSON válido, fraseo variado). El tamaño exacto del maestro se fija por
+medición en la Task 1 del plan: el 32B rinde 22,5 tok/s agregados a concurrencia 8 (≈10,5 h para el
+dataset completo), así que se elige el modelo más grande que baje de 4 h sin perder calidad. La
+concurrencia exige una instancia de Ollama con `OLLAMA_NUM_PARALLEL=8` (el servicio del sistema
+encola en serie: medido 10,4 tok/s con 8 peticiones, idéntico a una sola).
 
 **Composición objetivo, ~11.000 ejemplos:**
 
