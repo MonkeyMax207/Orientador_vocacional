@@ -110,6 +110,12 @@ def check(example: dict, *, source: str, official: list[str],
     # student to say nothing.
     if not answer.strip() or not question.strip():
         return ["forma_invalida"]
+    # Y dentro de cada turno: un dialogo con un turno a medias reventaba schema.to_chat al final
+    # de una corrida de horas, porque arriba "turnos" existia y parecia valido.
+    if example.get("turnos") and not all(
+            isinstance(t, dict) and str(t.get("u", "")).strip() and str(t.get("a", "")).strip()
+            for t in example["turnos"]):
+        return ["forma_invalida"]
 
     # Por turno, no sobre la concatenacion: ocho turnos de 17 palabras son ocho respuestas
     # correctas, no una de 136. Medirlo junto rechazaba el bucket de dialogos completo.

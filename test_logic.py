@@ -898,6 +898,16 @@ def test_as_items_handles_list_and_dialogue_shapes():
     assert make_dataset._as_items("nada") == []
 
 
+def test_usable_rejects_dialogue_with_a_half_turn():
+    # El maestro parte un turno en dos objetos: {"u":...} y luego {"a":...}. Pasaba el chequeo
+    # de arriba y reventaba schema.to_chat al final de una corrida de horas (9 de 258 dialogos).
+    partido = {"turnos": [{"u": "hola", "a": "¡Hola!"}, {"u": "solo pregunta"}, {"a": "solo respuesta"}]}
+    assert make_dataset._as_items(partido) == []
+    assert validate.check(partido, source="", official=OFICIALES) == ["forma_invalida"]
+    entero = {"turnos": [{"u": "hola", "a": "¡Hola!"}]}
+    assert make_dataset._as_items(entero) == [entero]
+
+
 def test_as_items_drops_other_key_names():
     # El maestro a veces responde {"pregunta":..,"respuesta":..}: dejarlo pasar reventaba
     # schema.to_chat al final de una corrida de horas.

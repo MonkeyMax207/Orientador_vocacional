@@ -134,7 +134,21 @@ def _load_done(path: Path) -> tuple[list[dict], set[str]]:
 
 
 def _usable(d) -> bool:
-    return isinstance(d, dict) and (("p" in d and "r" in d) or "turnos" in d)
+    """Shape check, including inside each dialogue turn.
+
+    The teacher occasionally splits one turn into two objects ({"u":...} then {"a":...}), which
+    passed a top-level "turnos in d" check and then raised KeyError in schema.to_chat at the end
+    of a multi-hour run. Those dialogues are dropped rather than repaired: pairing them up is
+    guesswork, and they were 9 of 258.
+    """
+    if not isinstance(d, dict):
+        return False
+    if "turnos" in d:
+        turnos = d["turnos"]
+        return (isinstance(turnos, list) and bool(turnos)
+                and all(isinstance(t, dict) and str(t.get("u", "")).strip()
+                        and str(t.get("a", "")).strip() for t in turnos))
+    return "p" in d and "r" in d
 
 
 def _as_items(data) -> list[dict]:
@@ -215,6 +229,8 @@ def main() -> None:
     ap.add_argument("--negativas", type=int, default=30, help="llamadas por clase de negativa")
     ap.add_argument("--num-predict", type=int, default=1300,
                     help="techo de tokens; los dialogos de 8 turnos no caben en 900")
+    ap.add_argument("--solo-escribir", action="store_true",
+                    help="no generar nada: rehacer train/quiz desde crudo.jsonl")
     args = ap.parse_args()
 
     out_dir = ROOT / args.out
@@ -253,9 +269,13 @@ def main() -> None:
     rng.shuffle(jobs)
     print(f"{len(jobs)} llamadas al maestro", flush=True)
 
-    kept = generate(jobs, model=args.model, host=args.host, official=programas,
-                    out_path=out_dir / "crudo.jsonl", rejects_path=out_dir / "rechazos.jsonl",
-                    workers=args.workers, batch=args.batch, num_predict=args.num_predict)
+    if args.solo_escribir:
+        kept, _ = _load_done(out_dir / "crudo.jsonl")
+        print(f"{len(kept)} ejemplos leidos de crudo.jsonl (sin generar nada)", flush=True)
+    else:
+        kept = generate(jobs, model=args.model, host=args.host, official=programas,
+                        out_path=out_dir / "crudo.jsonl", rejects_path=out_dir / "rechazos.jsonl",
+                        workers=args.workers, batch=args.batch, num_predict=args.num_predict)
     kept = validate.dedup(kept)
     print(f"{len(kept)} tras deduplicar", flush=True)
 
