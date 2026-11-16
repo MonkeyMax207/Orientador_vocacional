@@ -106,6 +106,8 @@ def main() -> None:
     ap.add_argument("--dump-template", action="store_true")
     ap.add_argument("--excluir", nargs="*", default=[],
                     help="prefijos de bucket a dejar fuera, p.ej. neg:fuera")
+    ap.add_argument("--reanudar", nargs="?", const="auto", default=None,
+                    help="retoma desde un checkpoint: ruta, o sin valor para el ultimo de --out")
     args = ap.parse_args()
 
     tokenizer = AutoTokenizer.from_pretrained(args.model)
@@ -160,7 +162,20 @@ def main() -> None:
         train_dataset=data,
         data_collator=lambda b: collate(b, pad_id),
     )
-    trainer.train()
+    # Reanudar importa tanto como entrenar: el 2026-11-16 un corte de luz mato la corrida en el
+    # paso 2155 de 4075 con checkpoints perfectos en disco, y sin esta bandera la unica salida
+    # era repetir dos horas y cuarto de GPU. El checkpoint trae pesos, momentos del optimizador,
+    # posicion del scheduler y estado del RNG, asi que retomar no es empezar de nuevo mas rapido:
+    # es la misma corrida continuada.
+    desde = args.reanudar
+    if desde == "auto":
+        puntos = sorted(Path(args.out).glob("checkpoint-*"),
+                        key=lambda d: int(d.name.split("-")[1]))
+        if not puntos:
+            raise SystemExit(f"No hay checkpoint-* en {args.out} para reanudar.")
+        desde = str(puntos[-1])
+        print(f"reanudando desde {desde}", flush=True)
+    trainer.train(resume_from_checkpoint=desde)
     trainer.save_model(args.out + "/final")
     tokenizer.save_pretrained(args.out + "/final")
     print(f"listo -> {args.out}/final", flush=True)

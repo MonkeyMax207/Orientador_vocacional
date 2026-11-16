@@ -188,8 +188,18 @@ def wait_until_cool(read=read_zone_temps, sleep=time.sleep, start_at: float = ST
 
 
 def main() -> None:
-    guard = ThermalGuard()
-    log(f"guardia activa: pausa {PAUSE_AT_C:.0f} °C, reanuda {RESUME_AT_C:.0f} °C, "
+    # Umbrales por linea de comandos:  python -m finetune.thermal --pausa 90 --reanuda 82
+    # El 2026-11-16 la maquina se apago en seco tras dos horas sosteniendo 90-91 °C, con el
+    # umbral en 94: nunca lo cruzo, asi que el guardia no intervino ni una vez. El apagon no
+    # dejo rastro en el kernel (firma de corte de energia, no de trip termico), pero sostener
+    # 90 °C durante horas es apostar, y poder bajar el umbral sin editar el archivo quita la
+    # tentacion de editarlo mientras corre.
+    import sys
+    def opcion(nombre, por_defecto):
+        return float(sys.argv[sys.argv.index(nombre) + 1]) if nombre in sys.argv else por_defecto
+    guard = ThermalGuard(pause_at=opcion("--pausa", PAUSE_AT_C),
+                         resume_at=opcion("--reanuda", RESUME_AT_C))
+    log(f"guardia activa: pausa {guard.pause_at:.0f} °C, reanuda {guard.resume_at:.0f} °C, "
         f"mata {KILL_AT_C:.0f} °C, piso de memoria {memory.FLOOR_GB:.0f} GB; vigilando {HEAVY}")
     last_csv = 0.0
     while True:
