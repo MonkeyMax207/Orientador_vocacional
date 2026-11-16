@@ -1,5 +1,9 @@
 # Guía de pruebas (para trabajar sin Claude)
 
+> Esta guía cubre el agente **ya funcionando**. Para rehacer el fine-tuning del modelo pequeño de
+> la Pi desde cero —entorno, maestro, dataset, entrenamiento, evaluación y las trampas que nos
+> costaron tiempo— ver `GUIA-FINE-TUNING.md`.
+
 Todos los comandos se corren en **PowerShell, desde la carpeta del proyecto** (`C:\Users\juand\Documentos\IA VOZ`).
 `uv run` usa automáticamente el Python 3.11 y las librerías del proyecto (`.venv/`); no hace falta activar nada.
 

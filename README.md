@@ -80,6 +80,14 @@ Measured with `knowledge/replay.py` (PC, 2026-09-27), time to first sentence:
 | pc (llama3.2:3b GPU, 2 cards) | 0.2–0.4 s | 0.3–1.4 s | Every program named exists; labs/courses/sports from the right cards |
 | pi (qwen2.5:1.5b CPU, 1 card) | 0.6 s | 2.6–6 s (16–17 s late in the chat) | Right cards, but the 1.5B model drifts (fixates on unrelated programs, embellishes cards) |
 
+## Pi autónoma: el conocimiento dentro de los pesos
+
+Sub-proyecto en curso: un modelo de 0.6B afinado con el conocimiento de la UAO corre en la Pi sin
+RAG, para que el robot funcione solo, sin internet ni la DGX. La DGX pasa a ser la máquina de
+entrenamiento. Guía completa y reproducible desde cero, con las trampas de la DGX Spark (memoria
+unificada, OOM invisible, límites térmicos): **`docs/GUIA-FINE-TUNING.md`**. Diseño y plan en
+`docs/superpowers/specs/2026-11-15-pi-finetune-no-rag-design.md`.
+
 ## DGX brain: LLM served by a NIM instead of Ollama
 
 First of three sub-projects migrating the DGX's voice pipeline to the NVIDIA ecosystem (STT/NeMo and
