@@ -35,7 +35,7 @@ RESUME_AT_C = 85.0
 LOG_EVERY_S = 30
 # The processes that actually heat the GPU. make_dataset only drives HTTP, so freezing it would
 # cool nothing: it is the Ollama runner that holds the model.
-HEAVY = ("ollama runner", "finetune.train")
+HEAVY = ("ollama runner", "finetune.train", "finetune.quiz")
 # Ante presion de memoria solo tiene sentido tocar lo que puede DEVOLVER memoria al soltarlo.
 # El runner de Ollama descarga el modelo al terminar; un entrenamiento congelado no devuelve
 # nada. Ver la nota de tick() sobre el abrazo mortal del 2026-11-16.
