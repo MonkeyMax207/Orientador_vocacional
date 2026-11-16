@@ -17,7 +17,7 @@ import numpy as np
 import animations
 import brain
 import config
-from finetune import make_dataset, masking, memory, schema, teacher, thermal, validate
+from finetune import make_dataset, masking, memory, quiz, schema, teacher, thermal, validate
 import download_models
 import main
 import rag
@@ -791,6 +791,49 @@ class _FakeTermica:
         self.enviadas.append(({s.SIGSTOP: "STOP", s.SIGCONT: "CONT", s.SIGKILL: "KILL"}[sig],
                                list(pids)))
         return list(pids)
+
+
+def test_quiz_distinctive_tokens_identify_one_program_each():
+    tokens = quiz.distinctive_tokens(OFICIALES)
+    assert tokens.get("mecatronica") == "Ingeniería Mecatrónica"
+    assert tokens.get("mecanica") == "Ingeniería Mecánica"
+    assert "ingenieria" not in tokens          # no identifica a ninguno
+
+
+def test_quiz_scores_expected_terms():
+    r = quiz.score("Tiene el Fab-Lab y el laboratorio de Automática.", ["fab", "automatica"],
+                    program="Ingeniería Mecatrónica", official=OFICIALES)
+    assert r["aciertos"] == 1.0 and not r["contaminacion_cruzada"]
+
+
+def test_quiz_detects_cross_contamination():
+    # La métrica que decide el sub-proyecto: el hecho atribuido al programa equivocado.
+    r = quiz.score("Eso es del laboratorio de Mecánica.", ["fab"],
+                    program="Ingeniería Mecatrónica", official=OFICIALES)
+    assert r["contaminacion_cruzada"] is True
+    assert r["aciertos"] == 0.0
+
+
+def test_quiz_flags_invented_program_bad_format_and_price():
+    r = quiz.score("- **Ingeniería Aeroespacial** cuesta tres millones de pesos.", ["fab"],
+                    program="Ingeniería Mecatrónica", official=OFICIALES)
+    assert r["inventado"] and not r["formato_ok"] and r["precio_dado"]
+
+
+def test_quiz_expected_terms_are_facts_not_style():
+    # Una palabra que solo está en la redacción del maestro no es un hecho que exigir.
+    terms = quiz.expected_terms("Tiene el Fab-Lab, genial para prototipar.",
+                                 "Cuenta con Fab-Lab para impresión tridimensional.")
+    assert "genial" not in terms
+
+
+def test_quiz_expected_terms_exclude_the_questions_own_words():
+    # Exigirlas premia al modelo que repite la pregunta y castiga al que contesta directo.
+    terms = quiz.expected_terms("Pensamiento creativo son cinco creditos.",
+                                 "Pensamiento creativo: cinco creditos del plan.",
+                                 question="cuantos creditos tiene pensamiento creativo")
+    assert "pensamiento" not in terms and "creativo" not in terms
+    assert "cinco" in terms
 
 
 def _meminfo_file(total_kb, avail_kb):

@@ -59,8 +59,14 @@ def _extract_json(raw: str):
 def ask_json(messages: list[dict], *, host: str = HOST, model: str, retries: int = 2,
              num_predict: int = 900, temperature: float = 0.9, seed: int | None = None):
     """Asks the teacher and returns the parsed JSON, or None after `retries` bad replies."""
-    body = {"model": model, "stream": False, "keep_alive": -1, "messages": messages,
-            "options": {"num_gpu": 99, "temperature": temperature, "num_predict": num_predict}}
+    # num_ctx explicito y keep_alive acotado, los dos por la misma razon: Ollama no puede
+    # consultar la memoria de la GPU en esta maquina (NVML no responde), asi que presupuesta
+    # contra los 121 GB del sistema y honra el contexto nativo del modelo. Con 16 slots en
+    # paralelo eso reservo 155,7 GB para un modelo de 9 GB y dejo la maquina en 8 GB libres.
+    # Nuestros prompts son de ~2k tokens y las salidas ~1,3k: 4096 sobra.
+    body = {"model": model, "stream": False, "keep_alive": "30m", "messages": messages,
+            "options": {"num_gpu": 99, "temperature": temperature, "num_predict": num_predict,
+                         "num_ctx": 4096}}
     if seed is not None:
         body["options"]["seed"] = seed
     for _ in range(retries + 1):

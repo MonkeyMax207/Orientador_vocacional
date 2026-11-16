@@ -99,6 +99,7 @@ def main() -> None:
     ap.add_argument("--epochs", type=float, default=4)
     ap.add_argument("--lr", type=float, default=1.5e-5)
     ap.add_argument("--bs", type=int, default=8)
+    ap.add_argument("--ga", type=int, default=2, help="acumulacion de gradiente; bs*ga = lote efectivo")
     ap.add_argument("--max-len", type=int, default=1024)
     ap.add_argument("--dump-template", action="store_true")
     ap.add_argument("--excluir", nargs="*", default=[],
@@ -142,12 +143,12 @@ def main() -> None:
     pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
     # transformers 5.x quito warmup_ratio: se calcula en pasos, y en una corrida corta (piloto)
     # un valor fijo seria mas largo que el entrenamiento entero.
-    pasos_totales = max(1, int(len(data) / (args.bs * 2) * args.epochs))
+    pasos_totales = max(1, int(len(data) / (args.bs * args.ga) * args.epochs))
     trainer = Trainer(
         model=model,
         args=TrainingArguments(
             output_dir=args.out, num_train_epochs=args.epochs, learning_rate=args.lr,
-            per_device_train_batch_size=args.bs, gradient_accumulation_steps=2,
+            per_device_train_batch_size=args.bs, gradient_accumulation_steps=args.ga,
             warmup_steps=max(1, int(pasos_totales * 0.03)), lr_scheduler_type="cosine",
             bf16=True, logging_steps=20, report_to=[],
             # Cada 200 pasos y no por epoca: el crash del 2026-11-15 se llevo una hora de

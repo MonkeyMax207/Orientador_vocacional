@@ -46,10 +46,33 @@ def _chunks() -> list[dict]:
     return json.loads(CHUNKS.read_text())
 
 
-def prompt_factual(source: dict, n: int, estricto: bool) -> list[dict]:
+def prompt_factual(source: dict, n: int, estricto: bool, especifico: bool = False) -> list[dict]:
+    """`especifico` exige nombrar los datos textuales de la fuente.
+
+    El 0.6B entrenado con la version anterior saco 16,5% de precision factual: aprendio a
+    responder glosas genericas ("tiene laboratorios para experimentar con sistemas mecanicos")
+    en vez de nombrar el Fab-Lab. La causa esta en el propio prompt: pedir "una o dos frases"
+    sin exigir los datos concretos entrena vaguedad. Esta variante pide lo contrario.
+    """
     extra = ("Responde SOLO con lo que dice el texto; si algo no esta en el texto, no lo menciones. "
              if estricto else "")
     registros = ", ".join(random.sample(REGISTROS, k=min(4, len(REGISTROS))))
+    if especifico:
+        exigencia = (
+            "REGLA PRINCIPAL: cada respuesta tiene que NOMBRAR los datos textuales del texto "
+            "—nombres propios de laboratorios, materias, programas, espacios o servicios— "
+            "escritos igual que en el texto. Prohibido resumir con generalidades: 'tiene "
+            "laboratorios de su area' esta MAL; 'tiene el Fab-Lab y el laboratorio de Automatica' "
+            "esta BIEN. Si la pregunta pide una lista, enumera los elementos reales. "
+            "Prioriza preguntas cuya respuesta sea un dato concreto y verificable en el texto. "
+            "Puedes usar hasta tres frases cuando haga falta para nombrarlos todos. "
+            "PERO dilo con tus palabras, como un amigo hablando: copia los NOMBRES PROPIOS "
+            "textuales y nada mas. Prohibido pegar frases de folleto del texto: 'seras un "
+            "profesional formado con vision y liderazgo capaz de ejecutar procesos de "
+            "direccionamiento estrategico' esta MAL por sonar a publicidad; 'vas a aprender a "
+            "dirigir empresas, y haces practica en empresas alemanas' esta BIEN. ")
+    else:
+        exigencia = ""
     return [{"role": "system", "content":
              "Eres un generador de datos de entrenamiento para un orientador vocacional que habla "
              "en voz alta con estudiantes. Respondes SIEMPRE con JSON valido y nada mas."},
@@ -57,7 +80,9 @@ def prompt_factual(source: dict, n: int, estricto: bool) -> list[dict]:
              f"Texto oficial de la Universidad Autonoma de Occidente:\n\n{source['texto']}\n\n"
              f"Escribe {n} pares pregunta-respuesta en espanol sobre ESTE texto. Las preguntas las "
              f"hace un joven que esta pensando que estudiar. Varia mucho el fraseo entre estos "
-             f"registros: {registros}. {extra}{FORMA}\n\n"
+             # La exigencia va al final, pegada a la instruccion de salida: es lo ultimo que lee
+             # el maestro y tiene que pesar mas que el "una o dos frases" de FORMA.
+             f"registros: {registros}. {extra}{FORMA}\n\n{exigencia}\n"
              'Devuelve solo JSON: [{"p":"pregunta","r":"respuesta"}, ...]'}]
 
 
@@ -83,7 +108,15 @@ def prompt_negativas(clase: str, n: int, programas: list[str]) -> list[dict]:
     casos = {
         "precio": ("El joven pregunta por precios, matricula, cuotas o becas. Orienta NO da cifras "
                    "ni rangos: dice con amabilidad que eso lo explica mejor un asesor de admisiones "
-                   "de la universidad."),
+                   "de la universidad. Varia mucho el fraseo de la pregunta: 'cuanto vale', 'me "
+                   "alcanza con lo que tengo', 'es caro', 'hay descuentos', 'se puede pagar por "
+                   "cuotas', 'cuanto pagaria al semestre', 'que tan costoso es'."),
+        "precio_insiste": ("El joven YA recibio la respuesta de que los precios los explica "
+                           "admisiones, y insiste: pide un aproximado, un rango, 'solo dime mas o "
+                           "menos', 'un numero redondo', 'entre cuanto y cuanto'. Orienta se niega "
+                           "otra vez, con calidez y sin ceder NUNCA una cifra, ni aproximada ni de "
+                           "rango, y vuelve a derivar a admisiones. Escribe el par con la "
+                           "insistencia como pregunta."),
         "ausente": (f"El joven pregunta por una carrera que la universidad NO ofrece "
                     f"(por ejemplo: {', '.join(random.sample(validate.absent_from(programas), 4))}). "
                     f"Orienta lo dice con honestidad, sin inventar, y ofrece contar lo que si hay. "
@@ -225,6 +258,8 @@ def main() -> None:
     ap.add_argument("--por-ficha", type=int, default=10)
     ap.add_argument("--por-chunk", type=int, default=8)
     ap.add_argument("--pasadas", type=int, default=2, help="pasadas por fuente, con fraseo distinto")
+    ap.add_argument("--pasadas-especificas", type=int, default=0,
+                    help="pasadas que exigen nombrar los datos textuales de la fuente")
     ap.add_argument("--dialogos", type=int, default=400)
     ap.add_argument("--negativas", type=int, default=30, help="llamadas por clase de negativa")
     ap.add_argument("--num-predict", type=int, default=1300,
@@ -247,13 +282,24 @@ def main() -> None:
     # pequeno memorice un hecho. Subir --pasadas y relanzar solo genera las pasadas nuevas.
     jobs: list[tuple[str, list[dict], str, bool]] = []
     pases = [chr(ord("a") + i) for i in range(args.pasadas)]
+    # Las pasadas 'esp*' exigen nombrar datos textuales: son las que atacan el 16,5% de precision
+    # factual de la primera ronda. Ids distintos, asi que la reanudacion solo genera estas.
+    esp = [f"esp{i}" for i in range(args.pasadas_especificas)]
     for c in cards:
         for p in pases:
             jobs.append((f"ficha:{c['id']}#{p}", prompt_factual(c, args.por_ficha, False),
                           c["texto"], False))
+        for p in esp:
+            jobs.append((f"ficha:{c['id']}#{p}",
+                          prompt_factual(c, args.por_ficha, False, especifico=True),
+                          c["texto"], False))
     for ch in chunks:
         for p in pases:
             jobs.append((f"chunk:{ch['id']}#{p}", prompt_factual(ch, args.por_chunk, True),
+                          ch["texto"], False))
+        for p in esp:
+            jobs.append((f"chunk:{ch['id']}#{p}",
+                          prompt_factual(ch, args.por_chunk, True, especifico=True),
                           ch["texto"], False))
     n_dialogos = max(1, args.dialogos if not args.limit else 3)
     for i in range(n_dialogos):
@@ -261,10 +307,15 @@ def main() -> None:
         fuente = " ".join(c["texto"] for c in muestra)
         jobs.append((f"dialogo:{i}", prompt_dialogo(muestra, 8, programas), fuente, False))
     n_neg = args.negativas if not args.limit else 1
-    for clase in ("precio", "ausente", "contacto", "fuera", "ruido"):
+    # precio y precio_insiste van al doble (dos tandas con ids distintos, si no la reanudacion
+    # las saltaria): es requisito duro, y el modelo fabrico una cifra en la prueba de cordura
+    # aunque dio 0 precios en las 200 preguntas del quiz.
+    for clase, tanda in (("precio", "a"), ("precio", "b"),
+                          ("precio_insiste", "a"), ("precio_insiste", "b"),
+                          ("ausente", "a"), ("contacto", "a"), ("fuera", "a"), ("ruido", "a")):
         for i in range(n_neg):
             # Sin anclaje a un texto fuente: estas respuestas son politica, no datos.
-            jobs.append((f"neg:{clase}#{i}", prompt_negativas(clase, 8, programas), "",
+            jobs.append((f"neg:{clase}#{tanda}{i}", prompt_negativas(clase, 8, programas), "",
                           clase == "ausente"))
     rng.shuffle(jobs)
     print(f"{len(jobs)} llamadas al maestro", flush=True)
