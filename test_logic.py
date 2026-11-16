@@ -17,7 +17,7 @@ import numpy as np
 import animations
 import brain
 import config
-from finetune import make_dataset, masking, schema, teacher, thermal, validate
+from finetune import make_dataset, masking, memory, schema, teacher, thermal, validate
 import download_models
 import main
 import rag
@@ -791,6 +791,50 @@ class _FakeTermica:
         self.enviadas.append(({s.SIGSTOP: "STOP", s.SIGCONT: "CONT", s.SIGKILL: "KILL"}[sig],
                                list(pids)))
         return list(pids)
+
+
+def _meminfo_file(total_kb, avail_kb):
+    p = Path(tempfile.mkdtemp()) / "meminfo"
+    p.write_text(f"MemTotal:       {total_kb} kB\nMemFree:         1000 kB\n"
+                  f"MemAvailable:   {avail_kb} kB\nBuffers:          500 kB\n")
+    return str(p)
+
+
+def test_memory_check_passes_with_headroom():
+    # 116 GB disponibles: lo que había tras el reinicio.
+    ok, msg = memory.check(needed_gb=25, reserve_gb=8,
+                            path=_meminfo_file(126 * 1024**2, 116 * 1024**2))
+    assert ok, msg
+
+
+def test_memory_check_fails_when_ollama_holds_the_pool():
+    # El escenario del 2026-11-15: los modelos cargados dejaron el pozo casi vacío.
+    ok, msg = memory.check(needed_gb=25, reserve_gb=8,
+                            path=_meminfo_file(126 * 1024**2, 20 * 1024**2))
+    assert not ok
+    assert "ollama" in msg.lower()   # el mensaje tiene que decir qué hacer
+
+
+def test_memory_require_aborts_instead_of_oomming_the_machine():
+    try:
+        memory.require(needed_gb=25, reserve_gb=8, path=_meminfo_file(126 * 1024**2, 5 * 1024**2))
+        assert False, "debió abortar"
+    except SystemExit as e:
+        assert "MEMORIA INSUFICIENTE" in str(e)
+
+
+def test_thermal_freezes_on_memory_pressure_even_when_cool():
+    t = _FakeTermica([40, 40])
+    t.guard.tick(pressure=True)      # frío, pero sin memoria
+    t.guard.tick(pressure=True)      # sigue congelado, no recongela
+    assert [a for a, _ in t.enviadas] == ["STOP"]
+
+
+def test_thermal_resumes_only_when_memory_pressure_clears():
+    t = _FakeTermica([40, 40])
+    t.guard.tick(pressure=True)
+    t.guard.tick(pressure=False)     # ya hay memoria y hace frío: reanuda
+    assert [a for a, _ in t.enviadas] == ["STOP", "CONT"]
 
 
 def test_thermal_freezes_above_threshold_and_thaws_when_cool():

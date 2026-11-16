@@ -25,6 +25,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+from finetune import memory
+
 ZONES = "/sys/class/thermal/thermal_zone*/temp"
 KILL_AT_C = 100.0
 PAUSE_AT_C = 94.0
@@ -109,9 +111,20 @@ class ThermalGuard:
         self.pause_at, self.resume_at, self.kill_at = pause_at, resume_at, kill_at
         self.frozen: list[int] = []
 
-    def tick(self) -> float:
+    def tick(self, pressure: bool = False) -> float:
+        """`pressure` is a second reason to freeze (memory), judged by the caller.
+
+        One state machine for both hazards: the response to heat and to memory exhaustion is the
+        same — freeze the heavy work — and two daemons tracking the same frozen PIDs would race.
+        """
         temps = self.read()
         hottest = max(temps) if temps else 0.0
+        if pressure and not self.frozen:
+            self.frozen = self.send(self.pids(), signal.SIGSTOP)
+            self.log(f"MEMORIA PAUSE {self.frozen or '(nada pesado)'}: poca memoria disponible")
+            return hottest
+        if pressure:                              # sigue congelado hasta que ceda la presion
+            return hottest
         if hottest >= self.kill_at:
             killed = self.send(self.frozen or self.pids(), signal.SIGKILL)
             self.frozen = []
@@ -148,15 +161,16 @@ def wait_until_cool(read=read_zone_temps, sleep=time.sleep, start_at: float = ST
 
 def main() -> None:
     guard = ThermalGuard()
-    log(f"guardia termica activa: pausa {PAUSE_AT_C:.0f} °C, reanuda {RESUME_AT_C:.0f} °C, "
-        f"mata {KILL_AT_C:.0f} °C; vigilando {HEAVY}")
+    log(f"guardia activa: pausa {PAUSE_AT_C:.0f} °C, reanuda {RESUME_AT_C:.0f} °C, "
+        f"mata {KILL_AT_C:.0f} °C, piso de memoria {memory.FLOOR_GB:.0f} GB; vigilando {HEAVY}")
     last_csv = 0.0
     while True:
         try:
-            hottest = guard.tick()
+            libre = memory.available_gb()
+            hottest = guard.tick(pressure=libre < memory.FLOOR_GB)
             if time.time() - last_csv >= LOG_EVERY_S:
                 last_csv = time.time()
-                log(f"{hottest:.1f} °C  gpu[{gpu_state()}]  "
+                log(f"{hottest:.1f} °C  {libre:.1f} GB libres  gpu[{gpu_state()}]  "
                     f"{'CONGELADO ' + str(guard.frozen) if guard.frozen else ''}")
         except Exception as e:                      # nunca morir: es el guardia
             log(f"error en la guardia: {e!r}")

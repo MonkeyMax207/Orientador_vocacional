@@ -21,7 +21,7 @@ import torch
 from torch.utils.data import Dataset
 from transformers import (AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments)
 
-from finetune import masking
+from finetune import masking, memory
 
 ROOT = Path(__file__).parent.parent
 IGNORE = masking.IGNORE   # transformers' "do not compute loss here"
@@ -118,6 +118,11 @@ def main() -> None:
         print(rendered)
         return
 
+    # Compuerta de memoria antes de reservar nada: el 2026-11-15 la maquina se congelo por OOM
+    # global con dos instancias de Ollama reteniendo modelos mientras esto entrenaba.
+    libre = memory.require()
+    print(f"memoria disponible: {libre:.1f} GB", flush=True)
+
     data = ChatDataset(ROOT / args.data, tokenizer, args.max_len, tuple(args.excluir))
     print(f"{len(data)} conversaciones (excluyendo {args.excluir or 'nada'})", flush=True)
 
@@ -144,7 +149,10 @@ def main() -> None:
             output_dir=args.out, num_train_epochs=args.epochs, learning_rate=args.lr,
             per_device_train_batch_size=args.bs, gradient_accumulation_steps=2,
             warmup_steps=max(1, int(pasos_totales * 0.03)), lr_scheduler_type="cosine",
-            bf16=True, logging_steps=20, save_strategy="epoch", save_total_limit=5, report_to=[],
+            bf16=True, logging_steps=20, report_to=[],
+            # Cada 200 pasos y no por epoca: el crash del 2026-11-15 se llevo una hora de
+            # entrenamiento porque el primer checkpoint de epoca no habia alcanzado a escribirse.
+            save_strategy="steps", save_steps=200, save_total_limit=4,
         ),
         train_dataset=data,
         data_collator=lambda b: collate(b, pad_id),
