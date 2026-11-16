@@ -126,6 +126,8 @@ def main() -> None:
     ap.add_argument("--host", default="http://127.0.0.1:11434")
     ap.add_argument("--quiz", default="finetune/data/quiz.jsonl")
     ap.add_argument("--n", type=int, default=200, help="preguntas a muestrear")
+    ap.add_argument("--guardar", help="JSONL donde dejar cada respuesta, para re-puntuar sin "
+                                      "volver a generar (una corrida son ~12 min de GPU)")
     args = ap.parse_args()
     if not (args.model or args.hf):
         raise SystemExit("hace falta --model <tag de ollama> o --hf <ruta al checkpoint>")
@@ -148,6 +150,9 @@ def main() -> None:
     agg = {"aciertos": [], "contaminacion": 0, "inventado": 0, "formato_malo": 0, "precio": 0,
            "con_terminos": 0}
     precio_rows, fallos = [], []
+    # Las respuestas se tiraban a la basura al terminar. Una corrida son ~12 min de GPU y la
+    # metrica puede cambiar — ya cambio dos veces — asi que re-puntuar sin re-generar vale oro.
+    guardado = open(ROOT / args.guardar, "w", encoding="utf-8") if args.guardar else None
     for i, row in enumerate(rows, 1):
         source = sources.get(row.get("fact_id", ""), {})
         terms = expected_terms(row["r"], source.get("texto", ""), row["p"])
@@ -164,9 +169,19 @@ def main() -> None:
             precio_rows.append((row["p"], answer))
         elif s["inventado"] or (s["aciertos"] is not None and s["aciertos"] == 0 and terms):
             fallos.append((row["p"], answer, terms))
+        if guardado:
+            guardado.write(json.dumps({"p": row["p"], "esperada": row["r"], "modelo": answer,
+                                        "terminos": terms, "aciertos": s["aciertos"],
+                                        "fact_id": row.get("fact_id", ""),
+                                        "programa": source.get("programa", "")},
+                                       ensure_ascii=False) + "\n")
+            guardado.flush()      # por si la maquina se apaga de nuevo a mitad de corrida
         if i % 25 == 0:
             print(f"  {i}/{len(rows)}", flush=True)
 
+    if guardado:
+        guardado.close()
+        print(f"respuestas guardadas en {args.guardar}", flush=True)
     n = len(rows)
     precision = sum(agg["aciertos"]) / len(agg["aciertos"]) if agg["aciertos"] else 0.0
     print(f"\n=== {args.model or args.hf} sobre {n} preguntas ===")
