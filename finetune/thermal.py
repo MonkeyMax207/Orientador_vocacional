@@ -36,6 +36,11 @@ LOG_EVERY_S = 30
 # The processes that actually heat the GPU. make_dataset only drives HTTP, so freezing it would
 # cool nothing: it is the Ollama runner that holds the model.
 HEAVY = ("ollama runner", "finetune.train")
+# Ante presion de memoria solo tiene sentido tocar lo que puede DEVOLVER memoria al soltarlo.
+# El runner de Ollama descarga el modelo al terminar; un entrenamiento congelado no devuelve
+# nada. Ver la nota de tick() sobre el abrazo mortal del 2026-11-16.
+RELEASABLE = ("ollama runner",)
+RELIEVE_EVERY_S = 60
 LOG_PATH = Path(__file__).parent.parent / "logs" / "thermal.csv"
 
 
@@ -110,21 +115,44 @@ class ThermalGuard:
         self.read, self.pids, self.send, self.log = read, pids, send, log
         self.pause_at, self.resume_at, self.kill_at = pause_at, resume_at, kill_at
         self.frozen: list[int] = []
+        self._last_relieve = 0.0
+
+    def _relieve(self) -> None:
+        """Responde a la presion de memoria SOLTANDO, no congelando.
+
+        El 2026-11-16 esta funcion no existia y la rama de memoria congelaba los PIDs pesados.
+        SIGSTOP no devuelve una sola pagina: el entrenamiento congelado seguia reteniendo sus
+        110 GB, asi que la condicion que lo congelo no podia ceder nunca. Quedo detenido 22
+        minutos en el paso 87 hasta que lo encontramos. Un guardia que puede bloquear
+        permanentemente el trabajo que protege es peor que no tener guardia.
+
+        Asi que aqui solo se termina lo que de verdad libera al morir (el runner de Ollama, que
+        descarga su modelo), nunca el trabajo principal, y no se "late" el estado: si no hay nada
+        que soltar, se avisa fuerte y se sigue. La proteccion real contra el OOM es la compuerta
+        previa memory.require(), que decide antes de reservar nada.
+        """
+        if time.time() - self._last_relieve < RELIEVE_EVERY_S:
+            return
+        self._last_relieve = time.time()
+        sueltos = self.send(self.pids(RELEASABLE), signal.SIGTERM)
+        if sueltos:
+            self.log(f"MEMORIA: poca disponible; liberando {sueltos} (devuelven memoria al salir)")
+        else:
+            self.log("MEMORIA: poca disponible y nada que soltar. NO se congela el trabajo "
+                     "principal: congelarlo no devuelve memoria y nunca se destrabaria.")
 
     def tick(self, pressure: bool = False) -> float:
-        """`pressure` is a second reason to freeze (memory), judged by the caller.
+        """Un tick del guardia. `pressure` = poca memoria, juzgado por quien llama.
 
-        One state machine for both hazards: the response to heat and to memory exhaustion is the
-        same — freeze the heavy work — and two daemons tracking the same frozen PIDs would race.
+        Los dos peligros se atienden aqui para que no haya dos daemons compitiendo por los
+        mismos PIDs, pero la respuesta a cada uno es distinta, y esa es la correccion del
+        2026-11-16: el calor se atiende congelando (funciona: el cómputo para y la temperatura
+        baja), la memoria se atiende soltando (ver _relieve). Congelar por memoria se traba.
         """
         temps = self.read()
         hottest = max(temps) if temps else 0.0
-        if pressure and not self.frozen:
-            self.frozen = self.send(self.pids(), signal.SIGSTOP)
-            self.log(f"MEMORIA PAUSE {self.frozen or '(nada pesado)'}: poca memoria disponible")
-            return hottest
-        if pressure:                              # sigue congelado hasta que ceda la presion
-            return hottest
+        if pressure:
+            self._relieve()
         if hottest >= self.kill_at:
             killed = self.send(self.frozen or self.pids(), signal.SIGKILL)
             self.frozen = []

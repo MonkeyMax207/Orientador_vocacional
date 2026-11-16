@@ -100,6 +100,8 @@ def main() -> None:
     ap.add_argument("--lr", type=float, default=1.5e-5)
     ap.add_argument("--bs", type=int, default=8)
     ap.add_argument("--ga", type=int, default=2, help="acumulacion de gradiente; bs*ga = lote efectivo")
+    ap.add_argument("--necesita-gb", type=float, default=memory.NEEDED_TRAIN_GB,
+                    help="memoria que exige la compuerta previa; el 0.6B uso ~27 GB, un 1.7B pide mas")
     ap.add_argument("--max-len", type=int, default=1024)
     ap.add_argument("--dump-template", action="store_true")
     ap.add_argument("--excluir", nargs="*", default=[],
@@ -121,7 +123,7 @@ def main() -> None:
 
     # Compuerta de memoria antes de reservar nada: el 2026-11-15 la maquina se congelo por OOM
     # global con dos instancias de Ollama reteniendo modelos mientras esto entrenaba.
-    libre = memory.require()
+    libre = memory.require(args.necesita_gb)
     print(f"memoria disponible: {libre:.1f} GB", flush=True)
 
     data = ChatDataset(ROOT / args.data, tokenizer, args.max_len, tuple(args.excluir))

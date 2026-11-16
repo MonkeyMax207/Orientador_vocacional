@@ -779,16 +779,21 @@ class _FakeTermica:
     """Guardia térmica con temperatura y señales simuladas."""
 
     def __init__(self, temps):
-        self.serie, self.enviadas = list(temps), []
-        self.guard = thermal.ThermalGuard(read=self._read, pids=lambda: [111, 222],
-                                           send=self._send, log=lambda m: None)
+        self.serie, self.enviadas, self.avisos = list(temps), [], []
+        self.guard = thermal.ThermalGuard(read=self._read, pids=self._pids,
+                                           send=self._send, log=self.avisos.append)
+
+    def _pids(self, patterns=thermal.HEAVY):
+        """Como heavy_pids: el patron decide. Solo el runner devuelve memoria al morir."""
+        return [111] if patterns == thermal.RELEASABLE else [111, 222]
 
     def _read(self):
         return [self.serie.pop(0)] if self.serie else [0.0]
 
     def _send(self, pids, sig):
         import signal as s
-        self.enviadas.append(({s.SIGSTOP: "STOP", s.SIGCONT: "CONT", s.SIGKILL: "KILL"}[sig],
+        self.enviadas.append(({s.SIGSTOP: "STOP", s.SIGCONT: "CONT", s.SIGKILL: "KILL",
+                                s.SIGTERM: "TERM"}[sig],
                                list(pids)))
         return list(pids)
 
@@ -866,18 +871,39 @@ def test_memory_require_aborts_instead_of_oomming_the_machine():
         assert "MEMORIA INSUFICIENTE" in str(e)
 
 
-def test_thermal_freezes_on_memory_pressure_even_when_cool():
-    t = _FakeTermica([40, 40])
-    t.guard.tick(pressure=True)      # frío, pero sin memoria
-    t.guard.tick(pressure=True)      # sigue congelado, no recongela
-    assert [a for a, _ in t.enviadas] == ["STOP"]
+def test_thermal_memory_pressure_never_freezes_the_main_job():
+    """La regresion del 2026-11-16: congelar por memoria dejo el entrenamiento trabado 22 min.
 
-
-def test_thermal_resumes_only_when_memory_pressure_clears():
+    SIGSTOP no devuelve memoria, asi que la presion que lo congelo no podia ceder. Ahora la
+    presion solo TERMINA lo que libera al salir, y jamas congela.
+    """
     t = _FakeTermica([40, 40])
     t.guard.tick(pressure=True)
-    t.guard.tick(pressure=False)     # ya hay memoria y hace frío: reanuda
-    assert [a for a, _ in t.enviadas] == ["STOP", "CONT"]
+    assert "STOP" not in [a for a, _ in t.enviadas]
+    assert t.enviadas == [("TERM", [111])]      # el runner, no el entrenamiento (222)
+
+
+def test_thermal_memory_pressure_does_not_latch():
+    """Y aunque la presion siga, el trabajo principal sigue corriendo: nada queda trabado."""
+    t = _FakeTermica([40, 40, 40])
+    for _ in range(3):
+        t.guard.tick(pressure=True)
+    assert t.guard.frozen == []
+
+
+def test_thermal_memory_pressure_warns_when_there_is_nothing_to_release():
+    t = _FakeTermica([40])
+    t.guard.pids = lambda patterns=thermal.HEAVY: []      # ya no queda runner que soltar
+    t.guard.tick(pressure=True)
+    assert all(not pids for _, pids in t.enviadas)     # no se señaló a nadie
+    assert any("NO se congela" in a for a in t.avisos)
+
+
+def test_thermal_still_freezes_for_heat_while_memory_is_tight():
+    """Calor y presion a la vez: el calor manda, porque ahi congelar si sirve."""
+    t = _FakeTermica([95])
+    t.guard.tick(pressure=True)
+    assert ("STOP", [111, 222]) in t.enviadas
 
 
 def test_thermal_freezes_above_threshold_and_thaws_when_cool():
