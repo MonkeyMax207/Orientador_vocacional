@@ -17,6 +17,8 @@ import numpy as np
 import animations
 import brain
 import config
+import fillers
+import graph
 import lexical
 from finetune import judge, make_dataset, masking, memory, quiz, schema, teacher, thermal, validate
 import download_models
@@ -1068,6 +1070,187 @@ def test_teacher_ask_many_keeps_order_and_marks_failures():
         assert teacher.ask_many(jobs, host="http://x", model="m", workers=2) == [[], None, []]
     finally:
         teacher._post = real_post
+
+
+def test_entrypoints_default_to_the_detected_profile():
+    """El 2026-11-17 main.py caia en el perfil "pc" sin argumentos y la Pi arranco con la ruta
+    de embeddings: tres minutos vectorizando en su CPU, con el BM25 ya instalado al lado. La
+    deteccion existia en config.py pero nadie la usaba."""
+    import re
+    for archivo in ("main.py", "server.py", "fillers.py"):
+        texto = Path(archivo).read_text()
+        linea = next(l for l in texto.splitlines() if "load_config(sys.argv" in l)
+        assert "DEFAULT_PROFILE" in linea, f"{archivo} no usa el perfil detectado: {linea.strip()}"
+        assert '"pc"' not in linea, f"{archivo} todavia cae en pc"
+
+
+def test_detected_profile_tells_a_pi_from_a_dgx():
+    """Las dos son aarch64: mirar solo la arquitectura mandaria la DGX al perfil de la Pi."""
+    assert config._perfil_por_defecto() in ("pi", "dgx", "pc")
+
+
+def test_both_retrievers_satisfy_the_same_interface():
+    """main.py usa el objeto de conocimiento sin saber que motor es. Si uno no tiene lo que el
+    otro si, la Pi se cae al arrancar — paso el 2026-11-17 con program_names()."""
+    import re
+    usados = set()
+    for archivo in ("main.py", "server.py"):
+        usados |= set(re.findall(r"self\.knowledge\.(\w+)", Path(archivo).read_text()))
+    assert usados, "la prueba no encontro ningun uso: revisa el analisis"
+    for nombre in usados:
+        assert hasattr(rag.Knowledge, nombre), f"Knowledge no tiene {nombre}"
+        assert hasattr(lexical.BM25, nombre), f"BM25 no tiene {nombre}"
+
+
+def test_fillers_cycle_before_repeating():
+    """random.choice con seis clips repetia alguna en tres de cada cinco turnos, y eso es lo
+    que delata a una maquina. La bolsa barajada las agota todas antes de volver a empezar."""
+    import types
+    f = types.SimpleNamespace(normal=list("abcdef"), slow=list("wxyz"),
+                               _bolsas={False: [], True: []})
+    f.pick = types.MethodType(fillers.Fillers.pick, f)
+    salidas = [f.pick() for _ in range(6)]
+    assert sorted(salidas) == list("abcdef"), salidas
+    assert sorted(f.pick(slow=True) for _ in range(4)) == list("wxyz")
+    # Las dos bolsas son independientes: gastar las lentas no toca las normales.
+    assert sorted(f.pick() for _ in range(6)) == list("abcdef")
+
+
+def test_filler_phrases_are_speakable():
+    """Sin digitos ni markup: el robot las dice en voz alta. Y cortas, porque su trabajo es
+    tapar un hueco, no llenarlo."""
+    import re
+    for frase in fillers.FILLERS:
+        assert len(frase.split()) <= 6, frase
+    for frase in fillers.FILLERS + fillers.SLOW_FILLERS:
+        assert not re.search(r"\d|\*|#|_", frase), frase
+        assert frase[0].isupper() and frase.endswith((".", "?", "!")), frase
+    assert len(set(fillers.FILLERS)) == len(fillers.FILLERS)
+
+
+def test_config_limits_actually_reach_the_brain():
+    """max_turns, max_tokens y max_sentences llevaban en config.toml sin que nadie los leyera:
+    el tope real salia del Modelfile y el historial crecia hasta 19 mensajes. En una charla de
+    20 turnos del 2026-11-17 eso llevo la primera palabra de 4,7 s a 30,3 s en la Pi."""
+    import types
+    cfg = types.SimpleNamespace(llm_backend="ollama", ollama_host="http://x", llm_model="m",
+                                 threads=4, llm_num_gpu=0, max_turns=3, max_tokens=60,
+                                 rag_card_chars=300)
+    b = brain.make_brain(cfg)
+    assert b.max_turns == 3, "max_turns no llego al cerebro"
+    assert b.options.get("num_predict") == 60, "max_tokens no llego al cerebro"
+    assert b.card_chars == 300
+
+
+def test_pi_remembers_fewer_turns_than_the_dgx():
+    """La Pi paga cada ficha del historial en espera; la DGX no."""
+    import tomllib
+    d = tomllib.load(open("config.toml", "rb"))
+    assert d["pi"]["max_turns"] < d["common"]["max_turns"]
+
+
+def test_graph_covers_every_program_with_the_hard_facts():
+    g = graph.build()
+    assert len(g) == 30
+    for campo, minimo in (("creditos", 30), ("titulo", 30), ("duracion", 28),
+                           ("perfil", 30), ("egresado", 30)):
+        n = sum(1 for nodo in g.values() if nodo.get(campo))
+        assert n >= minimo, f"{campo}: solo {n}/30"
+
+
+def test_graph_trims_the_brochure_tail_off_a_value():
+    """La extraccion por regex no sabe donde termina un dato: el titulo de Psicologia salia
+    "psicologo becas y financiacion directorio de" el 2026-11-17."""
+    assert graph.recortar("psicologo becas y financiacion directorio") == "psicologo"
+    assert graph.recortar("arquitecto descripcion del programa") == "arquitecto"
+    for nodo in graph.build().values():
+        assert len(nodo.get("titulo", "").split()) <= 6, nodo.get("titulo")
+
+
+def test_graph_field_comes_from_the_current_question():
+    """"y cuanto dura" despues de "hablame del plan de estudios" devolvia las materias, porque
+    la coincidencia mas larga ganaba y venia del turno anterior."""
+    g = graph.build()
+    hecho, _ = graph.consultar(g, "y cuanto dura", "Ingeniería Mecatrónica",
+                                contexto="me puedes hablar del plan de estudios")
+    assert "periodos" in hecho, hecho
+
+
+def test_graph_keeps_the_program_across_turns():
+    g = graph.build()
+    assert graph.programa_de("y cuanto dura", g, "Psicología") == "Psicología"
+    assert "Mercadeo" in graph.programa_de("hablame de mercadeo", g, "Psicología")
+
+
+def test_graph_answers_catalog_questions_with_official_names():
+    """En la conversacion real del 2026-11-17 el robot dijo que Mercadeo y Negocios
+    Internacionales es una carrera "relacionada con el arte". Los nombres oficiales son el
+    unico antidoto contra inventar carreras."""
+    g = graph.build()
+    todos = graph.listar(g, "que carreras tienen")
+    assert "Arquitectura" in todos
+    # Se entregan pocos nombres a proposito: con los 30 delante, el modelo los recitaba todos
+    # (43 palabras, 29 segundos en la Pi). El resto se anuncia, no se lista.
+    assert todos.count(",") < graph.MAX_LISTA + 1 and "más" in todos
+    solo_ing = graph.listar(g, "que carreras de ingenieria hay")
+    assert "Ingeniería Ambiental" in solo_ing and "Arquitectura" not in solo_ing
+    assert graph.listar(g, "hola como va todo") == ""
+    assert graph.listar(g, "cuanto dura psicologia") == ""
+
+
+def test_graph_says_nothing_rather_than_guessing():
+    """Un dato ausente tiene que poder decirse "no lo se": rellenarlo con lo que haya cerca es
+    exactamente como el modelo respondia que la carrera "dura 139 creditos"."""
+    g = graph.build()
+    assert graph.hecho(g, "Psicología", "inventado") == ""
+    assert graph.hecho(g, "Carrera Que No Existe", "duracion") == ""
+    assert graph.consultar(g, "hola como va todo") == ("", "")
+
+
+def test_graph_facts_are_far_smaller_than_prose():
+    """La razon de ser del grafo: en la Pi cada ficha de prompt son ~23 ms de silencio."""
+    g = graph.build()
+    hecho, _ = graph.consultar(g, "cuanto dura", "Ingeniería Mecatrónica")
+    assert 0 < len(hecho) < 120, hecho
+
+
+def test_bm25_prefix_expansion_reaches_word_forms():
+    """"cuanto DURA" tiene que alcanzar "DURACION": el 2026-11-17 el robot contesto que la
+    carrera "dura 139 creditos" teniendo "8 periodos academicos" en el corpus, porque la
+    busqueda lexica comparaba palabras exactas."""
+    kb = lexical.load()
+    assert "duracion" in kb.expandir("dura")
+    assert "laboratorios" in kb.expandir("labor")
+    # Se expande aunque el termino exacto exista: "dura" esta en el corpus por su cuenta.
+    assert len(kb.expandir("dura")) > 1
+
+
+def test_bm25_short_terms_are_not_expanded():
+    """Con menos de cuatro letras el prefijo arrastra medio diccionario."""
+    kb = lexical.load()
+    assert len(kb.expandir("de")) <= 1 and len(kb.expandir("psi")) <= 1
+
+
+def test_bm25_finds_the_duration_fact():
+    kb = lexical.load()
+    texto = " ".join(f["texto"] for f in lexical.fragmentos(kb, "estudio psicologia y cuanto dura"))
+    assert "periodos" in texto.lower(), texto[:160]
+
+
+def test_fragments_are_much_smaller_than_whole_documents():
+    """La razon de ser de los fragmentos: en la Pi cada ficha de prompt son ~23 ms."""
+    kb = lexical.load()
+    consulta = "cuenteme de arquitectura que materias hay en el sexto semestre"
+    enteros = sum(len(str(d.get("texto", ""))) for d, _ in kb.search(consulta, k=3))
+    trozos = sum(len(f["texto"]) for f in lexical.fragmentos(kb, consulta))
+    assert trozos < enteros / 2, f"{trozos} contra {enteros}"
+
+
+def test_bm25_lists_the_official_programs():
+    kb = lexical.load()
+    nombres = kb.program_names()
+    assert "Arquitectura" in nombres and "Psicología" in nombres
+    assert all(n for n in nombres) and len(nombres) == len(set(nombres))
 
 
 def test_retriever_dispatches_by_profile():

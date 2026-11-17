@@ -9,6 +9,7 @@ Threads involved:
   - this main thread        → VAD, STT, sentence splitting, Piper, orchestration
 """
 import queue
+import json
 import sys
 import threading
 import time
@@ -20,7 +21,7 @@ import numpy as np
 import animations
 from audio_io import SAMPLE_RATE, Mic, Player, save_wav, to_int16
 from brain import llm_worker, make_brain
-from config import load_config
+from config import DEFAULT_PROFILE, load_config
 from fillers import Fillers
 from rag import make_retriever
 from sentences import SentenceSplitter, clean_for_tts
@@ -28,7 +29,8 @@ from stt import STT, clean
 from tts import TTS
 from vad import CHUNK_MS, VAD, TurnDetector
 
-RECORDINGS = Path(__file__).parent / "recordings"
+ROOT = Path(__file__).parent
+RECORDINGS = ROOT / "recordings"
 
 
 def slow_filler_due(elapsed, limit, answer_started, already_played, player_busy) -> bool:
@@ -50,7 +52,11 @@ class Agent:
         self.brain.warmup()    # load the LLM + cache the system prompt
         self.stt = STT(cfg.whisper_model, cfg.whisper_device,
                        cfg.whisper_compute, cfg.threads)
-        self.tts = TTS(cfg.tts_engine, cfg.voice, cfg.tts_device)
+        # pace y pause_s vienen del trabajo hecho en la Pi: el ritmo se alarga sin bajar el
+        # tono, y la pausa evita que las frases se atropellen (cada una se sintetiza apenas el
+        # LLM la escribe). Opcionales, asi que la DGX y el PC siguen funcionando sin ellos.
+        self.tts = TTS(cfg.tts_engine, cfg.voice, cfg.tts_device,
+                       getattr(cfg, "voice_pace", 1.0), getattr(cfg, "sentence_pause_s", 0.0))
         # warm-up
         self.tts.synthesize("Hola.")
         self.fillers = Fillers(cfg.voice)
@@ -96,6 +102,26 @@ class Agent:
                 return True
         # Interrupt once the user has said as much as a valid turn needs (min_speech_ms).
         return self.turns.speech_chunks * CHUNK_MS >= self.cfg.min_speech_ms
+
+    def _anotar(self, pregunta, respuesta, cards, t_end, t_stt, t_first) -> None:
+        """Una linea JSON por turno en logs/conversacion-<fecha>.jsonl. Nunca interrumpe: si
+        escribir falla, el robot sigue hablando."""
+        try:
+            registro = {
+                "hora": datetime.now().isoformat(timespec="seconds"),
+                "pregunta": pregunta,
+                "respuesta": respuesta,
+                "docs": [{"id": c.get("id", ""), "programa": c.get("programa", ""),
+                           "texto": str(c.get("texto", ""))[:300]} for c in cards],
+                "stt_s": round(t_stt - t_end, 2),
+                "primera_palabra_s": round(t_first - t_stt, 2) if t_first else None,
+            }
+            destino = ROOT / "logs" / f"conversacion-{datetime.now():%Y%m%d}.jsonl"
+            destino.parent.mkdir(exist_ok=True)
+            with open(destino, "a", encoding="utf-8") as f:
+                f.write(json.dumps(registro, ensure_ascii=False) + "\n")
+        except Exception as e:
+            print(f"[log] no se pudo anotar el turno: {e}", flush=True)
 
     def find_cards(self, text: str) -> list[dict]:
         # UAO text only for questions about the UAO (rag_gate); plain chat gets nothing.
@@ -180,6 +206,11 @@ class Agent:
 
         print(f"Orienta: {' '.join(spoken)}", flush=True)
         self.last_reply = " ".join(spoken)
+        # El 2026-11-17 la primera conversacion real del robot se perdio al cerrar la terminal, y
+        # con ella la unica evidencia de como se comporta fuera de un quiz. Cada turno queda
+        # escrito con lo que recupero y cuanto tardo: sin esto se diagnostica a ciegas y se
+        # termina midiendo lo que es comodo medir en vez de lo que falla.
+        self._anotar(text, " ".join(spoken), cards, t_end, t_stt, t_first)
         if t_first:
             first_sound = min(t_filler + [t_first]) - t_end
             source = "filler" if t_filler and t_filler[0] < t_first else "respuesta"
@@ -203,7 +234,10 @@ class Agent:
 
 
 def main():
-    cfg = load_config(sys.argv[1] if len(sys.argv) > 1 else "pc")
+    # Sin argumento, la maquina decide: la Pi no debe caer en el perfil del PC, que usa
+    # embeddings y CUDA. El 2026-11-17 ese defecto dejo a la Pi tres minutos vectorizando 253
+    # fragmentos en su CPU antes de que nadie pudiera hablarle.
+    cfg = load_config(sys.argv[1] if len(sys.argv) > 1 else DEFAULT_PROFILE)
     agent = Agent(cfg)
     print(
         f"Listo (perfil {cfg.profile}). Habla cuando quieras. Ctrl+C para salir.", flush=True)

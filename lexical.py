@@ -87,18 +87,62 @@ class BM25:
                 self.doc_freq[t] = self.doc_freq.get(t, 0) + 1
         self.n = len(docs)
 
+    def program_names(self) -> list[str]:
+        """Los nombres oficiales de los programas, para que el cerebro no invente carreras.
+
+        Mismo contrato que rag.Knowledge.program_names(): los dos motores de recuperacion son
+        intercambiables desde main.py, y el 2026-11-17 este metodo faltaba aqui, asi que la Pi
+        se cayo al arrancar con BM25 — la clase servia para buscar pero no cumplia la interfaz.
+        """
+        return sorted({d["programa"] for d in self.docs if d.get("programa")})
+
+    def _vocabulario(self) -> list[str]:
+        if not hasattr(self, "_vocab"):
+            self._vocab = sorted(self.doc_freq)
+        return self._vocab
+
+    def expandir(self, term: str, maximo: int = 6) -> list[str]:
+        """El termino, o los del indice que empiezan por el si no aparece tal cual.
+
+        Sin esto, "cuanto DURA" no alcanza "DURACION del programa: 8 periodos academicos" —
+        comprobado el 2026-11-17 con el robot hablando: el dato estaba en el corpus y al modelo
+        le llegaron tablas de creditos, asi que respondio que la carrera "dura 139 creditos".
+        Es la debilidad conocida de la busqueda lexica, y un prefijo la cubre casi entera sin
+        traer un modelo de por medio.
+
+        Se expande SIEMPRE, no solo cuando el termino falta: "dura" existe por su cuenta en el
+        corpus, asi que una condicion "si no aparece" dejaba el caso real sin arreglar.
+
+        Solo para terminos de 4 letras o mas: con menos, el prefijo arrastra medio diccionario.
+        """
+        if len(term) < 4:
+            return [term] if term in self.doc_freq else []
+        import bisect
+        vocab = self._vocabulario()
+        i = bisect.bisect_left(vocab, term)
+        fuera = []
+        # El termino exacto entra primero si existe; bisect ya lo deja en esta posicion.
+        while i < len(vocab) and vocab[i].startswith(term) and len(fuera) < maximo:
+            fuera.append(vocab[i])
+            i += 1
+        return fuera
+
     def idf(self, term: str) -> float:
         """Rare terms weigh more. The +0.5s keep it finite for a term in every document."""
         df = self.doc_freq.get(term, 0)
         return math.log(1 + (self.n - df + 0.5) / (df + 0.5))
 
     def scores(self, query: str) -> list[float]:
-        terms = tokenize(query)
+        # Cada termino se expande a sus derivados por prefijo (ver expandir), y los derivados
+        # se reparten el peso para que una palabra con muchas variantes no pese mas que una
+        # exacta: "dura" no debe valer seis veces por alcanzar duracion, duraderos, durante...
+        terms = []
+        for t in tokenize(query):
+            variantes = self.expandir(t)
+            terms += [(v, 1.0 / len(variantes)) for v in variantes]
         out = [0.0] * self.n
-        for term in terms:
-            if term not in self.doc_freq:
-                continue
-            idf = self.idf(term)
+        for term, peso in terms:
+            idf = self.idf(term) * peso
             for i, tf in enumerate(self.frecuencias):
                 f = tf.get(term, 0)
                 if not f:
@@ -113,6 +157,62 @@ class BM25:
         puntajes = self.scores(query)
         orden = sorted(range(self.n), key=lambda i: puntajes[i], reverse=True)
         return [(self.docs[i], puntajes[i]) for i in orden[:k] if puntajes[i] > minimo]
+
+
+def _ventanas(texto: str, ancho: int, paso: int):
+    """Trozos solapados de `ancho` caracteres. Deliberadamente NO se corta por frases: el
+    corpus es texto de folleto con tablas, y al separar por puntos "Titulo que otorga:" quedaba
+    en un trozo y "Psicologo" en otro, que es justo perder el dato. Una ventana mantiene juntos
+    la etiqueta y su valor."""
+    texto = " ".join((texto or "").split())
+    if len(texto) <= ancho:
+        return [texto] if texto else []
+    return [texto[i:i + ancho] for i in range(0, max(1, len(texto) - ancho + paso), paso)]
+
+
+def fragmentos(indice: "BM25", consulta: str, docs: int = 3, n: int = 2,
+               ancho: int = 260, paso: int = 90) -> list[dict]:
+    """Los `n` trozos mas pertinentes de los `docs` mejores documentos.
+
+    Por que existe: medido en la Pi el 2026-11-17, el robot tarda de 7 a 11 segundos en decir su
+    primera palabra, y casi todo ese tiempo es leer el prompt a ~43 fichas/s. Tres documentos
+    recortados a 300 caracteres son ~250 fichas, pero la respuesta suele vivir en una franja
+    pequena de uno de ellos; el resto se paga en silencio frente al visitante.
+
+    Se conserva el programa y el titulo de cada trozo: sin ellos el modelo pierde a que carrera
+    pertenece el dato, que es precisamente su falla dominante.
+    """
+    mejores = indice.search(consulta, k=docs)
+    candidatos = [(v, doc) for doc, _ in mejores
+                  for v in _ventanas(str(doc.get("texto", "")), ancho, paso)]
+    if not candidatos:
+        return []
+    # El nombre del programa sale de la consulta aqui: ya hizo su trabajo eligiendo el
+    # documento, y dentro de el solo es ruido. Sin esto, a "y cuanto dura" le ganaban las
+    # ventanas que repetian "psicologia" en vez de la que dice "8 periodos academicos".
+    del_programa = set()
+    for _, doc in candidatos:
+        del_programa |= set(tokenize(str(doc.get("programa", ""))))
+    afinada = " ".join(t for t in tokenize(consulta) if t not in del_programa) or consulta
+
+    sub = BM25([{"titulo": "", "programa": "", "texto": v} for v, _ in candidatos],
+               peso_programa=1)
+    puntajes = sub.scores(afinada)
+    orden = sorted(range(len(candidatos)), key=lambda i: puntajes[i], reverse=True)
+    salida, tomados = [], []
+    for i in orden:
+        if len(salida) >= n:
+            break
+        ventana, doc = candidatos[i]
+        # Dos ventanas contiguas del mismo documento dicen casi lo mismo y se pagan dos veces.
+        if any(d is doc and (v in ventana or ventana in v or
+                             len(set(v.split()) & set(ventana.split())) > len(ventana.split()) * 0.5)
+               for v, d in tomados):
+            continue
+        tomados.append((ventana, doc))
+        salida.append({"id": doc.get("id", ""), "programa": doc.get("programa", ""),
+                        "titulo": doc.get("titulo", ""), "texto": ventana})
+    return salida
 
 
 def load(cards: Path | None = None, chunks: Path | None = None) -> BM25:

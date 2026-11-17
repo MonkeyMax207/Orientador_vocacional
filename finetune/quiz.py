@@ -143,6 +143,8 @@ def main() -> None:
                                       "volver a generar (una corrida son ~12 min de GPU)")
     ap.add_argument("--recuperar", type=int, default=0,
                     help="documentos BM25 a poner en el prompt (0 = sin recuperacion)")
+    ap.add_argument("--fragmentos", type=int, default=0,
+                    help="franjas del documento en vez del documento entero (lo que corre la Pi)")
     ap.add_argument("--con-programa", action="store_true",
                     help="incluir el programa en la consulta, como lo haria el robot a mitad "
                           "de conversacion, que sabe de que carrera se esta hablando")
@@ -167,6 +169,16 @@ def main() -> None:
         if not indice:
             return pregunta
         consulta = f"{programa} {pregunta}" if (args.con_programa and programa) else pregunta
+        if args.fragmentos:
+            trozos = lexical.fragmentos(indice, consulta, docs=args.recuperar,
+                                         n=args.fragmentos)
+            if not trozos:
+                return pregunta
+            bloque = "\n".join(f"- {d.get('titulo') or d.get('programa') or ''}: {d['texto']}"
+                                for d in trozos)
+            return (f"Informacion de la UAO:\n{bloque}\n\n"
+                    f"Responde esta pregunta usando solo esa informacion, en UNA frase corta y "
+                    f"hablada.\n\nPregunta: {pregunta}")
         hits = indice.search(consulta, k=args.recuperar)
         if not hits:
             return pregunta

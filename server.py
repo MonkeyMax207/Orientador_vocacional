@@ -20,7 +20,7 @@ import websockets
 
 import animations
 from brain import make_brain
-from config import load_config
+from config import DEFAULT_PROFILE, load_config
 from fillers import Fillers
 from rag import make_retriever
 from sentences import SentenceSplitter, clean_for_tts
@@ -99,5 +99,5 @@ async def serve(pipeline: Pipeline, port: int):
 
 
 if __name__ == "__main__":
-    cfg = load_config(sys.argv[1] if len(sys.argv) > 1 else "pc")
+    cfg = load_config(sys.argv[1] if len(sys.argv) > 1 else DEFAULT_PROFILE)
     asyncio.run(serve(Pipeline(cfg), cfg.server_port))

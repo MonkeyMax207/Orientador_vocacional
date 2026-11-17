@@ -180,10 +180,76 @@ def make_finder_bm25(cfg):
         return None, lambda text, previous="": []
     kb = lexical.load()
 
+    # rag_fragmentos > 0 entrega franjas del documento en vez del documento entero. En la Pi
+    # cada ficha de prompt son ~23 ms, y la respuesta casi siempre vive en una franja pequena:
+    # mandar el parrafo completo se paga en silencio antes de que el robot hable.
+    trozos = getattr(cfg, "rag_fragmentos", 0)
+
     def find(text: str, previous: str = "") -> list[dict]:
         consulta = f"{previous} {text}".strip() if previous else text
         hits = kb.search(consulta, k=cfg.rag_max_cards, minimo=cfg.rag_gate_bm25)
+        if not hits:
+            return []                      # la compuerta decide: sin nada relevante, no se inventa
+        if trozos:
+            return lexical.fragmentos(kb, consulta, docs=cfg.rag_max_cards, n=trozos)
         return [doc for doc, _ in hits]
+    return kb, find
+
+
+def make_finder_grafo(cfg):
+    """Hechos estructurados primero; la busqueda por texto solo como ultimo recurso.
+
+    Nace de la primera conversacion real del robot, el 2026-11-17, que mostro dos cosas que
+    ningun quiz habia revelado:
+
+      * "Hola, como va todo?" trajo documentos del CAFS y el robot hablo de espacios
+        deportivos. 79 de 400 documentos no pertenecen a ninguna carrera y secuestraban la
+        charla desde el primer turno.
+      * El programa en foco se perdia entre turnos: "y es dificil?" trajo Ingenieria Mecanica
+        mientras se hablaba de Mercadeo.
+
+    Por eso aqui el programa es **pegajoso**: una vez nombrado, se arrastra hasta que la
+    persona nombre otro. Y si no hay ninguno en foco, la compuerta sube a `rag_gate_charla`,
+    de modo que un saludo no arrastre folletos. El umbral salio de medir: la charla puntua
+    0-4.8 en BM25 y una pregunta sobre la UAO 7.6 o mas.
+    """
+    import graph
+    import lexical
+    grafo = graph.build()
+    kb = lexical.load()
+    trozos = getattr(cfg, "rag_fragmentos", 0)
+    gate_charla = getattr(cfg, "rag_gate_charla", 6.0)
+    estado = {"programa": ""}
+
+    def find(text: str, previous: str = "") -> list[dict]:
+        programa = graph.programa_de(f"{previous} {text}", grafo, estado["programa"])
+        estado["programa"] = programa
+
+        # 0. Pregunta por el catalogo: se entregan los nombres oficiales y nada mas.
+        catalogo = graph.listar(grafo, text)
+        if catalogo:
+            return [{"id": "grafo:catalogo", "programa": "", "titulo": "Programas",
+                      "texto": catalogo}]
+
+        # 1. Un hecho exacto de la ficha del programa: ~20 fichas de prompt en vez de ~140.
+        dato, _ = graph.consultar(grafo, text, programa, contexto=previous)
+        if dato:
+            return [{"id": f"grafo:{programa}", "programa": programa,
+                      "titulo": programa, "texto": dato}]
+
+        # 2. Sin programa en foco, solo se busca si la pregunta de verdad habla de la UAO.
+        # El programa entra en la consulta de respaldo: medido el 2026-11-16, con el en la
+        # consulta el acierto de programa es 100% y sin el 40%. Sin esta linea, "¿es dificil?"
+        # mientras se hablaba de Mercadeo traia Ingenieria Ambiental y Arquitectura.
+        consulta = " ".join(x for x in (programa, previous, text) if x).strip()
+        minimo = cfg.rag_gate_bm25 if programa else gate_charla
+        hits = kb.search(consulta, k=cfg.rag_max_cards, minimo=minimo)
+        if not hits:
+            return []
+        if trozos:
+            return lexical.fragmentos(kb, consulta, docs=cfg.rag_max_cards, n=trozos)
+        return [doc for doc, _ in hits]
+
     return kb, find
 
 
@@ -211,6 +277,8 @@ def make_finder(cfg):
 def make_retriever(cfg):
     """La unica puerta que usan server.py y main.py. El perfil decide el motor."""
     backend = getattr(cfg, "rag_backend", "embed")
+    if backend == "grafo":
+        return make_finder_grafo(cfg)
     if backend == "bm25":
         return make_finder_bm25(cfg)
     if backend == "ninguno":

@@ -29,6 +29,13 @@ embed_model = "embeddinggemma"   # Ollama embedding model (CPU); 21/25 in knowle
 # "bm25" (lexico, 0.11 ms por consulta y sin modelo) o "ninguno".
 rag_backend = "embed"
 rag_gate_bm25 = 1.0          # puntaje BM25 minimo; por debajo no se entrega nada y el robot dice que no sabe
+rag_card_chars = 0           # recorte por documento recuperado; 0 = completo. Solo la Pi lo necesita
+rag_fragmentos = 0           # >0 = entregar N franjas del documento en vez del documento entero
+rag_gate_charla = 6.0        # umbral cuando no hay carrera en foco: la charla puntua 0-4.8, una pregunta UAO 7.6+
+max_tokens = 200             # tope de la respuesta; la Pi lo baja porque cada ficha son ~0,16 s alli
+max_turns = 10               # intercambios recordados; acota el prompt y por tanto la espera
+voice_pace = 1.0             # >1 = habla mas lento con el mismo tono (el modelo estira cada sonido)
+sentence_pause_s = 0.0       # silencio tras cada frase, para que no se atropellen
 rag_gate = 0.33                  # offer the buscar_uao tool only above this similarity (chat ~0.15–0.28)
 rag_threshold = 0.30             # embeddinggemma: off-topic scores 0.09–0.26, relevant 0.27–0.66 (knowledge/eval.py)
 recommend_after_turns = 8        # on this turn the agent suggests programs even if not asked (a friend listens first)
@@ -56,16 +63,34 @@ llm_model = "orienta-17b-q8"  # el afinado, Q8_0 1.8 GB: 25.8% de error contra 3
 llm_num_gpu = 0              # 0 = LLM runs on the CPU only, like on the Pi
 # BM25 en la Pi: sin modelo de embeddings cargado y sin ida y vuelta HTTP por turno. Medido el
 # 2026-11-16: recuperar baja la tasa de error de 46.5% a 19.7% (fp16, juzgado contra la fuente).
-rag_backend = "bm25"
-rag_max_cards = 5            # recall@5 = 73.8% contra 61.9% con 3; k=8 llega a 84.9% pero el prompt crece
+rag_backend = "grafo"
+# Medido en la Pi el 2026-11-17: leer el prompt va a ~43 fichas/s y generar a 6.4 fichas/s, asi
+# que cada documento recuperado se paga en segundos de espera antes de que el robot hable.
+# k=5 con 600 caracteres por documento daba turnos de 13 s; esto da ~9 s. La exactitud casi no
+# cambia entre k=3 y k=5 (quedaron dentro de 4 puntos en la medicion del 2026-11-16).
+rag_max_cards = 3
+rag_card_chars = 0           # ya no hace falta: los fragmentos vienen acotados de origen
+rag_fragmentos = 2           # dos franjas de ~260 caracteres en vez de 3 parrafos de ~900
+max_tokens = 60              # el modelo fue entrenado para ~20 fichas; 120 lo dejaba divagar 27 s
+# Medido el 2026-11-17 en una charla real de 20 turnos: con 10 intercambios el historial llego
+# a 605 fichas y la primera palabra paso de 4,7 s en el turno 19 a 30,3 s en el 32. El programa
+# en foco ya lo recuerda el grafo, no el historial, asi que recordar menos cuesta muy poco.
+max_turns = 3
+# La primera muletilla dura 1,9-2,9 s y empieza cuando dejas de hablar; la respuesta llega
+# sobre los 7,6 s. A los 3 s la primera ya termino y quedaria un hueco de silencio, asi que
+# ahi entra la segunda (slow_filler_due espera igual a que el reproductor se libere).
+slow_llm_s = 3.0
+
+# Hardware real de esta Pi, traido de su configuracion propia: la lista son nombres candidatos
+# del modulo USB, y la voz mexicana con su ritmo ajustado a mano frente al parlante.
+input_device = ["USB PnP MME", "USB PnP Audio Device"]
+output_device = ["USB PnP MME", "USB PnP Audio Device"]
+voice = "es_MX-claude-high"
+voice_pace = 1.12            # >1 = habla mas lento con el mismo tono; Piper por defecto sonaba apurado
+sentence_pause_s = 0.35      # silencio tras cada frase: tiempo de respirar
 barge_in = false             # the Waveshare module has no hardware echo cancellation
-# On the Pi (Linux) use the system default device: set the USB module as default in the Pi's
-# sound settings; "default" goes through PipeWire, which converts sample rates for us.
-input_device = "default"
-output_device = "default"
 tts_engine = "piper"         # Kokoro is slower than real time on a Pi 5 CPU; Piper is ~4x faster than real time
 tts_device = "cpu"           # the Pi has no CUDA GPU
-voice = "es_ES-davefx-medium" # Piper voice file: models/piper/<voice>.onnx (Spain accent, male)
 voice_rate = 1.0             # try 0.9 for a wiser, older turtle; costs nothing
 
 [dgx]

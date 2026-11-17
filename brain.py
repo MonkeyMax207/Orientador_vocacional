@@ -114,11 +114,32 @@ class Brain:
         if cards:
             # Verified facts travel ONLY with this turn's message; the history keeps the plain
             # text, so later turns don't carry (and re-read) old cards.
-            facts = "\n".join(f"- {c['titulo']}: {c['texto']}" for c in cards)
+            # El recorte importa mas de lo que parece: medido en la Pi el 2026-11-17, leer el
+            # prompt va a ~43 fichas/s, asi que cada 100 caracteres de documento cuestan ~0,6 s
+            # de espera antes de que el robot empiece a hablar. 600 caracteres por tarjeta eran
+            # ~7 s por turno. El limite vive en la configuracion porque la DGX no lo necesita.
+            corte = getattr(self, "card_chars", 0)
+            facts = "\n".join(f"- {c['titulo']}: {c['texto'][:corte] if corte else c['texto']}"
+                               for c in cards)
             # Framed as a hidden note: otherwise the model thinks the student wrote these facts
             # ("gracias por recordarme la información verificada").
+            # "Una frase completa" y no solo "corto": el 2026-11-17, probandolo en voz alta, a
+            # "¿como se llama el titulo?" respondia "Psicologo" y nada mas. Es correcto y es
+            # inservible como conversacion — un orientador diria "El titulo es Psicologo".
+            # El modelo ya fue entrenado para ser breve; lo que le faltaba era cerrar la frase.
+            # La instruccion cambia segun lo que se entrego: pedir "nada de listas" a una
+            # pregunta de catalogo hizo que, teniendo los 30 nombres, nombrara uno solo
+            # ("Tienen Ingenieria Ambiental, entre otras") el 2026-11-17.
+            es_catalogo = any(str(c.get("id", "")) == "grafo:catalogo" for c in cards)
+            instruccion = (
+                "Nombra varios de esos programas en una frase hablada, sin leerlos todos ni "
+                "numerarlos, y ofrécete a contar más de alguno."
+                if es_catalogo else
+                "Responde con una frase completa y natural, como se la dirías a alguien de "
+                "frente: ni una palabra suelta ni una lista larga.")
             content = (f"[Nota interna para Orienta; el estudiante no la escribió ni la ve. "
-                       f"Información verificada de la UAO para responder:\n{facts}]\n\n"
+                       f"Información verificada de la UAO para responder:\n{facts}\n"
+                       f"{instruccion}]\n\n"
                        f"{user_text}")
         self.history.append({"role": "user", "content": user_text})
         # Keep an odd number of messages so the history always starts with a user message.
@@ -233,8 +254,19 @@ class NimBrain(Brain):
 
 def make_brain(cfg, program_names=()):
     if getattr(cfg, "llm_backend", "ollama") == "nim":
-        return NimBrain(cfg.nim_host, cfg.llm_model, program_names=program_names)
-    return Brain(cfg.ollama_host, cfg.llm_model, cfg.threads, cfg.llm_num_gpu, program_names=program_names)
+        cerebro = NimBrain(cfg.nim_host, cfg.llm_model, program_names=program_names)
+    else:
+        cerebro = Brain(cfg.ollama_host, cfg.llm_model, cfg.threads, cfg.llm_num_gpu,
+                        max_turns=getattr(cfg, "max_turns", 10), program_names=program_names)
+    # 0 = sin recorte, que es lo correcto en la DGX. En la Pi cada caracter se paga en espera.
+    cerebro.card_chars = getattr(cfg, "rag_card_chars", 0)
+    # max_tokens llevaba en config.toml sin que nadie lo leyera: el tope real salia del
+    # Modelfile. Medido el 2026-11-17, generar va a 6.4 fichas/s en la Pi, asi que el tope de
+    # salida es la mitad de la latencia de un turno.
+    tope = getattr(cfg, "max_tokens", 0)
+    if tope:
+        cerebro.options["num_predict"] = tope
+    return cerebro
 
 
 def llm_worker(brain, text: str, out_q, stop, cards=()) -> None:
