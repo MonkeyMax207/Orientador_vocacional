@@ -17,7 +17,7 @@ import numpy as np
 import animations
 import brain
 import config
-from finetune import make_dataset, masking, memory, quiz, schema, teacher, thermal, validate
+from finetune import judge, make_dataset, masking, memory, quiz, schema, teacher, thermal, validate
 import download_models
 import main
 import rag
@@ -1067,6 +1067,41 @@ def test_teacher_ask_many_keeps_order_and_marks_failures():
         assert teacher.ask_many(jobs, host="http://x", model="m", workers=2) == [[], None, []]
     finally:
         teacher._post = real_post
+
+
+def test_judge_prompt_withholds_the_reference_answer():
+    """El juez debe ver la FUENTE, nunca la respuesta de referencia: mostrarsela reproduciria
+    el defecto que este modulo existe para arreglar (comparar redacciones, no hechos)."""
+    msgs = judge.build_prompt("¿hay Neurociencias?", "Si, hay Neurociencias",
+                              "El programa incluye Neurociencias en el tercer ciclo.", "Psicologia")
+    texto = " ".join(m["content"] for m in msgs)
+    assert "tercer ciclo" in texto                 # la fuente si
+    assert "Psicologia" in texto
+    assert "referencia" not in texto.lower()       # la respuesta de referencia no
+
+
+def test_judge_parse_rejects_unknown_verdicts():
+    assert judge.parse({"veredicto": "correcta", "por_que": "ok"})[0] == "correcta"
+    assert judge.parse({"veredicto": "CORRECTA"})[0] == "correcta"
+    assert judge.parse({"veredicto": "mas o menos"})[0] == ""    # no se cuela como aprobada
+    assert judge.parse(None)[0] == ""
+    assert judge.parse("correcta")[0] == ""
+
+
+def test_judge_summary_excludes_the_unanswerable_from_the_denominator():
+    """Contar una pregunta imposible como fallo del modelo lo subestimaria igual que la
+    metrica vieja; y una respuesta sin juicio tampoco puede contar como buena."""
+    s = judge.summarize(["correcta", "correcta", "incorrecta", "incompleta", "imposible", ""])
+    assert s["juzgables"] == 4                      # 2 correctas + 1 incorrecta + 1 incompleta
+    assert s["exactitud"] == 0.5
+    assert s["exactitud_laxa"] == 0.75
+    assert s["tasa_error"] == 0.25
+    assert s["imposible"] == 1 and s["sin_juicio"] == 1
+
+
+def test_judge_summary_of_nothing_is_zero_not_a_crash():
+    s = judge.summarize([])
+    assert s["exactitud"] == 0.0 and s["juzgables"] == 0
 
 
 if __name__ == "__main__":
