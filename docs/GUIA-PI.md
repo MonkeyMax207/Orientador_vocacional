@@ -136,12 +136,20 @@ Y las cifras de calidad de la DGX, para comparar si corrés el quiz allá:
 |---|---|---|
 | Afinado **sin** recuperación | 26,5% | 46,5% |
 | Afinado + BM25, fp16 | 53,5% | 19,7% |
-| **Afinado + BM25, Q8 (lo que lleva la Pi)** | **~50%** | **~26%** |
+| **Afinado + BM25, Q8 + ponderacion (lo que lleva la Pi)** | **50,6%** | **19,9%** |
 | Afinado + BM25, Q4 | 41,0% | 34,6% |
 
-**Esto no es calidad de producción todavía.** El umbral del proyecto era 80% de precisión y
-vamos en ~50%. Es un robot que acierta la mitad de las veces y se equivoca una de cada cuatro,
-no uno listo para atender aspirantes solo. Sirve para demostrarlo y para medir desde algo real.
+La configuracion de la Pi iguala a fp16 en tasa de error (19,9% contra 19,7%) con la mitad del
+tamano. Lo que cerro la diferencia no fue el tamano del modelo sino ponderar el nombre del
+programa en el indice: ver `PESO_PROGRAMA` en `lexical.py`.
+
+Mas documentos recuperados **no** compra exactitud de forma confiable: k=3, k=5 y k=8 quedan
+dentro de ~4 puntos entre si, aunque el recall del recuperador suba de 61,9% a 84,9%. El cuello
+no es que falte informacion, es que el modelo no la aprovecha toda cuando la tiene.
+
+**Esto no es calidad de producción todavía.** El umbral del proyecto era 80% de precisión
+estricta y vamos en 50,6%. Dicho de otra forma: de cada cinco respuestas, una es falsa dicha con
+seguridad. No es un robot listo para atender aspirantes solo. Sirve para demostrarlo y para medir desde algo real.
 
 ## 8. Lo que no cambió, y conviene verificar que siga así
 
