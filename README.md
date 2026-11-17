@@ -1,111 +1,150 @@
-# Orientador vocacional por voz (offline)
+# Orientador vocacional por voz — Oso Andino
 
-Voice agent that talks with students in Spanish and helps them discover their vocational interests.
-Fully offline. Runs on Windows/Ubuntu for development and on a Raspberry Pi 5 inside an animatronic.
+Un animatrónico que conversa en español con aspirantes y les ayuda a escoger carrera en la
+Universidad Autónoma de Occidente. **Funciona sin internet**, entero dentro de una Raspberry
+Pi 5 de 8 GB: voz, modelo de lenguaje, conocimiento y servos.
 
-Design: `docs/superpowers/specs/2026-09-26-offline-voice-loop-design.md`
+Correr local no es un capricho técnico: el robot se promueve como una solución económica, así
+que depender de un servidor o de conexión anula su razón de ser.
 
-## Setup (once, needs internet)
+---
 
+## Cómo está armado
+
+Cada pieza hace un trabajo y no el del vecino. Esa separación salió de medir, no de diseñar:
+
+| Pieza | Qué aporta | Archivo |
+|---|---|---|
+| **Whisper** (`base`, int8) | Oír | `stt.py` |
+| **Respuestas inmediatas** | Saludos, gracias y **precios**, sin pasar por el modelo | `respuestas.py` |
+| **Grafo de programas** | El dato exacto de la carrera correcta | `graph.py` |
+| **BM25 léxico** | Buscar texto cuando el grafo no tiene el dato | `lexical.py` |
+| **Modelo afinado** | *Cómo* habla: registro, brevedad, negativas | `brain.py` |
+| **Piper** | Voz | `tts.py` |
+| **ESP32 + PCA9685** | Ojos y boca | `esp32.py`, `firmware/` |
+
+El modelo **no sabe los datos de memoria y no debe saberlos**. Medido contra la fuente, el
+modelo solo se equivocaba en el **46,5%** de las respuestas, inventando materias casi correctas
+atribuidas al programa equivocado. Con recuperación baja a **19,9%**. Los hechos se recuperan;
+el modelo solo los dice bien.
+
+---
+
+## Arrancar en la Raspberry
+
+```bash
+cd ~/Orientador_vocacional
+.venv/bin/python main.py
 ```
-uv sync                                  # Python 3.11 + dependencies into .venv/
-uv run python download_models.py         # VAD, Whisper and Piper files into models/
-ollama pull qwen2.5:3b                   # LLM for the pc profile
-ollama pull qwen2.5:1.5b                 # LLM for the pi profile
-uv run python fillers.py pc              # generate the filler clips with the Piper voice
+
+No lleva argumentos: el perfil se detecta leyendo `/proc/device-tree/model`. En la Pi usa el
+perfil `pi`; en la DGX, `dgx`. Si alguna vez ves que arranca a vectorizar documentos, está en
+el perfil equivocado.
+
+Antes de la primera vez:
+
+```bash
+.venv/bin/python test_logic.py        # 137 comprobaciones, ~1 min
+.venv/bin/python -m lexical "titulo de psicologia"   # el buscador, sin modelo
+ollama list | grep orienta            # debe estar orienta-17b-q8
 ```
 
-## Run (offline)
+Para el animatrónico, cuando esté enchufado:
 
-```
-uv run python list_devices.py            # check the USB audio module is found
-uv run python main.py pc                 # fast profile (GPU)
-uv run python main.py pi                 # Pi-like profile (CPU, 4 threads, small models)
-uv run python test_logic.py              # logic checks
-uv run python bench.py pi                # latency benchmark over recorded turns
+```bash
+python3 probar_oso.py                 # busca el puerto y recorre ojos, boca y gestos
 ```
 
-## Measured latency (PC, 2026-09-26)
+y después poné el puerto en `config.toml`: `esp32_port = "/dev/ttyUSB0"`.
 
-Six synthetic Spanish turns (two Piper voices), `uv run python bench.py <profile>`:
+---
 
-| Profile | STT | LLM 1st sentence | TTS 1st sentence | Answer ready | First sound |
-|---|---|---|---|---|---|
-| pc (Whisper small GPU, qwen2.5:3b GPU) | 0.41 s | 0.23 s | 0.40 s | 1.65 s | ~0.60 s |
-| pi (on PC, 4 threads: Whisper base int8, qwen2.5:1.5b CPU) | 1.50 s | 0.81 s | 0.21 s | 3.12 s | ~0.60 s |
-| pi with Whisper small int8 (rejected) | 3.64 s | 0.73 s | 0.21 s | 5.18 s | ~0.60 s |
+## Los números, sin adornos
 
-"Answer ready" includes the 0.6 s end-of-turn silence. Expect the real Pi 5 to be ~1.5–2.5x slower than the `pi` row.
-Known trade-off: Whisper `base` is fast enough but mishears some short/unclear Spanish ("Sí" → "¡Tienes!"); `small` is accurate but too slow on CPU. To revisit in the Pi port.
+Medidos el 2026-11-17 en la Pi 5, con el juez de `finetune/judge.py` sobre 200 preguntas
+apartadas. **No es calidad de producción todavía.**
 
-## After the first live test (2026-09-26)
+| | Medido | Umbral del proyecto |
+|---|---|---|
+| Exactitud estricta | **50,6%** | 80% |
+| Exactitud laxa (correcta + incompleta) | 80,1% | — |
+| **Tasa de error** (inventa o contradice) | **19,9%** | — |
+| Programas inventados | 3 de 200 | **0** |
+| Precios dados | **0 de 200** ✅ | 0 |
 
-Feedback: fillers sounded pointless (the answer was already ready), the voice sounded robotic, and the LLM repeated questions and ignored questions asked to it. Changes, each measured first:
+De cada cinco respuestas, una es falsa dicha con seguridad. Sirve para demostrar el robot y
+para medir desde algo real; no para dejarlo solo con un aspirante.
 
-| Change | Why (measured) |
+**Latencia por turno**, con el historial acotado a 3 intercambios:
+
+| Etapa | Tiempo |
 |---|---|
-| New prompt: answer the student first, react to what they said, never repeat a question, cope with STT errors | Replaying the real conversation: same `qwen2.5:3b` stopped repeating questions |
-| pc LLM `llama3.2:3b` (was `qwen2.5:3b`) | Best of 4 on the replay: answered questions about itself, read "Pugar fútbol" as "jugar fútbol"; 0.23 s to first sentence |
-| pi LLM stays `qwen2.5:1.5b` with the new prompt | `gemma3:1b` worse; `llama3.2:3b` on 4 CPU threads 2.9 s/sentence (~6 s on a Pi) |
-| pc voice Kokoro `em_santa` on the GPU (onnxruntime-gpu 1.22 + cuDNN 9.10) | More natural; 0.3–0.5 s per sentence on GPU vs 3–4 s on CPU |
-| pi voice Piper `es_ES-davefx-medium` | Kokoro is slower than real time on a Pi 5 CPU (RTF ~1.3–1.6 est.); Piper ~0.25 |
-| Short fillers ("Mmm...", "A ver...") only if no answer after `filler_after_s` (1.0 s) | A quick answer no longer waits behind "dame un segundo" |
-| `voice_rate` knob: plays audio slower = deeper "turtle" voice | Zero CPU cost; tune by ear (e.g. 0.9) |
-| Rejected: Whisper `initial_prompt` vocabulary hint | Made `small` recite the hint over noise and turn "Sí" into "Sin" |
+| Esperar el fin de tu frase | 0,6 s |
+| Whisper | 1,9 s |
+| Modelo hasta la primera palabra | 4 – 6 s |
+| Piper (primera frase) | 0,6 s |
 
-pc end to end with everything on the 4 GB GPU (3.8 GB used): first sound 1.0 s (filler), answer ready 1.4–1.8 s.
+Las muletillas (`fillers.py`) tapan ese hueco: una corta apenas dejás de hablar y una larga a
+los 3,5 s. No acortan la espera real; cambian la percibida, que es lo que se podía mover.
 
-## UAO knowledge (RAG)
+Un saludo o una pregunta de precio responden en **0 s**: no pasan por el modelo.
 
-The agent answers from `knowledge/cards.json`: 147 short fact cards about the Universidad Autónoma de
-Occidente's 30 undergraduate programs and campus life, generated from the public website and reviewed
-(cards flagged `revisar` are never used). Prices, tuition and scholarships are never answered; the agent
-hands those over to admissions staff.
+---
 
+## Las decisiones que no son obvias
+
+**Por qué BM25 y no embeddings.** El RAG semántico necesita un segundo modelo cargado y una
+petición HTTP por turno. BM25 indexa los 400 documentos en 27 ms y consulta en 0,43 ms, en
+Python puro. Su debilidad —no entiende sinónimos— se cubre con expansión por prefijo, para que
+*"cuánto **dura**"* alcance *"**Duración** del programa"*.
+
+**Por qué un grafo y no solo búsqueda.** `knowledge/cards.json` ya venía estructurado: 147
+fichas con `programa` y `tipo`. Un hecho del grafo son 60-70 caracteres; un párrafo de folleto,
+520. En la Pi cada ficha de prompt cuesta ~23 ms, así que el tamaño del dato es latencia.
+
+**Por qué la carrera en foco es pegajosa.** Con el programa en la consulta, la recuperación
+acierta el programa el **100%** de las veces; sin él, el 40%. En una conversación nadie repite
+el nombre ("¿y cuánto dura?"), así que el foco se arrastra — y se suelta en cuanto nombrás otra.
+
+**Por qué Q8 y no Q4.** Q4 es 25% más rápido y la tasa de error sube de 19,9% a 34,6%.
+
+**Por qué Whisper `base` y no `tiny`.** `tiny` es 1,8x más rápido y convierte *"me interesa
+psicología"* en *"me interesa así con lo día"*, lo que manda la búsqueda a una carrera al azar.
+
+---
+
+## Dónde mirar cuando algo falla
+
+**Cada turno queda registrado** en `logs/conversacion-<fecha>.jsonl`: la pregunta, la respuesta,
+qué documentos se recuperaron y cuánto tardó cada etapa. Es la herramienta de diagnóstico más
+útil del proyecto — distingue si falló el oído, la búsqueda o el modelo. Los audios quedan en
+`recordings/`.
+
+En la terminal, `[rag]` muestra lo recuperado y `[inmediata:<regla>]` cuando se saltó el modelo.
+
+---
+
+## Documentación
+
+| Documento | Para qué |
+|---|---|
+| [ROADMAP.md](ROADMAP.md) | Lo hecho y lo que falta, con prioridades |
+| [docs/GUIA-PI.md](docs/GUIA-PI.md) | Desplegar el modelo en la Raspberry, paso a paso |
+| [docs/GUIA-FINE-TUNING.md](docs/GUIA-FINE-TUNING.md) | Entrenar el modelo desde cero, con 20 trampas documentadas |
+| [docs/GUIA-DE-PRUEBAS.md](docs/GUIA-DE-PRUEBAS.md) | Probar cada pieza por separado |
+| [docs/2026-11-16-resultados-medicion.md](docs/2026-11-16-resultados-medicion.md) | Todas las mediciones del entrenamiento |
+| `docs/superpowers/specs/` | Los diseños originales de cada subproyecto |
+
+---
+
+## Entrenar (solo en la DGX)
+
+El entrenamiento no corre en la Pi y no debe: `pyproject.toml` nunca debe arrastrar torch.
+
+```bash
+~/.venvs/orienta-train/bin/python -m finetune.train --model Qwen/Qwen3-1.7B --epochs 5
+~/.venvs/orienta-train/bin/python -m finetune.export --nombre orienta-17b-q8 --cuantizar q8_0
+~/.venvs/orienta-train/bin/python -m finetune.export --nombre orienta-17b-q8 --empaquetar ~/orienta-pi
 ```
-uv run python -m knowledge.scrape        # download pages (internet; ~3 min, polite 2 s delay)
-uv run python -m knowledge.make_cards    # write cards with the PC LLM; review the "revisar" ones
-uv run python -m knowledge.eval embeddinggemma   # retrieval quality (21/25 at threshold 0.30)
-uv run python -m knowledge.replay pc     # end-to-end check without audio
-```
 
-To update: delete `knowledge/raw/`, rerun scrape and make_cards, review `git diff knowledge/cards.json`, commit.
-Before `replay`/`main`, unload models from other profiles (`ollama stop <model>`): Ollama keeps at most 3
-loaded, and evicting the chat model to load the embedder costs ~5 s per turn.
-
-Measured with `knowledge/replay.py` (PC, 2026-09-27), time to first sentence:
-
-| Profile | Turns without cards | Turns with cards | Notes |
-|---|---|---|---|
-| pc (llama3.2:3b GPU, 2 cards) | 0.2–0.4 s | 0.3–1.4 s | Every program named exists; labs/courses/sports from the right cards |
-| pi (qwen2.5:1.5b CPU, 1 card) | 0.6 s | 2.6–6 s (16–17 s late in the chat) | Right cards, but the 1.5B model drifts (fixates on unrelated programs, embellishes cards) |
-
-## Pi autónoma: el conocimiento dentro de los pesos
-
-Sub-proyecto en curso: un modelo de 0.6B afinado con el conocimiento de la UAO corre en la Pi sin
-RAG, para que el robot funcione solo, sin internet ni la DGX. La DGX pasa a ser la máquina de
-entrenamiento. Guía completa y reproducible desde cero, con las trampas de la DGX Spark (memoria
-unificada, OOM invisible, límites térmicos): **`docs/GUIA-FINE-TUNING.md`**. Diseño y plan en
-`docs/superpowers/specs/2026-11-15-pi-finetune-no-rag-design.md`.
-
-## DGX brain: LLM served by a NIM instead of Ollama
-
-First of three sub-projects migrating the DGX's voice pipeline to the NVIDIA ecosystem (STT/NeMo and
-TTS/Riva are next). Design: `docs/superpowers/specs/2026-09-29-nim-llm-backend-design.md`. Setup:
-`docs/GUIA-DE-PRUEBAS.md` §10.2.
-
-The `dgx` profile now serves chat through the `nvidia-nemotron-nano-9b-v2-dgx-spark` NIM — a model
-built specifically for this hardware — instead of Ollama's `qwen2.5:32b`, behind a `make_brain()`
-factory (`brain.py`) so `llm_backend = "ollama"` in `config.toml` reverts instantly with no code
-change. RAG embeddings stay on Ollama either way.
-
-Two behaviors only showed up once it was actually running against the container: Nemotron is a
-hybrid reasoning model, so without `/no_think` appended to the system prompt every reply was a
-visible chain of thought instead of a spoken answer; and its chat template rejects a system-only
-warmup request (Ollama accepts one) with a 400, so `NimBrain.warmup()` sends a dummy user turn too.
-
-Measured with `knowledge/replay.py dgx` (DGX, 2026-09-29), same 11-turn script as the table above:
-every named program was real, laboratorios/materias/deportes cited the right cards, the price
-question was handed to admissions, and "¿Tienen ingeniería aeroespacial?" was correctly answered as
-not offered. Time to first sentence: 0.5–2.6 s on 10 of 11 turns, one 18.2 s outlier (not yet
-explained — watch for a repeat before trusting the backend for live use).
+Corré siempre el guardia térmico al lado: `uv run python -m finetune.thermal --pausa 90 --reanuda 82`.
