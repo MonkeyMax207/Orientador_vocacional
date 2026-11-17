@@ -139,15 +139,29 @@ def programa_de(pregunta: str, grafo: dict, actual: str = "") -> str:
     arrastrarlo es lo que sostiene la precision.
     """
     p = normalize(pregunta)
+    genericas = _genericas(grafo)
     candidatos = []
     for nombre in grafo:
         for palabra in normalize(nombre).split():
-            if len(palabra) > 5 and palabra not in (
-                    "ingenieria", "licenciatura", "tecnologia", "profesional", "comunicacion",
-                    "administracion", "virtual", "modelo", "aleman") and palabra in p:
+            # Minimo 4 letras, no 6: con el umbral anterior "Cine" era indetectable y el foco
+            # saltaba a Comunicacion Social, que respondia que Cine es parte de ese programa.
+            # Las genericas van fuera porque aparecen en media docena de nombres.
+            if len(palabra) >= 4 and palabra not in genericas and palabra in p:
                 candidatos.append((len(palabra), nombre))
     if candidatos:
         return max(candidatos)[1]
+    # Nada distintivo coincidio. Puede ser que la palabra sea comun a varios programas
+    # ("contaduria" esta en dos), asi que se cuenta cuantas palabras de cada nombre aparecen y
+    # gana el que mas tenga; a igualdad, el nombre mas corto, que es el programa base y no su
+    # variante virtual o hibrida. Callarse aqui seria peor: el foco se quedaria en la carrera
+    # anterior y el robot responderia de otra cosa, que es el fallo del 2026-11-17.
+    puntuados = []
+    for nombre in grafo:
+        palabras = [w for w in normalize(nombre).split() if len(w) >= 4 and w in p]
+        if palabras:
+            puntuados.append((len(palabras), -len(nombre), nombre))
+    if puntuados:
+        return max(puntuados)[2]
     return actual
 
 
@@ -177,6 +191,20 @@ def hecho(grafo: dict, programa: str, campo: str, max_chars: int = 260) -> str:
 # Preguntas por el catalogo entero, no por una carrera. En la conversacion real del
 # 2026-11-17 aparecieron dos ("que carreras de arte existen", "que carreras no existen") y las
 # dos se respondieron de memoria: una invento que Mercadeo es una carrera de arte.
+def _genericas(nombres) -> frozenset:
+    """Palabras que aparecen en dos o mas nombres de programa, y por tanto no identifican a
+    ninguno. Se calculan del propio catalogo en vez de escribirse a mano: una lista escrita a
+    ojo dejo fuera "datos" el 2026-11-17, y con eso "ingenieria de datos" dejo de encontrar su
+    programa aunque esa palabra solo aparece en uno.
+    """
+    import collections
+    cuenta = collections.Counter()
+    for nombre in nombres:
+        for palabra in set(normalize(nombre).split()):
+            cuenta[palabra] += 1
+    return frozenset(w for w, n in cuenta.items() if n > 1)
+
+
 MAX_LISTA = 4        # cuantos nombres se le entregan al modelo en una pregunta de catalogo
 CATALOGO = ("que carreras", "cuales carreras", "que programas", "cuales programas",
             "que estudios", "que ofrecen", "que hay para estudiar", "carreras tienen",

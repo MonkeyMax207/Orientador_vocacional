@@ -222,7 +222,13 @@ def make_finder_grafo(cfg):
     estado = {"programa": ""}
 
     def find(text: str, previous: str = "") -> list[dict]:
-        programa = graph.programa_de(f"{previous} {text}", grafo, estado["programa"])
+        # Primero el turno actual solo: si la persona nombra otra carrera, el foco cambia ahi
+        # mismo. Solo si no nombra ninguna se mira el contexto (su turno anterior y la ultima
+        # respuesta del robot), y por ultimo se conserva el foco anterior. Sin este orden el
+        # foco quedaba pegado: el 2026-11-17 llevaba nueve turnos en Ingenieria Mecatronica
+        # mientras la conversacion ya iba por Cine.
+        nombrado = graph.programa_de(text, grafo, "")
+        programa = nombrado or graph.programa_de(previous, grafo, "") or estado["programa"]
         estado["programa"] = programa
 
         # 0. Pregunta por el catalogo: se entregan los nombres oficiales y nada mas.
@@ -232,7 +238,15 @@ def make_finder_grafo(cfg):
                       "texto": catalogo}]
 
         # 1. Un hecho exacto de la ficha del programa: ~20 fichas de prompt en vez de ~140.
-        dato, _ = graph.consultar(grafo, text, programa, contexto=previous)
+        # El programa ya se decidio arriba; consultar() lo recalculaba por su cuenta con el
+        # contexto y podia discrepar. El 2026-11-17, a "hablame de la carrera de cine" el foco
+        # dijo Cine y el dato entregado fue el de Ingenieria Mecatronica, que seguia en el
+        # contexto. Dos sitios decidiendo lo mismo es un sitio de mas.
+        # Sin campo reconocido pero con una carrera en foco, se entrega su perfil: "hablame de
+        # la carrera de cine" no pide un dato concreto, y caer a texto libre ahi fue lo que
+        # devolvio parrafos de Mecatronica cuando se preguntaba por Cine.
+        campo = graph.campo_de(text) or graph.campo_de(previous) or ("perfil" if nombrado else "")
+        dato = graph.hecho(grafo, programa, campo) if programa else ""
         if dato:
             return [{"id": f"grafo:{programa}", "programa": programa,
                       "titulo": programa, "texto": dato}]
@@ -241,7 +255,12 @@ def make_finder_grafo(cfg):
         # El programa entra en la consulta de respaldo: medido el 2026-11-16, con el en la
         # consulta el acierto de programa es 100% y sin el 40%. Sin esta linea, "¿es dificil?"
         # mientras se hablaba de Mercadeo traia Ingenieria Ambiental y Arquitectura.
-        consulta = " ".join(x for x in (programa, previous, text) if x).strip()
+        # El turno anterior solo entra si el actual NO nombro carrera. Si la nombro, arrastrar
+        # el turno viejo la contradice: el 2026-11-17, "hablame de la carrera de cine" despues
+        # de hablar de mecatronica devolvio parrafos de Mecatronica, porque esa palabra seguia
+        # en la consulta y pesa mas que "cine", que tiene cuatro letras.
+        partes = (programa, text) if nombrado else (programa, previous, text)
+        consulta = " ".join(x for x in partes if x).strip()
         minimo = cfg.rag_gate_bm25 if programa else gate_charla
         hits = kb.search(consulta, k=cfg.rag_max_cards, minimo=minimo)
         if not hits:

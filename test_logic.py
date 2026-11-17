@@ -19,6 +19,7 @@ import brain
 import config
 import fillers
 import graph
+import respuestas
 import lexical
 from finetune import judge, make_dataset, masking, memory, quiz, schema, teacher, thermal, validate
 import download_models
@@ -212,7 +213,8 @@ def test_noise_turn_cuts_filler():
     a.player = Player()
     a.fillers = SimpleNamespace(pick=lambda slow=False: np.zeros(10, np.int16))
     a.stt = SimpleNamespace(transcribe=lambda audio: "Mmm")
-    main.RECORDINGS = Path(tempfile.mkdtemp())   # keep the test's wav out of recordings/
+    main.RECORDINGS = main.CONVERSACIONES = Path(tempfile.mkdtemp())   # keep the test's wav out of recordings/
+    a.respuestas = SimpleNamespace(buscar=lambda texto: ("", ""))
     a.respond(np.zeros(512, np.float32))
     assert stopped
 
@@ -236,9 +238,12 @@ def _filler_run(llm_delay_s):
     a.cfg.silence_ms, a.cfg.filler_after_s = 0, 0.3   # filler due 0.3 s after the turn ends
     a.player, a.brain = Player(), SlowBrain()
     a.fillers = SimpleNamespace(pick=lambda slow=False: FILLER)
-    a.stt = SimpleNamespace(transcribe=lambda audio: "Hola")
+    # Sin respuesta inmediata a proposito: esta prueba es sobre las muletillas, y "Hola" ahora
+    # toma el atajo de respuestas.py, asi que la dejaria sin ejercitar nada.
+    a.respuestas = SimpleNamespace(buscar=lambda texto: ("", ""))
+    a.stt = SimpleNamespace(transcribe=lambda audio: "que materias tiene mecatronica")
     a.tts = SimpleNamespace(synthesize=lambda text: np.zeros(5, np.int16))
-    main.RECORDINGS = Path(tempfile.mkdtemp())
+    main.RECORDINGS = main.CONVERSACIONES = Path(tempfile.mkdtemp())
     a.respond(np.zeros(512, np.float32))
     time.sleep(0.4)   # give a wrongly-uncancelled timer the chance to fire
     return any(p is FILLER for p in puts)
@@ -1102,6 +1107,38 @@ def test_both_retrievers_satisfy_the_same_interface():
         assert hasattr(lexical.BM25, nombre), f"BM25 no tiene {nombre}"
 
 
+def test_canned_reply_skips_the_model_for_greetings_and_prices():
+    """El modelo es el 57% de un turno en la Pi y no aporta nada a un saludo. Y los precios
+    dejan de depender de que se porte bien: una frase escrita a mano no alucina."""
+    r = respuestas.Respuestas()
+    for entrada, esperado in (("hola", "saludo"), ("Hola, ¿cómo estás?", "como_estas"),
+                               ("cuanto cuesta la carrera", "precio"),
+                               ("cual es la mas economica", "precio"),
+                               ("hay beca para psicologia", "precio"),
+                               ("muchas gracias", "gracias")):
+        texto, regla = r.buscar(entrada)
+        assert regla == esperado, f"{entrada} -> {regla}"
+        assert texto
+
+
+def test_canned_reply_does_not_hijack_real_questions():
+    """Lo que necesita datos tiene que llegar al grafo: si esta tabla se los traga, el robot
+    responde generalidades donde tenia el dato exacto."""
+    r = respuestas.Respuestas()
+    for entrada in ("que materias tiene psicologia", "cuanto dura derecho",
+                     "hola, me interesa mecatronica", "que laboratorios hay",
+                     "me gusta dibujar que me recomiendas"):
+        assert r.buscar(entrada) == ("", ""), entrada
+
+
+def test_canned_price_reply_never_quotes_a_number():
+    """El requisito duro: ni cifras ni promesas de beca."""
+    import re
+    for _, patron, opciones in respuestas.TABLA:
+        for frase in opciones:
+            assert not re.search(r"\d", frase), frase
+
+
 def test_fillers_cycle_before_repeating():
     """random.choice con seis clips repetia alguna en tres de cada cinco turnos, y eso es lo
     que delata a una maquina. La bolsa barajada las agota todas antes de volver a empezar."""
@@ -1174,6 +1211,27 @@ def test_graph_field_comes_from_the_current_question():
     hecho, _ = graph.consultar(g, "y cuanto dura", "Ingeniería Mecatrónica",
                                 contexto="me puedes hablar del plan de estudios")
     assert "periodos" in hecho, hecho
+
+
+def test_graph_detects_short_and_ambiguous_program_names():
+    """"Cine" tiene cuatro letras y con el umbral anterior era indetectable: el foco saltaba a
+    Comunicacion Social, que respondia que Cine es parte de ese programa. Y "contaduria" esta
+    en dos nombres, asi que ninguna palabra suya es distintiva."""
+    g = graph.build()
+    assert graph.programa_de("hay algo relacionado con el cine", g, "") == "Cine"
+    assert graph.programa_de("cuentame de contaduria", g, "") == "Contaduría Pública"
+    assert "Datos" in graph.programa_de("que tal la ingenieria de datos", g, "")
+    # Y nada de falsos positivos con charla.
+    for q in ("hola como estas", "me gusta dibujar", "que carreras tienen"):
+        assert graph.programa_de(q, g, "") == "", q
+
+
+def test_graph_generic_words_come_from_the_catalog():
+    """Escrita a mano, esa lista dejo fuera "datos" y rompio un programa entero."""
+    g = graph.build()
+    gen = graph._genericas(g)
+    assert "ingenieria" in gen and "virtual" in gen     # en varios nombres
+    assert "datos" not in gen and "cine" not in gen     # en uno solo
 
 
 def test_graph_keeps_the_program_across_turns():
@@ -1251,6 +1309,28 @@ def test_bm25_lists_the_official_programs():
     nombres = kb.program_names()
     assert "Arquitectura" in nombres and "Psicología" in nombres
     assert all(n for n in nombres) and len(nombres) == len(set(nombres))
+
+
+def test_focus_and_fact_never_disagree_across_a_conversation():
+    """El dato entregado tiene que ser del programa que el foco dice. El 2026-11-17, a
+    "hablame de la carrera de cine" el foco decia Cine y el texto era de Ingenieria
+    Mecatronica: find() decidia el programa y consultar() lo recalculaba por su cuenta."""
+    class Cfg:
+        rag_backend = "grafo"; rag_max_cards = 3; rag_gate_bm25 = 1.0
+        rag_gate_charla = 6.0; rag_fragmentos = 2
+    _, find = rag.make_retriever(Cfg())
+    guion = [("", "me puedes hablar del programa de ingenieria mecatronica", "Mecatrónica"),
+             ("me puedes hablar del programa de ingenieria mecatronica",
+              "me puedes hablar de la carrera de cine", "Cine"),
+             ("me puedes hablar de la carrera de cine", "y cuanto dura", "Cine"),
+             ("y cuanto dura", "que materias tiene", "Cine")]
+    for previo, pregunta, esperado in guion:
+        docs = find(pregunta, previo)
+        assert docs, pregunta
+        prog = docs[0].get("programa") or ""
+        assert esperado in prog, f"{pregunta}: foco {prog}, esperaba {esperado}"
+        # Y el texto tiene que hablar de ese programa, no de otro.
+        assert prog.split()[-1].lower()[:5] in str(docs[0]["texto"]).lower(), docs[0]["texto"][:90]
 
 
 def test_retriever_dispatches_by_profile():

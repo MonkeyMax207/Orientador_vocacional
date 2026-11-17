@@ -135,8 +135,8 @@ class Brain:
                 "Nombra varios de esos programas en una frase hablada, sin leerlos todos ni "
                 "numerarlos, y ofrécete a contar más de alguno."
                 if es_catalogo else
-                "Responde con una frase completa y natural, como se la dirías a alguien de "
-                "frente: ni una palabra suelta ni una lista larga.")
+                "Responde en dos frases habladas: la primera con el dato concreto, la segunda "
+                "ofreciendo contar algo más de esa carrera. Nada de palabras sueltas ni listas.")
             content = (f"[Nota interna para Orienta; el estudiante no la escribió ni la ve. "
                        f"Información verificada de la UAO para responder:\n{facts}\n"
                        f"{instruccion}]\n\n"

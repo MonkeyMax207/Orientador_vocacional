@@ -36,6 +36,7 @@ max_tokens = 200             # tope de la respuesta; la Pi lo baja porque cada f
 max_turns = 10               # intercambios recordados; acota el prompt y por tanto la espera
 voice_pace = 1.0             # >1 = habla mas lento con el mismo tono (el modelo estira cada sonido)
 sentence_pause_s = 0.0       # silencio tras cada frase, para que no se atropellen
+pausa_tras_filler_s = 0.0    # respiro entre una muletilla y la respuesta (la Pi lo sube)
 rag_gate = 0.33                  # offer the buscar_uao tool only above this similarity (chat ~0.15–0.28)
 rag_threshold = 0.30             # embeddinggemma: off-topic scores 0.09–0.26, relevant 0.27–0.66 (knowledge/eval.py)
 recommend_after_turns = 8        # on this turn the agent suggests programs even if not asked (a friend listens first)
@@ -79,7 +80,10 @@ max_turns = 3
 # La primera muletilla dura 1,9-2,9 s y empieza cuando dejas de hablar; la respuesta llega
 # sobre los 7,6 s. A los 3 s la primera ya termino y quedaria un hueco de silencio, asi que
 # ahi entra la segunda (slow_filler_due espera igual a que el reproductor se libere).
-slow_llm_s = 3.0
+slow_llm_s = 3.5             # la muletilla corta dura 1,9-2,9 s; a los 3,5 ya termino
+# Silencio que se deja despues de una muletilla antes de soltar la respuesta. Sin esto las dos
+# se encadenan sin aire y suena atropellado, aunque el reloj diga que esta bien.
+pausa_tras_filler_s = 0.45
 
 # Hardware real de esta Pi, traido de su configuracion propia: la lista son nombres candidatos
 # del modulo USB, y la voz mexicana con su ritmo ajustado a mano frente al parlante.

@@ -23,6 +23,7 @@ from audio_io import SAMPLE_RATE, Mic, Player, save_wav, to_int16
 from brain import llm_worker, make_brain
 from config import DEFAULT_PROFILE, load_config
 from fillers import Fillers
+from respuestas import Respuestas
 from rag import make_retriever
 from sentences import SentenceSplitter, clean_for_tts
 from stt import STT, clean
@@ -31,6 +32,11 @@ from vad import CHUNK_MS, VAD, TurnDetector
 
 ROOT = Path(__file__).parent
 RECORDINGS = ROOT / "recordings"
+# Las pruebas lo redirigen, igual que RECORDINGS. Sin esto, test_logic.py escribia turnos
+# falsos en el registro real: el 2026-11-17 aparecieron como "Hola" repetido y "que materias
+# tiene mecatronica" con stt 0.0s, y yo los diagnostique como un bucle del microfono. El
+# registro es la evidencia de como se comporta el robot; contaminarlo cuesta horas.
+CONVERSACIONES = ROOT / "logs"
 
 
 def slow_filler_due(elapsed, limit, answer_started, already_played, player_busy) -> bool:
@@ -60,6 +66,7 @@ class Agent:
         # warm-up
         self.tts.synthesize("Hola.")
         self.fillers = Fillers(cfg.voice)
+        self.respuestas = Respuestas()
         self.vad = VAD(cfg.vad_threshold)
         self.turns = TurnDetector(cfg.silence_ms, cfg.min_speech_ms)
         # voice_rate < 1 plays the same samples slower: a deeper "character" voice at zero CPU cost.
@@ -116,7 +123,7 @@ class Agent:
                 "stt_s": round(t_stt - t_end, 2),
                 "primera_palabra_s": round(t_first - t_stt, 2) if t_first else None,
             }
-            destino = ROOT / "logs" / f"conversacion-{datetime.now():%Y%m%d}.jsonl"
+            destino = CONVERSACIONES / f"conversacion-{datetime.now():%Y%m%d}.jsonl"
             destino.parent.mkdir(exist_ok=True)
             with open(destino, "a", encoding="utf-8") as f:
                 f.write(json.dumps(registro, ensure_ascii=False) + "\n")
@@ -127,7 +134,13 @@ class Agent:
         # UAO text only for questions about the UAO (rag_gate); plain chat gets nothing.
         self.user_turns.append(text)
         previous = self.user_turns[-2] if len(self.user_turns) > 1 else ""
-        cards = self.find(text, previous) if self.knowledge else []
+        # La respuesta anterior del robot tambien es contexto, y hacia falta: el 2026-11-17,
+        # tras contestar "si, hay la carrera de Cine", la pregunta siguiente ("¿y que materias
+        # se ven en esa carrera?") seguia trayendo Ingenieria Mecatronica, porque el foco solo
+        # miraba lo que decia el estudiante. "Esa carrera" era la que el robot acababa de
+        # nombrar, y el grafo no se enteraba.
+        contexto = f"{self.last_reply} {previous}".strip()
+        cards = self.find(text, contexto) if self.knowledge else []
         if cards:
             print(f"[rag] {', '.join(c['id'] for c in cards)}", flush=True)
         return cards
@@ -162,6 +175,23 @@ class Agent:
             return
         print(f"\nTú: {text}", flush=True)
         # verified UAO facts for this turn (maybe none)
+        # Respuesta inmediata para lo que no necesita al modelo: saludos, agradecimientos y
+        # —sobre todo— precios. Idea de Juan Diego el 2026-11-17, tras oir al robot tardar
+        # varios segundos en decir "Hola, que bien". Ahorra el 57% del turno que se va en el
+        # modelo, y de paso saca el requisito de "nunca dar precios" de las manos del modelo:
+        # una frase escrita a mano no alucina.
+        lista, regla = self.respuestas.buscar(text)
+        if lista:
+            filler.cancel()
+            self.player.stop()        # la muletilla no tiene sentido si ya hay respuesta
+            print(f"[inmediata:{regla}] {lista}", flush=True)
+            self.player.put(self.tts.synthesize(lista), ["hablar"])
+            print(f"Orienta: {lista}", flush=True)
+            self.last_reply = lista
+            self._anotar(text, lista, [], t_end, t_stt, None)
+            self.finish_speaking()
+            return
+
         cards = self.find_cards(text)
 
         # Start the LLM on its own thread; tokens arrive in `tokens` while we keep working.
@@ -198,6 +228,13 @@ class Agent:
                 # SPEAKING: synthesize and queue. It plays right after the filler/previous sentence.
                 clip = self.tts.synthesize(sentence)
                 filler.cancel()   # the answer is here: a filler not yet started is no longer needed
+                # Un respiro si justo antes sono una muletilla: encadenadas sin aire suenan
+                # atropelladas, aunque el reloj diga que el tiempo esta bien. Solo antes de la
+                # primera frase, y solo si hubo muletilla.
+                pausa = getattr(self.cfg, "pausa_tras_filler_s", 0.0)
+                if t_first is None and pausa and (t_filler or slow_played):
+                    import numpy as _np
+                    self.player.put(_np.zeros(int(self.tts.sample_rate * pausa), dtype=clip.dtype))
                 self.player.put(clip, animations.match(sentence))
                 t_first = t_first or time.perf_counter()
                 spoken.append(sentence)
