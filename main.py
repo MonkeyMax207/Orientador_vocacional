@@ -19,6 +19,7 @@ from pathlib import Path
 import numpy as np
 
 import animations
+import esp32
 from audio_io import SAMPLE_RATE, Mic, Player, save_wav, to_int16
 from brain import llm_worker, make_brain
 from config import DEFAULT_PROFILE, load_config
@@ -67,6 +68,10 @@ class Agent:
         self.tts.synthesize("Hola.")
         self.fillers = Fillers(cfg.voice)
         self.respuestas = Respuestas()
+        # El oso. Si no hay ESP32 enchufado esto queda inerte y el robot habla igual: un servo
+        # que falta no puede dejar mudo al orientador.
+        self.oso = esp32.make_animatronico(cfg)
+        animations.conectar(self.oso if self.oso.conectado else None)
         self.vad = VAD(cfg.vad_threshold)
         self.turns = TurnDetector(cfg.silence_ms, cfg.min_speech_ms)
         # voice_rate < 1 plays the same samples slower: a deeper "character" voice at zero CPU cost.

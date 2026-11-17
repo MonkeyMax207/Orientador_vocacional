@@ -33,6 +33,30 @@ def match(sentence: str) -> list[str]:
     return found
 
 
+# El animatronico se conecta aqui una sola vez, al arrancar. Queda como variable de modulo y
+# no como parametro porque trigger() lo llama el Player desde el hilo del audio, que no tiene
+# —ni deberia tener— una referencia al hardware. Sin conectar, todo sigue siendo un print.
+_OSO = None
+
+
+def conectar(oso) -> None:
+    """Enchufa el puente con el ESP32. `oso` puede ser None: entonces solo se imprime."""
+    global _OSO
+    _OSO = oso
+
+
 def trigger(name: str) -> None:
-    # Sub-project 4 replaces this print with the servo command.
     print(f"[ANIM] {name}", flush=True)
+    if _OSO is not None:
+        _OSO.animacion(name)
+
+
+def boca(nivel: int) -> None:
+    """Abertura de la boca, 0-100. La llama el Player por cada trozo de audio que suena, unas
+    21 veces por segundo, asi que tiene que ser barata y no puede lanzar excepciones: una
+    mandibula no vale una voz cortada."""
+    if _OSO is not None:
+        try:
+            _OSO.boca(nivel)
+        except Exception:
+            pass

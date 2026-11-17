@@ -12,6 +12,7 @@ import numpy as np
 import sounddevice as sd
 
 import animations
+import esp32
 
 SAMPLE_RATE = 16000   # Hz. Whisper and Silero VAD both expect 16 kHz.
 CHUNK = 512           # samples per block = 32 ms at 16 kHz (the size Silero VAD requires)
@@ -112,7 +113,14 @@ class Player:
             for i in range(0, len(audio), 1024):   # write in small pieces so stop() reacts fast
                 if self._stop.is_set():
                     break
-                self.stream.write(audio[i:i + 1024].reshape(-1, 1))   # (frames, channels)
+                trozo = audio[i:i + 1024]
+                # La boca sigue el volumen real de la voz. Se calcula ANTES de escribir el
+                # audio para que el servo salga un pelo adelante y no detras: el servo tarda
+                # unos 60 ms en llegar, y el oido perdona que la boca se adelante, no que
+                # llegue tarde. A 22050 Hz cada trozo son 46 ms, o sea ~21 veces por segundo.
+                animations.boca(esp32.nivel_de_boca(trozo))
+                self.stream.write(trozo.reshape(-1, 1))   # (frames, channels)
+            animations.boca(0)                 # al callar, la boca se cierra
             self.q.task_done()
 
 

@@ -18,6 +18,7 @@ import animations
 import brain
 import config
 import fillers
+import esp32
 import graph
 import respuestas
 import lexical
@@ -1105,6 +1106,104 @@ def test_both_retrievers_satisfy_the_same_interface():
     for nombre in usados:
         assert hasattr(rag.Knowledge, nombre), f"Knowledge no tiene {nombre}"
         assert hasattr(lexical.BM25, nombre), f"BM25 no tiene {nombre}"
+
+
+class _PuertoFalso:
+    """Un puerto serie de mentira: guarda lo que se le escribe."""
+    def __init__(self): self.escrito = []
+    def write(self, datos): self.escrito.append(datos.decode("ascii")); return len(datos)
+    def close(self): pass
+    def reset_input_buffer(self): pass
+
+    def ordenes(self):
+        return [l for l in "".join(self.escrito).split("\n") if l]
+
+
+def _oso(puerto):
+    return esp32.Animatronico("/dev/falso", abrir=lambda p, b: puerto, log=lambda m: None)
+
+
+def test_animatronic_absent_is_not_an_error():
+    """Sin ESP32 el robot tiene que hablar igual. Hoy no hay ninguno enchufado a la Pi, y
+    nadie deberia quedarse sin voz porque falte un servo."""
+    mudo = esp32.Animatronico("", log=lambda m: None)
+    assert not mudo.conectado
+    mudo.boca(50); mudo.parpadear(); mudo.animacion("saludar"); mudo.reposo()   # no revienta
+
+
+def test_animatronic_survives_a_port_that_fails_to_open():
+    def explota(puerto, baud): raise OSError("no existe")
+    oso = esp32.Animatronico("/dev/noexiste", abrir=explota, log=lambda m: None)
+    assert not oso.conectado
+    oso.boca(80)              # y sigue sin quejarse
+
+
+def test_mouth_level_follows_loudness():
+    import numpy as np
+    assert esp32.nivel_de_boca(np.zeros(256, dtype="int16")) == 0
+    suave = esp32.nivel_de_boca(np.full(256, 900, dtype="int16"))
+    fuerte = esp32.nivel_de_boca(np.full(256, 9000, dtype="int16"))
+    assert 0 < suave < fuerte == 100
+    assert esp32.nivel_de_boca(np.full(256, 30000, dtype="int16")) == 100   # sin pasarse
+    assert esp32.nivel_de_boca([]) == 0
+
+
+def test_mouth_skips_repeats_so_the_servo_does_not_buzz():
+    """Mandarle veinte veces por segundo la misma posicion a un servo lo hace zumbar y
+    calentarse, y ademas llena el puerto de ruido inutil."""
+    puerto = _PuertoFalso()
+    oso = _oso(puerto)
+    oso._vivo = False                      # sin escritor: se mira el buzon directamente
+    oso.boca(50)
+    assert oso._pendiente == "M50"
+    oso._pendiente = None
+    for _ in range(5):
+        oso.boca(50)                       # el mismo valor: no debe volver a enviarse
+        oso.boca(52)                       # dentro del umbral: tampoco
+    assert oso._pendiente is None, oso._pendiente
+    oso.boca(90)                           # un cambio de verdad si pasa
+    assert oso._pendiente == "M90"
+    # 0 y 100 siempre pasan aunque esten dentro del umbral: cerrar del todo importa.
+    oso._pendiente = None
+    oso.boca(100); assert oso._pendiente == "M100"
+    oso._pendiente = None
+    oso.boca(0); assert oso._pendiente == "M0"
+
+
+def test_mouth_updates_overwrite_instead_of_piling_up():
+    """Llegar tarde con la posicion de una mandibula no sirve de nada: solo importa la
+    ultima. Si se encolaran, la boca iria retrasada respecto a la voz y nunca alcanzaria."""
+    import time
+    puerto = _PuertoFalso()
+    oso = _oso(puerto)
+    oso._vivo = False                      # el escritor no corre: se inspecciona el buzon
+    for nivel in (10, 30, 60, 95):
+        oso.boca(nivel)
+    assert oso._pendiente == "M95", oso._pendiente
+    assert oso._cola == []                 # la boca no ocupa la cola de ordenes
+
+
+def test_named_animations_are_queued_not_overwritten():
+    """Un parpadeo o un saludo si tienen que llegar todos: pisarlos seria perder gestos."""
+    puerto = _PuertoFalso()
+    oso = _oso(puerto)
+    oso._vivo = False
+    oso.animacion("saludar"); oso.parpadear(); oso.mirar(10, 90)
+    assert oso._cola == ["Asaludar", "B", "L10,90"]
+
+
+def test_animations_module_works_without_hardware():
+    """animations.trigger() lo llama el hilo del audio; si el oso falta o falla, la voz sigue."""
+    animations.conectar(None)
+    animations.trigger("saludar")          # solo imprime
+    animations.boca(50)
+
+    class Roto:
+        def animacion(self, n): raise RuntimeError("cable suelto")
+        def boca(self, n): raise RuntimeError("cable suelto")
+    animations.conectar(Roto())
+    animations.boca(50)                    # tragado: una mandibula no vale una voz cortada
+    animations.conectar(None)
 
 
 def test_canned_reply_skips_the_model_for_greetings_and_prices():

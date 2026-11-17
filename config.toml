@@ -32,6 +32,11 @@ rag_gate_bm25 = 1.0          # puntaje BM25 minimo; por debajo no se entrega nad
 rag_card_chars = 0           # recorte por documento recuperado; 0 = completo. Solo la Pi lo necesita
 rag_fragmentos = 0           # >0 = entregar N franjas del documento en vez del documento entero
 rag_gate_charla = 6.0        # umbral cuando no hay carrera en foco: la charla puntua 0-4.8, una pregunta UAO 7.6+
+
+# Animatronico (ESP32 + PCA9685: ojos CH0-CH5, boca CH6). Vacio = el robot habla sin moverse,
+# que es como corre en el PC y en la DGX. El firmware esta en firmware/oso_andino/.
+esp32_port = ""              # p.ej. "/dev/ttyUSB0" en la Pi; `ls /dev/ttyUSB*` tras enchufarlo
+esp32_baud = 115200
 max_tokens = 200             # tope de la respuesta; la Pi lo baja porque cada ficha son ~0,16 s alli
 max_turns = 10               # intercambios recordados; acota el prompt y por tanto la espera
 voice_pace = 1.0             # >1 = habla mas lento con el mismo tono (el modelo estira cada sonido)

@@ -13,6 +13,7 @@ dependencies = [
     "beautifulsoup4",   # HTML parsing for the knowledge build (knowledge/extract.py)
     "pypdf",
     "websockets",       # PC ↔ Pi link (server.py / client.py)            # text from the study-plan PDFs (knowledge/extract.py)
+    "pyserial",         # puerto serie con el ESP32 del animatronico (esp32.py)
     # ONNX Runtime runs Silero VAD, Piper and Kokoro. Two builds of the same library:
     #  - on the Pi (ARM): the normal CPU build;
     #  - on x86 PCs: the GPU build (it also has the CPU provider). 1.22 is the last build for
