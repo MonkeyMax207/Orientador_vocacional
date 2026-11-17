@@ -159,6 +159,34 @@ def make_search(cfg):
     return kb, search, gate
 
 
+def make_finder_bm25(cfg):
+    """El mismo contrato que make_finder, con BM25 lexico en vez de embeddings.
+
+    Por que existe: el 2026-11-16 el modelo afinado solo (sin recuperar nada) quedo en 46.5% de
+    error juzgado contra la fuente, con el modo de falla dominante en inventar especificos —
+    materias casi correctas, atribuidas al programa equivocado. Recuperar bajo ese error a 19.7%
+    en fp16. Pero la razon para quitar el RAG era la latencia en la Pi, y era buena: embeddings
+    exigen un segundo modelo cargado y una ida y vuelta HTTP por turno.
+
+    BM25 no necesita nada de eso: 400 documentos indexados en 27 ms, consulta en 0.11 ms, Python
+    puro. Conserva "local y economico" y devuelve casi toda la latencia que se buscaba ganar.
+
+    El turno anterior se concatena a la consulta por la misma razon que en la version con
+    embeddings, y ahi esta medido cuanto importa: con el programa en la consulta, la
+    recuperacion acierta el programa el 100% de las veces contra el 40% sin el.
+    """
+    import lexical
+    if not CHUNKS.exists():
+        return None, lambda text, previous="": []
+    kb = lexical.load()
+
+    def find(text: str, previous: str = "") -> list[dict]:
+        consulta = f"{previous} {text}".strip() if previous else text
+        hits = kb.search(consulta, k=cfg.rag_max_cards, minimo=cfg.rag_gate_bm25)
+        return [doc for doc, _ in hits]
+    return kb, find
+
+
 def make_finder(cfg):
     """Returns (knowledge, find). find(text) -> the chunks to put next to the student's message:
     none for plain chat (below rag_gate), the top rag_max_cards for questions about the UAO.
@@ -178,3 +206,13 @@ def make_finder(cfg):
         best = max(rankings, key=lambda ranked: ranked[0][0])
         return kb._pick(best, cfg.rag_max_cards, cfg.rag_threshold, None)
     return kb, find
+
+
+def make_retriever(cfg):
+    """La unica puerta que usan server.py y main.py. El perfil decide el motor."""
+    backend = getattr(cfg, "rag_backend", "embed")
+    if backend == "bm25":
+        return make_finder_bm25(cfg)
+    if backend == "ninguno":
+        return None, lambda text, previous="": []
+    return make_finder(cfg)

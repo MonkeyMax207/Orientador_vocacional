@@ -17,6 +17,7 @@ import numpy as np
 import animations
 import brain
 import config
+import lexical
 from finetune import judge, make_dataset, masking, memory, quiz, schema, teacher, thermal, validate
 import download_models
 import main
@@ -1067,6 +1068,90 @@ def test_teacher_ask_many_keeps_order_and_marks_failures():
         assert teacher.ask_many(jobs, host="http://x", model="m", workers=2) == [[], None, []]
     finally:
         teacher._post = real_post
+
+
+def test_retriever_dispatches_by_profile():
+    """server.py y main.py llaman una sola puerta; el perfil elige el motor. Sin esto habria
+    que editar codigo para cambiar de la DGX a la Pi, que es como se cuelan las diferencias
+    entre lo que se mide y lo que se despliega."""
+    class Cfg:
+        rag_backend = "ninguno"
+        rag_max_cards = 3
+        rag_gate_bm25 = 1.0
+    kb, find = rag.make_retriever(Cfg())
+    assert kb is None and find("hola de arquitectura") == []
+
+    Cfg.rag_backend = "bm25"
+    kb, find = rag.make_retriever(Cfg())
+    hits = find("como se llama el titulo", previous="estudio psicologia")
+    assert hits and any("Psicolog" in (h.get("programa") or "") for h in hits)
+
+
+def test_retriever_bm25_uses_the_previous_turn_as_topic():
+    """Medido el 2026-11-16: con el programa en la consulta la recuperacion acierta el programa
+    el 100% de las veces, contra el 40% sin el. El turno anterior es ese contexto."""
+    class Cfg:
+        rag_backend = "bm25"
+        rag_max_cards = 3
+        rag_gate_bm25 = 1.0
+    _, find = rag.make_retriever(Cfg())
+    sin = find("que materias hay en el sexto semestre")
+    con = find("que materias hay en el sexto semestre", previous="cuenteme de arquitectura")
+    assert any("Arquitectura" in (h.get("programa") or "") for h in con)
+    assert con != sin
+
+
+def test_quiz_does_not_punish_an_honest_refusal_as_an_invention():
+    """Nombrar una carrera ausente PARA rechazarla es el comportamiento correcto. El
+    2026-11-16 esta medicion lo contaba como invencion y restaba puntos por acertar."""
+    oficiales = ["Ingeniería Ambiental", "Arquitectura", "Mercadeo Global – Virtual"]
+    bien = quiz.score("No contamos con Ingeniería Química, pero sí con Ingeniería Ambiental.",
+                      [], program="", official=oficiales)
+    assert not bien["inventado"]
+    mal = quiz.score("Claro, puedes estudiar Ingeniería Química en la UAO.",
+                     [], program="", official=oficiales)
+    assert mal["inventado"]
+
+
+def test_lexical_normalizes_accents_because_students_type_without_them():
+    assert lexical.normalize("Diseño Gráfico") == "diseno grafico"
+    assert lexical.tokenize("de la Arquitectura") == ["arquitectura"]   # vacias fuera
+
+
+def test_lexical_drops_corpus_wide_words():
+    """'programa' esta en casi los 400 documentos: dejarlo haria que toda consulta matchee todo."""
+    assert "programa" not in lexical.tokenize("el programa de psicologia")
+    assert "psicologia" in lexical.tokenize("el programa de psicologia")
+
+
+def test_lexical_ranks_the_matching_program_first():
+    docs = [{"titulo": "Psicología", "programa": "Psicología",
+             "texto": "El titulo otorgado es Psicologo, nueve periodos academicos."},
+            {"titulo": "Arquitectura", "programa": "Arquitectura",
+             "texto": "Taller de proyecto y urbanismo, 150 creditos."},
+            {"titulo": "Mecatrónica", "programa": "Ingeniería Mecatrónica",
+             "texto": "Automatizacion y control, Fab-Lab."}]
+    idx = lexical.BM25(docs)
+    mejor, puntaje = idx.search("como se llama el titulo del programa de psicologia", k=1)[0]
+    assert mejor["programa"] == "Psicología" and puntaje > 0
+
+
+def test_lexical_searches_title_and_program_not_only_body():
+    """Una pregunta que nombra la carrera debe alcanzar sus documentos aunque el cuerpo no la
+    repita: el nombre del programa es parte del texto buscable."""
+    docs = [{"titulo": "Arquitectura: laboratorios", "programa": "Arquitectura",
+             "texto": "Los talleres de proyecto se llaman laboratorios."},
+            {"titulo": "Derecho: consultorio", "programa": "Derecho",
+             "texto": "Brigadas juridicas desde el quinto semestre."}]
+    idx = lexical.BM25(docs)
+    assert idx.search("arquitectura", k=1)[0][0]["programa"] == "Arquitectura"
+
+
+def test_lexical_returns_nothing_when_nothing_matches():
+    """Sin coincidencia, lista vacia: deja que quien llama diga que no sabe, en vez de
+    entregarle al modelo un documento irrelevante que invite a inventar."""
+    idx = lexical.BM25([{"titulo": "Psicología", "programa": "Psicología", "texto": "Psicologo"}])
+    assert idx.search("cuanto cuesta el parqueadero de bicicletas") == []
 
 
 def test_judge_prompt_withholds_the_reference_answer():

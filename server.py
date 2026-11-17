@@ -22,7 +22,7 @@ import animations
 from brain import make_brain
 from config import load_config
 from fillers import Fillers
-from rag import make_finder
+from rag import make_retriever
 from sentences import SentenceSplitter, clean_for_tts
 from stt import STT, clean
 from tts import TTS
@@ -34,7 +34,7 @@ class Pipeline:
     def __init__(self, cfg):
         self.cfg = cfg
         # UAO text chunks go next to the student's message only for questions about the UAO.
-        knowledge, self.find = make_finder(cfg)
+        knowledge, self.find = make_retriever(cfg)
         names = knowledge.program_names() if knowledge else ()
         self.brain = make_brain(cfg, program_names=names)
         self.brain.check()

@@ -22,7 +22,7 @@ from audio_io import SAMPLE_RATE, Mic, Player, save_wav, to_int16
 from brain import llm_worker, make_brain
 from config import load_config
 from fillers import Fillers
-from rag import make_finder
+from rag import make_retriever
 from sentences import SentenceSplitter, clean_for_tts
 from stt import STT, clean
 from tts import TTS
@@ -43,7 +43,7 @@ class Agent:
         self.cfg = cfg
         print("Cargando modelos...", flush=True)
         # UAO knowledge is optional (knowledge/chunks.json); the LLM decides when to search it.
-        self.knowledge, self.find = make_finder(cfg)
+        self.knowledge, self.find = make_retriever(cfg)
         names = self.knowledge.program_names() if self.knowledge else ()
         self.brain = make_brain(cfg, program_names=names)
         self.brain.check()     # fail fast if Ollama is down or the model is missing

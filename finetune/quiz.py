@@ -21,6 +21,7 @@ import re
 import urllib.request
 from pathlib import Path
 
+import lexical
 from finetune import validate
 
 ROOT = Path(__file__).parent.parent
@@ -55,6 +56,12 @@ def expected_terms(reference: str, source: str, question: str = "") -> list[str]
     return sorted(shared - validate._content_tokens(question))
 
 
+# Formas de decir "eso no lo ofrecemos". Separadas de validate.DECLINES, que son formas de
+# decir "la fuente no lo dice": aqui se niega la OFERTA, no el conocimiento.
+NIEGA_OFRECER = ("no ofrecemos", "no contamos con", "no tenemos", "no existe", "no hay",
+                 "no la ofrece", "no lo ofrece", "no esta disponible")
+
+
 def score(answer: str, terms: list[str], *, program: str, official: list[str]) -> dict:
     plain = validate.normalize(answer)
     words = set(re.findall(r"[a-zñ]+", plain))
@@ -70,7 +77,13 @@ def score(answer: str, terms: list[str], *, program: str, official: list[str]) -
     return {
         "aciertos": len(hits) / len(terms) if terms else None,
         "contaminacion_cruzada": contaminated,
-        "inventado": bool(validate._mentions_absent_program(answer, official)),
+        # Una negativa honesta nombra la carrera ausente PARA rechazarla, que es justo lo que
+        # queremos: "no contamos con Ingenieria Quimica, pero si con Ambiental" se marcaba como
+        # invencion el 2026-11-16 y contaba contra el modelo. validate.py ya tenia la exencion;
+        # aqui faltaba, asi que la medicion castigaba el comportamiento correcto.
+        "inventado": bool(validate._mentions_absent_program(answer, official))
+                     and not any(d in plain for d in validate.DECLINES)
+                     and not any(d in plain for d in NIEGA_OFRECER),
         "formato_ok": not (validate.MARKDOWN.search(answer) or validate.DIGITS.search(answer)
                             or validate.EMOJI.search(answer)),
         "precio_dado": validate._quotes_an_amount(answer),
@@ -128,6 +141,11 @@ def main() -> None:
     ap.add_argument("--n", type=int, default=200, help="preguntas a muestrear")
     ap.add_argument("--guardar", help="JSONL donde dejar cada respuesta, para re-puntuar sin "
                                       "volver a generar (una corrida son ~12 min de GPU)")
+    ap.add_argument("--recuperar", type=int, default=0,
+                    help="documentos BM25 a poner en el prompt (0 = sin recuperacion)")
+    ap.add_argument("--con-programa", action="store_true",
+                    help="incluir el programa en la consulta, como lo haria el robot a mitad "
+                          "de conversacion, que sabe de que carrera se esta hablando")
     args = ap.parse_args()
     if not (args.model or args.hf):
         raise SystemExit("hace falta --model <tag de ollama> o --hf <ruta al checkpoint>")
@@ -140,6 +158,32 @@ def main() -> None:
 
     random.Random(11).shuffle(rows)
     rows = rows[:args.n]
+    # Recuperacion lexica opcional. El 2026-11-16 el modelo afinado quedo en 46.5% de error con
+    # el modo de falla dominante en inventar especificos; los hechos que un 1.7B no retiene hay
+    # que recuperarlos. BM25 y no embeddings: 0.13 ms por consulta en la Pi, sin modelo cargado.
+    indice = lexical.load() if args.recuperar else None
+
+    def con_contexto(pregunta: str, programa: str) -> str:
+        if not indice:
+            return pregunta
+        consulta = f"{programa} {pregunta}" if (args.con_programa and programa) else pregunta
+        hits = indice.search(consulta, k=args.recuperar)
+        if not hits:
+            return pregunta
+        bloque = "\n".join(f"- {d.get('titulo') or d.get('programa') or ''}: "
+                            f"{str(d.get('texto'))[:600]}" for d, _ in hits)
+        # Instrucciones duras porque la primera version produjo respuestas de 77 palabras
+        # listando el documento, y frases como "el texto no especifica", que un robot que habla
+        # en voz alta nunca puede decir: para el visitante no existe ningun texto.
+        return (f"Informacion de la UAO:\n{bloque}\n\n"
+                f"Responde esta pregunta usando solo esa informacion, en UNA frase corta y "
+                f"hablada, como se la dirias a alguien de frente. No leas la lista completa: "
+                f"di lo esencial. Nunca menciones \"el texto\", \"la informacion\" ni que te "
+                f"dieron datos. Escribe los numeros en palabras (\"nueve semestres\", no \"9\"), "
+                f"porque esto se va a leer en voz alta. Si la informacion no alcanza, dilo en "
+                f"una frase.\n\n"
+                f"Pregunta: {pregunta}")
+
     if args.hf:
         print("AVISO: midiendo fp16, linea base para comparar entrenamientos. La cifra de "
               "aceptacion se mide sobre el GGUF cuantizado.", flush=True)
@@ -156,7 +200,7 @@ def main() -> None:
     for i, row in enumerate(rows, 1):
         source = sources.get(row.get("fact_id", ""), {})
         terms = expected_terms(row["r"], source.get("texto", ""), row["p"])
-        answer = ask(row["p"])
+        answer = ask(con_contexto(row["p"], source.get("programa") or ""))
         s = score(answer, terms, program=source.get("programa", ""), official=official)
         if s["aciertos"] is not None:
             agg["aciertos"].append(s["aciertos"])
