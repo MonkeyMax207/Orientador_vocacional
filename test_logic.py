@@ -1123,6 +1123,43 @@ def _oso(puerto):
     return esp32.Animatronico("/dev/falso", abrir=lambda p, b: puerto, log=lambda m: None)
 
 
+def test_audio_device_accepts_a_list_of_candidate_names():
+    """El mismo modulo USB se llama distinto en Windows y en Linux, asi que config.toml da
+    varios nombres. Yo borre esta funcion el 2026-11-17 al sobreescribir audio_io.py, y la Pi
+    quedo con una lista en la configuracion y un lector que no entendia listas; no exploto
+    solo porque nadie arranco el robot en ese rato."""
+    import audio_io
+    assert audio_io.pick_device("default", "input") == "default"   # cadena suelta, tal cual
+
+    encontrados = []
+    def consulta(nombre, tipo):
+        encontrados.append(nombre)
+        if nombre != "El Bueno":
+            raise ValueError("no existe")
+    real = audio_io.sd.query_devices
+    audio_io.sd.query_devices = consulta
+    try:
+        elegido = audio_io.pick_device(["No Existe", "El Bueno", "Tampoco"], "input")
+        assert elegido == "El Bueno", elegido
+        assert encontrados == ["No Existe", "El Bueno"]            # para en cuanto acierta
+        try:
+            audio_io.pick_device(["Ninguno"], "input")
+            assert False, "deberia avisar en vez de seguir sin audio"
+        except SystemExit as e:
+            assert "list_devices" in str(e)
+    finally:
+        audio_io.sd.query_devices = real
+
+
+def test_config_device_names_match_what_the_code_accepts():
+    """El perfil de la Pi trae una lista; el del PC una cadena. Los dos tienen que funcionar."""
+    import tomllib
+    d = tomllib.load(open("config.toml", "rb"))
+    for perfil in ("pc", "pi"):
+        valor = d[perfil].get("input_device", d["common"].get("input_device"))
+        assert isinstance(valor, (str, list)), f"{perfil}: {valor!r}"
+
+
 def test_animatronic_absent_is_not_an_error():
     """Sin ESP32 el robot tiene que hablar igual. Hoy no hay ninguno enchufado a la Pi, y
     nadie deberia quedarse sin voz porque falte un servo."""

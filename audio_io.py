@@ -36,8 +36,30 @@ def load_wav(path) -> tuple[np.ndarray, int]:
         return np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16), w.getframerate()
 
 
+def pick_device(names, kind: str) -> str:
+    """El primer nombre de la lista que sounddevice encuentre. Una cadena suelta se devuelve tal cual.
+
+    El mismo modulo USB se llama distinto en Windows y en Linux, asi que config.toml puede dar
+    varios candidatos. Esto venia del trabajo hecho en la Pi y yo lo sobreescribi el 2026-11-17
+    al desplegar la boca del animatronico: la Pi quedo con `input_device` como lista y un
+    audio_io que la pasaba cruda a PortAudio. No fallo solo porque nadie volvio a arrancar el
+    robot entre ese despliegue y la revision.
+    """
+    if isinstance(names, str):
+        return names
+    for name in names:
+        try:
+            sd.query_devices(name, kind)       # ValueError si ninguno de ese tipo coincide
+            return name
+        except ValueError:
+            pass
+    raise SystemExit(f"Ningún dispositivo de audio coincide con {names}.\n"
+                     f"Ejecuta: uv run python list_devices.py")
+
+
 class Mic:
-    def __init__(self, device: str):
+    def __init__(self, device):
+        device = pick_device(device, "input")
         self.q = queue.Queue()
         try:
             self.stream = sd.InputStream(
@@ -72,7 +94,8 @@ class Mic:
 class Player:
     """Plays queued clips one after another on a background thread."""
 
-    def __init__(self, device: str, sample_rate: int):
+    def __init__(self, device, sample_rate: int):
+        device = pick_device(device, "output")
         self.q = queue.Queue()                 # items: (int16 audio, animation names)
         self._stop = threading.Event()         # thread-safe flag used to cut playback short
         try:
